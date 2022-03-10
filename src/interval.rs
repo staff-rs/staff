@@ -14,6 +14,8 @@ impl Interval {
 
     pub const MINOR_THIRD: Self = Self::new(3);
 
+    pub const MAJOR_SEVENTH: Self = Self::new(11);
+
     pub const fn new(semitones: u8) -> Self {
         Self { semitones }
     }

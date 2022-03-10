@@ -1,5 +1,8 @@
-use crate::note::{Accidental, Note, Pitch};
 pub use crate::Interval;
+use crate::{
+    note::{pitch_note::PitchNote, Accidental, Note},
+    pitch::Pitch,
+};
 use core::slice::Iter;
 
 pub const MAJOR_SCALE: [Interval; 7] = [
@@ -13,37 +16,53 @@ pub const MAJOR_SCALE: [Interval; 7] = [
 ];
 
 pub struct Scale<'a> {
-    pitch: Pitch,
-    note: Note,
+    pitch_note: PitchNote,
     intervals: Iter<'a, Interval>,
 }
 
+impl<'a> Scale<'a> {
+    pub fn new(pitch_note: PitchNote, intervals: &'a [Interval]) -> Self {
+        Self {
+            pitch_note,
+            intervals: intervals.iter(),
+        }
+    }
+
+    pub fn major(pitch_note: PitchNote) -> Self {
+        Self::new(pitch_note, &MAJOR_SCALE)
+    }
+}
+
 impl Iterator for Scale<'_> {
-    type Item = Note;
+    type Item = PitchNote;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(interval) = self.intervals.next() {
-            self.pitch = self.pitch + *interval;
-            let letter = self.note.letter.next();
+            let pitch = self.pitch_note.pitch() + *interval;
 
+            let letter = self.pitch_note.note().letter.next();
             let natural_pitch = Pitch::from(letter);
 
-            let a = if natural_pitch >= self.pitch {
-                match natural_pitch - self.pitch {
+            let accidental = if natural_pitch >= pitch {
+                match natural_pitch - pitch {
                     Interval::UNISON => Accidental::Natrual,
-                    Interval::MINOR_SECOND => Accidental::Sharp,
-                    Interval::MAJOR_SECOND => Accidental::DoubleSharp,
-                    a => panic!("{:?}", a),
-                }
-            } else {
-                match self.pitch - natural_pitch {
                     Interval::MINOR_SECOND => Accidental::Flat,
                     Interval::MAJOR_SECOND => Accidental::DoubleFlat,
+                    Interval::MAJOR_SEVENTH => Accidental::Sharp,
+                    _ => todo!(),
+                }
+            } else {
+                match pitch - natural_pitch {
+                    Interval::MINOR_SECOND => Accidental::Sharp,
+                    Interval::MAJOR_SECOND => Accidental::DoubleSharp,
                     _ => todo!(),
                 }
             };
 
-            Some(core::mem::replace(&mut self.note, Note::new(letter, a)))
+            Some(core::mem::replace(
+                &mut self.pitch_note,
+                PitchNote::new(pitch, Note::new(letter, accidental)),
+            ))
         } else {
             None
         }
@@ -52,19 +71,12 @@ impl Iterator for Scale<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::note::{Letter, Note, Pitch};
-    use super::{Scale, MAJOR_SCALE};
+    use crate::{note::pitch_note::PitchNote, pitch::Pitch, scale::Scale};
 
     #[test]
     fn it_works() {
-        let scale = Scale {
-            pitch: Pitch::C,
-            note: Note::new(Letter::C, crate::note::Accidental::Natrual),
-            intervals: MAJOR_SCALE.iter(),
-        };
-
-        for n in scale {
-            dbg!(n);
+        for note in Scale::major(PitchNote::from(Pitch::C)) {
+            dbg!(note);
         }
     }
 }
