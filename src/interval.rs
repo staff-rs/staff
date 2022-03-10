@@ -6,6 +6,8 @@ pub struct Interval {
 }
 
 impl Interval {
+    pub const UNISON: Self = Self::new(0);
+
     pub const MINOR_SECOND: Self = Self::new(1);
 
     pub const MAJOR_SECOND: Self = Self::new(2);
