@@ -84,8 +84,17 @@ impl Note {
     pub const fn from_sharp(pitch: Pitch) -> Self {
         match pitch {
             Pitch::C => Self::natural(Letter::C),
+            Pitch::C_SHARP => Self::sharp(Letter::C),
             Pitch::D => Self::natural(Letter::D),
+            Pitch::D_SHARP => Self::sharp(Letter::D),
+            Pitch::E => Self::natural(Letter::E),
+            Pitch::F => Self::natural(Letter::F),
+            Pitch::F_SHARP => Self::sharp(Letter::F),
+            Pitch::G => Self::natural(Letter::G),
             Pitch::G_SHARP => Self::sharp(Letter::G),
+            Pitch::A => Self::natural(Letter::A),
+            Pitch::A_SHARP => Self::sharp(Letter::A),
+            Pitch::B => Self::natural(Letter::B),
             _ => todo!(),
         }
     }
@@ -93,9 +102,64 @@ impl Note {
     pub const fn from_flat(pitch: Pitch) -> Self {
         match pitch {
             Pitch::C => Self::natural(Letter::C),
+            Pitch::C_SHARP => Self::flat(Letter::D),
             Pitch::D => Self::natural(Letter::D),
+            Pitch::D_SHARP => Self::flat(Letter::E),
+            Pitch::E => Self::natural(Letter::E),
+            Pitch::F => Self::natural(Letter::F),
+            Pitch::F_SHARP => Self::flat(Letter::G),
+            Pitch::G => Self::natural(Letter::G),
             Pitch::G_SHARP => Self::flat(Letter::A),
+            Pitch::A => Self::natural(Letter::A),
+            Pitch::A_SHARP => Self::flat(Letter::B),
+            Pitch::B => Self::natural(Letter::B),
             _ => todo!(),
         }
+    }
+
+    /// Returns the enharmonic note for `self` in flat notation.
+    ///
+    /// # Examples
+    ///
+    /// Convert a `Note` in sharp notation to flats
+    /// ```
+    /// use music::note::{Letter, Note};
+    ///
+    /// let note = Note::sharp(Letter::G);
+    /// assert_eq!(note.into_flat(), Note::flat(Letter::A))
+    /// ```
+    ///
+    /// Find a natural enharmonic note
+    /// ```
+    /// use music::note::{Letter, Note};
+    ///
+    /// let note = Note::flat(Letter::F);
+    /// assert_eq!(note.into_flat(), Note::natural(Letter::E))
+    /// ```
+    pub const fn into_flat(self) -> Self {
+        Self::from_flat(Pitch::from_note(self))
+    }
+
+    /// Returns the enharmonic note for `self` in sharp notation.
+    ///
+    /// # Examples
+    ///
+    /// Convert a `Note` in flat notation to sharps
+    /// ```
+    /// use music::note::{Letter, Note};
+    ///
+    /// let note = Note::flat(Letter::D);
+    /// assert_eq!(note.into_sharp(), Note::sharp(Letter::C))
+    /// ```
+    ///
+    /// Find a natural enharmonic note
+    /// ```
+    /// use music::note::{Letter, Note};
+    ///
+    /// let note = Note::sharp(Letter::B);
+    /// assert_eq!(note.into_sharp(), Note::natural(Letter::C))
+    /// ```
+    pub const fn into_sharp(self) -> Self {
+        Self::from_sharp(Pitch::from_note(self))
     }
 }
