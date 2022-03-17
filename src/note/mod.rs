@@ -1,4 +1,5 @@
-pub mod pitch_note;
+mod pitch_note;
+pub use pitch_note::PitchNote;
 
 use crate::{pitch::Pitch, Interval};
 use core::fmt::{self, Debug};
@@ -161,5 +162,27 @@ impl Note {
     /// ```
     pub const fn into_sharp(self) -> Self {
         Self::from_sharp(Pitch::from_note(self))
+    }
+
+    /// Returns `true` if the `self` is enharmonically equivalent to `other`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use music::note::{Letter, Note};
+    ///
+    /// let note = Note::flat(Letter::D);
+    /// assert!(note.is_enharmonic(Note::sharp(Letter::C)))
+    /// ```
+    ///
+    /// This function will also return true if the notes are the same.
+    /// ```
+    /// use music::note::{Letter, Note};
+    ///
+    /// let note = Note::natural(Letter::C);
+    /// assert!(note.is_enharmonic(note))
+    /// ```
+    pub const fn is_enharmonic(self, other: Self) -> bool {
+        Pitch::from_note(self).into_byte() == Pitch::from_note(other).into_byte()
     }
 }

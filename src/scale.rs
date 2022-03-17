@@ -2,7 +2,7 @@ use core::mem::{self, MaybeUninit};
 
 pub use crate::Interval;
 use crate::{
-    note::{pitch_note::PitchNote, Accidental, Letter, Note},
+    note::{Accidental, Letter, Note, PitchNote},
     pitch::Pitch,
 };
 
@@ -95,7 +95,7 @@ impl Iterator for Scale<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{note::pitch_note::PitchNote, pitch::Pitch, scale::Scale};
+    use crate::{note::PitchNote, pitch::Pitch, scale::Scale};
 
     #[test]
     fn it_works() {
