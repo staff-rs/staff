@@ -1,8 +1,16 @@
-use crate::Pitch;
+use crate::{midi::MidiNote, Interval};
 
-pub fn functions<I>(chord: I, root: Pitch) -> impl Iterator
+pub fn major(root: MidiNote) -> [MidiNote; 3] {
+    [
+        root,
+        root + Interval::MAJOR_THIRD,
+        root + Interval::PERFECT_FIFTH,
+    ]
+}
+
+pub fn functions<I>(chord: I, root: MidiNote) -> impl Iterator
 where
-    I: IntoIterator<Item = Pitch>,
+    I: IntoIterator<Item = MidiNote>,
 {
-    chord.into_iter().map(move |pitch: Pitch| pitch - root)
+    chord.into_iter().map(move |note| note - root)
 }
