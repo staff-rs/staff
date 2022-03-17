@@ -42,6 +42,10 @@ impl Pitch {
         }
     }
 
+    pub const fn from_byte(byte: u8) -> Self {
+        Self(byte % (Self::B.into_byte() + 1))
+    }
+
     pub const fn from_note(note: Note) -> Self {
         let natural = Self::natural(note.letter);
         match note.accidental {
@@ -58,7 +62,7 @@ impl Pitch {
     }
 
     pub const fn sub_interval(self, interval: Interval) -> Self {
-        Self((self.0 as i8 - interval.semitones() as i8).abs() as u8 % (Self::B.0 - 1))
+        Self::from_byte((self.0 as i8 - interval.semitones() as i8).abs() as u8)
     }
 
     pub const fn into_byte(self) -> u8 {

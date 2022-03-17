@@ -3,8 +3,12 @@
 #![feature(maybe_uninit_uninit_array)]
 #![feature(const_ptr_read)]
 
+pub mod chord;
+
 mod interval;
 pub use interval::Interval;
+
+pub mod midi;
 
 pub mod note;
 
