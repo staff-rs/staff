@@ -112,15 +112,3 @@ pub const fn scale<const LEN: usize>(
 
     unsafe { (&array as *const _ as *const [PitchNote; LEN]).read() }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{note::PitchNote, pitch::Pitch, scale::Scale};
-
-    #[test]
-    fn it_works() {
-        for note in Scale::major(PitchNote::from_flat(Pitch::G_SHARP)) {
-            dbg!(note, Pitch::from(note.note()));
-        }
-    }
-}

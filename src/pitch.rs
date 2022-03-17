@@ -46,6 +46,11 @@ impl Pitch {
         Self(byte % (Self::B.into_byte() + 1))
     }
 
+
+    pub const fn from_byte_unchecked(byte: u8) -> Self {
+        Self(byte)
+    }
+
     pub const fn from_note(note: Note) -> Self {
         let natural = Self::natural(note.letter);
         match note.accidental {
