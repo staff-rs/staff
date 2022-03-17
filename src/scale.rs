@@ -1,24 +1,9 @@
-use core::mem::{self, MaybeUninit};
-
-pub use crate::Interval;
 use crate::{
-    note::{Accidental, Letter, Note, PitchNote},
+    note::{Accidental, Note, PitchNote},
     pitch::Pitch,
+    Interval,
 };
-
-pub const C_MAJOR: [PitchNote; 7] = {
-    let mut array: [MaybeUninit<PitchNote>; 7] = MaybeUninit::uninit_array();
-
-    let mut scale = Scale::major(PitchNote::new(Pitch::C, Note::natural(Letter::C)));
-
-    let mut i = 0;
-    while let Some(note) = scale.next_note() {
-        array[i] = MaybeUninit::new(note);
-        i += 1;
-    }
-
-    unsafe { (&array as *const _ as *const [PitchNote; 7]).read() }
-};
+use core::mem::{self, MaybeUninit};
 
 pub const MAJOR_SCALE: [Interval; 7] = [
     Interval::MAJOR_SECOND,
@@ -37,16 +22,16 @@ pub struct Scale<'a> {
 }
 
 impl<'a> Scale<'a> {
-    pub const fn new(pitch_note: PitchNote, intervals: &'a [Interval]) -> Self {
+    pub const fn new(root: PitchNote, intervals: &'a [Interval]) -> Self {
         Self {
-            pitch_note,
+            pitch_note: root,
             intervals,
             index: 0,
         }
     }
 
-    pub const fn major(pitch_note: PitchNote) -> Self {
-        Self::new(pitch_note, &MAJOR_SCALE)
+    pub const fn major(root: PitchNote) -> Self {
+        Self::new(root, &MAJOR_SCALE)
     }
 
     pub const fn next_note(&mut self) -> Option<PitchNote> {
@@ -91,6 +76,41 @@ impl Iterator for Scale<'_> {
     fn next(&mut self) -> Option<Self::Item> {
         self.next_note()
     }
+}
+
+/// ```
+/// use music::note::{Letter, PitchNote};
+/// use music::scale::{scale, MAJOR_SCALE};
+///
+/// const C_MAJOR: [PitchNote; 7] = scale(PitchNote::natural(Letter::C), MAJOR_SCALE);
+/// assert_eq!(
+///     C_MAJOR,
+///     [
+///         PitchNote::natural(Letter::C),
+///         PitchNote::natural(Letter::D),
+///         PitchNote::natural(Letter::E),
+///         PitchNote::natural(Letter::F),
+///         PitchNote::natural(Letter::G),
+///         PitchNote::natural(Letter::A),
+///         PitchNote::natural(Letter::B)
+///     ]
+/// )
+/// ```
+pub const fn scale<const LEN: usize>(
+    root: PitchNote,
+    intervals: [Interval; LEN],
+) -> [PitchNote; LEN] {
+    let mut array: [MaybeUninit<PitchNote>; LEN] = MaybeUninit::uninit_array();
+
+    let mut scale = Scale::new(root, &intervals);
+
+    let mut i = 0;
+    while let Some(note) = scale.next_note() {
+        array[i] = MaybeUninit::new(note);
+        i += 1;
+    }
+
+    unsafe { (&array as *const _ as *const [PitchNote; LEN]).read() }
 }
 
 #[cfg(test)]

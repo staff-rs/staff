@@ -9,7 +9,7 @@ pub use interval::Interval;
 pub mod note;
 
 pub mod pitch;
-use pitch::Pitch;
+pub use pitch::Pitch;
 
 pub mod scale;
 

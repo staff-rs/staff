@@ -1,6 +1,7 @@
-use crate::{note::Note, pitch::Pitch};
+use super::{Letter, Note};
+use crate::pitch::Pitch;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PitchNote {
     pitch: Pitch,
     note: Note,
@@ -9,6 +10,10 @@ pub struct PitchNote {
 impl PitchNote {
     pub const fn new(pitch: Pitch, note: Note) -> Self {
         Self { pitch, note }
+    }
+
+    pub const fn natural(letter: Letter) -> Self {
+        Self::new(Pitch::natural(letter), Note::natural(letter))
     }
 
     pub const fn from_flat(pitch: Pitch) -> Self {
