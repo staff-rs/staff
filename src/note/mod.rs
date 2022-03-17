@@ -62,13 +62,29 @@ impl Note {
     pub const fn natural(letter: Letter) -> Self {
         Self::new(letter, Accidental::Natrual)
     }
-}
 
-impl From<Pitch> for Note {
-    fn from(note: Pitch) -> Self {
-        match note {
+    pub const fn flat(letter: Letter) -> Self {
+        Self::new(letter, Accidental::Flat)
+    }
+
+    pub const fn sharp(letter: Letter) -> Self {
+        Self::new(letter, Accidental::Sharp)
+    }
+
+    pub const fn from_sharp(pitch: Pitch) -> Self {
+        match pitch {
             Pitch::C => Self::natural(Letter::C),
             Pitch::D => Self::natural(Letter::D),
+            Pitch::G_SHARP => Self::sharp(Letter::G),
+            _ => todo!(),
+        }
+    }
+
+    pub const fn from_flat(pitch: Pitch) -> Self {
+        match pitch {
+            Pitch::C => Self::natural(Letter::C),
+            Pitch::D => Self::natural(Letter::D),
+            Pitch::G_SHARP => Self::flat(Letter::A),
             _ => todo!(),
         }
     }

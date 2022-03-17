@@ -80,7 +80,7 @@ impl Add<Interval> for Pitch {
     type Output = Self;
 
     fn add(self, interval: Interval) -> Self {
-       self.add_interval(interval)
+        self.add_interval(interval)
     }
 }
 

@@ -1,4 +1,4 @@
-use std::mem::MaybeUninit;
+use core::mem::{self, MaybeUninit};
 
 pub use crate::Interval;
 use crate::{
@@ -75,7 +75,7 @@ impl<'a> Scale<'a> {
                 }
             };
 
-            Some(core::mem::replace(
+            Some(mem::replace(
                 &mut self.pitch_note,
                 PitchNote::new(pitch, Note::new(letter, accidental)),
             ))
@@ -99,7 +99,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        for note in Scale::major(PitchNote::from(Pitch::C)) {
+        for note in Scale::major(PitchNote::from_flat(Pitch::G_SHARP)) {
             dbg!(note);
         }
     }

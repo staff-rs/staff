@@ -11,21 +11,20 @@ impl PitchNote {
         Self { pitch, note }
     }
 
+    pub const fn from_flat(pitch: Pitch) -> Self {
+        Self::new(pitch, Note::from_flat(pitch))
+    }
+
+    pub const fn from_sharp(pitch: Pitch) -> Self {
+        Self::new(pitch, Note::from_sharp(pitch))
+    }
+
     pub const fn pitch(self) -> Pitch {
         self.pitch
     }
 
     pub const fn note(self) -> Note {
         self.note
-    }
-}
-
-impl From<Pitch> for PitchNote {
-    fn from(pitch: Pitch) -> Self {
-        Self {
-            pitch,
-            note: pitch.into(),
-        }
     }
 }
 

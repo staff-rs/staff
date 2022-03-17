@@ -5,12 +5,11 @@
 
 mod interval;
 pub use interval::Interval;
-use note::pitch_note::PitchNote;
-use pitch::Pitch;
 
 pub mod note;
 
 pub mod pitch;
+use pitch::Pitch;
 
 pub mod scale;
 
