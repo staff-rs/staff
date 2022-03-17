@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub};
 
 use crate::{
-    note::{Letter, Note},
+    note::{Accidental, Letter, Note},
     Interval,
 };
 
@@ -42,8 +42,23 @@ impl Pitch {
         }
     }
 
+    pub const fn from_note(note: Note) -> Self {
+        let natural = Self::natural(note.letter);
+        match note.accidental {
+            Accidental::Natrual => natural,
+            Accidental::Flat => natural.sub_interval(Interval::MINOR_SECOND),
+            Accidental::DoubleFlat => natural.sub_interval(Interval::MAJOR_SECOND),
+            Accidental::Sharp => natural.add_interval(Interval::MINOR_SECOND),
+            Accidental::DoubleSharp => natural.add_interval(Interval::MAJOR_SECOND),
+        }
+    }
+
     pub const fn add_interval(self, interval: Interval) -> Self {
         Self((self.0 + interval.semitones()) % (Self::B.0 + 1))
+    }
+
+    pub const fn sub_interval(self, interval: Interval) -> Self {
+        Self((self.0 as i8 - interval.semitones() as i8).abs() as u8 % (Self::B.0 - 1))
     }
 
     pub const fn into_byte(self) -> u8 {
@@ -72,7 +87,7 @@ impl From<Letter> for Pitch {
 
 impl From<Note> for Pitch {
     fn from(note: Note) -> Self {
-        todo!()
+        Self::from_note(note)
     }
 }
 

@@ -1,6 +1,6 @@
 pub mod pitch_note;
 
-use crate::pitch::Pitch;
+use crate::{pitch::Pitch, Interval};
 use core::fmt::{self, Debug};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -46,6 +46,16 @@ pub enum Accidental {
     DoubleFlat,
     Sharp,
     DoubleSharp,
+}
+
+impl Accidental {
+    pub fn interval(self) -> Interval {
+        match self {
+            Self::Natrual => Interval::UNISON,
+            Self::Flat | Self::Sharp => Interval::MINOR_SECOND,
+            Self::DoubleFlat | Self::DoubleSharp => Interval::MAJOR_SECOND,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

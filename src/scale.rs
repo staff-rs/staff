@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn it_works() {
         for note in Scale::major(PitchNote::from_flat(Pitch::G_SHARP)) {
-            dbg!(note);
+            dbg!(note, Pitch::from(note.note()));
         }
     }
 }
