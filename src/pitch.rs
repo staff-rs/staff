@@ -28,6 +28,31 @@ impl Pitch {
     pub const A_SHARP: Self = Self(10);
 
     pub const B: Self = Self(11);
+
+    pub const fn natural(letter: Letter) -> Self {
+        match letter {
+            Letter::C => Self::C,
+            Letter::D => Self::D,
+            Letter::E => Self::E,
+            Letter::F => Self::F,
+            Letter::G => Self::G,
+            Letter::A => Self::A,
+            Letter::B => Self::B,
+            _ => todo!(),
+        }
+    }
+
+    pub const fn add_interval(self, interval: Interval) -> Self {
+        Self((self.0 + interval.semitones()) % (Self::B.0 + 1))
+    }
+
+    pub const fn into_byte(self) -> u8 {
+        self.0
+    }
+
+    pub const fn sub(self, rhs: Self) -> Interval {
+        Interval::new(self.0 - rhs.0)
+    }
 }
 
 impl From<Letter> for Pitch {
@@ -55,7 +80,7 @@ impl Add<Interval> for Pitch {
     type Output = Self;
 
     fn add(self, interval: Interval) -> Self {
-        Self((self.0 + interval.semitones()) % (Self::B.0 + 1))
+       self.add_interval(interval)
     }
 }
 
@@ -63,6 +88,6 @@ impl Sub for Pitch {
     type Output = Interval;
 
     fn sub(self, rhs: Self) -> Interval {
-        Interval::new(self.0 - rhs.0)
+        self.sub(rhs)
     }
 }

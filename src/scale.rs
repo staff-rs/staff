@@ -1,9 +1,24 @@
+use std::mem::MaybeUninit;
+
 pub use crate::Interval;
 use crate::{
-    note::{pitch_note::PitchNote, Accidental, Note},
+    note::{pitch_note::PitchNote, Accidental, Letter, Note},
     pitch::Pitch,
 };
-use core::slice::Iter;
+
+pub const C_MAJOR: [PitchNote; 7] = {
+    let mut array: [MaybeUninit<PitchNote>; 7] = MaybeUninit::uninit_array();
+
+    let mut scale = Scale::major(PitchNote::new(Pitch::C, Note::natural(Letter::C)));
+
+    let mut i = 0;
+    while let Some(note) = scale.next_note() {
+        array[i] = MaybeUninit::new(note);
+        i += 1;
+    }
+
+    unsafe { (&array as *const _ as *const [PitchNote; 7]).read() }
+};
 
 pub const MAJOR_SCALE: [Interval; 7] = [
     Interval::MAJOR_SECOND,
@@ -17,34 +32,35 @@ pub const MAJOR_SCALE: [Interval; 7] = [
 
 pub struct Scale<'a> {
     pitch_note: PitchNote,
-    intervals: Iter<'a, Interval>,
+    intervals: &'a [Interval],
+    index: usize,
 }
 
 impl<'a> Scale<'a> {
-    pub fn new(pitch_note: PitchNote, intervals: &'a [Interval]) -> Self {
+    pub const fn new(pitch_note: PitchNote, intervals: &'a [Interval]) -> Self {
         Self {
             pitch_note,
-            intervals: intervals.iter(),
+            intervals,
+            index: 0,
         }
     }
 
-    pub fn major(pitch_note: PitchNote) -> Self {
+    pub const fn major(pitch_note: PitchNote) -> Self {
         Self::new(pitch_note, &MAJOR_SCALE)
     }
-}
 
-impl Iterator for Scale<'_> {
-    type Item = PitchNote;
+    pub const fn next_note(&mut self) -> Option<PitchNote> {
+        if self.index < self.intervals.len() {
+            let interval = self.intervals[self.index];
+            self.index += 1;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(interval) = self.intervals.next() {
-            let pitch = self.pitch_note.pitch() + *interval;
+            let pitch = self.pitch_note.pitch().add_interval(interval);
 
             let letter = self.pitch_note.note().letter.next();
-            let natural_pitch = Pitch::from(letter);
+            let natural_pitch = Pitch::natural(letter);
 
-            let accidental = if natural_pitch >= pitch {
-                match natural_pitch - pitch {
+            let accidental = if natural_pitch.into_byte() >= pitch.into_byte() {
+                match natural_pitch.sub(pitch) {
                     Interval::UNISON => Accidental::Natrual,
                     Interval::MINOR_SECOND => Accidental::Flat,
                     Interval::MAJOR_SECOND => Accidental::DoubleFlat,
@@ -52,7 +68,7 @@ impl Iterator for Scale<'_> {
                     _ => todo!(),
                 }
             } else {
-                match pitch - natural_pitch {
+                match pitch.sub(natural_pitch) {
                     Interval::MINOR_SECOND => Accidental::Sharp,
                     Interval::MAJOR_SECOND => Accidental::DoubleSharp,
                     _ => todo!(),
@@ -66,6 +82,14 @@ impl Iterator for Scale<'_> {
         } else {
             None
         }
+    }
+}
+
+impl Iterator for Scale<'_> {
+    type Item = PitchNote;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_note()
     }
 }
 

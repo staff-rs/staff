@@ -11,11 +11,11 @@ impl PitchNote {
         Self { pitch, note }
     }
 
-    pub fn pitch(self) -> Pitch {
+    pub const fn pitch(self) -> Pitch {
         self.pitch
     }
 
-    pub fn note(self) -> Note {
+    pub const fn note(self) -> Note {
         self.note
     }
 }
