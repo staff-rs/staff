@@ -33,6 +33,12 @@ impl Interval {
     }
 }
 
+impl From<Interval> for u8 {
+    fn from(interval: Interval) -> Self {
+        interval.semitones()
+    }
+}
+
 impl Add for Interval {
     type Output = Self;
 

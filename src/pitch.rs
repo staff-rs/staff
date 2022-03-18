@@ -46,7 +46,6 @@ impl Pitch {
         Self(byte % (Self::B.into_byte() + 1))
     }
 
-
     pub const fn from_byte_unchecked(byte: u8) -> Self {
         Self(byte)
     }
@@ -97,6 +96,12 @@ impl From<Letter> for Pitch {
 impl From<Note> for Pitch {
     fn from(note: Note) -> Self {
         Self::from_note(note)
+    }
+}
+
+impl From<Pitch> for u8 {
+    fn from(pitch: Pitch) -> Self {
+        pitch.into_byte()
     }
 }
 
