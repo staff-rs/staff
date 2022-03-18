@@ -92,24 +92,6 @@ impl Iterator for Scale<'_> {
     }
 }
 
-/// ```
-/// use music::note::{Letter, PitchNote};
-/// use music::scale::{scale, MAJOR_SCALE};
-///
-/// const C_MAJOR: [PitchNote; 7] = scale(PitchNote::natural(Letter::C), MAJOR_SCALE);
-/// assert_eq!(
-///     C_MAJOR,
-///     [
-///         PitchNote::natural(Letter::C),
-///         PitchNote::natural(Letter::D),
-///         PitchNote::natural(Letter::E),
-///         PitchNote::natural(Letter::F),
-///         PitchNote::natural(Letter::G),
-///         PitchNote::natural(Letter::A),
-///         PitchNote::natural(Letter::B)
-///     ]
-/// )
-/// ```
 pub const fn scale<const LEN: usize>(
     root: PitchNote,
     intervals: [Interval; LEN],
