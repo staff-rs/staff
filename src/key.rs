@@ -1,10 +1,9 @@
 use core::fmt;
-use std::fmt::Write;
+use std::{array::IntoIter, fmt::Write};
 
 use crate::{
     chord::{Chord, ChordKind},
-    midi::{MidiNote, Octave},
-    note::PitchNote,
+    midi::MidiNote,
     scale::Scale,
     Interval, Pitch,
 };
@@ -66,24 +65,18 @@ impl fmt::Display for KeySignature {
 }
 
 pub struct Key {
-    octave: Octave,
-    scale: Scale<'static>,
+    scale: Scale<MidiNote, IntoIter<Interval, 7>>,
     kinds: [ChordKind; 7],
 }
 
 impl Key {
-    pub fn new(octave: Octave, scale: Scale<'static>, kinds: [ChordKind; 7]) -> Self {
-        Self {
-            octave,
-            scale,
-            kinds,
-        }
+    pub fn new(scale: Scale<MidiNote, IntoIter<Interval, 7>>, kinds: [ChordKind; 7]) -> Self {
+        Self { scale, kinds }
     }
 
     pub fn major(root: MidiNote) -> Self {
         Self::new(
-            root.octave(),
-            Scale::major(PitchNote::from_sharp(root.pitch())),
+            Scale::major(root),
             [
                 ChordKind::MajorSeventh,
                 ChordKind::MinorSeventh,
@@ -98,8 +91,7 @@ impl Key {
 
     pub fn natural_minor(root: MidiNote) -> Self {
         Self::new(
-            root.octave(),
-            Scale::natural_minor(PitchNote::from_sharp(root.pitch())),
+            Scale::natural_minor(root),
             [
                 ChordKind::MajorSeventh,
                 ChordKind::MinorSeventh,
@@ -115,7 +107,7 @@ impl Key {
     pub fn chords(self) -> impl Iterator<Item = Chord> {
         self.scale
             .zip(self.kinds.into_iter())
-            .map(move |(note, kind)| Chord::new(MidiNote::new(note.pitch(), self.octave), kind))
+            .map(move |(note, kind)| Chord::new(note, kind))
     }
 }
 
