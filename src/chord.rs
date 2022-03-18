@@ -22,6 +22,18 @@ impl Chord {
     pub fn new(root: MidiNote, kind: ChordKind) -> Self {
         Self { root, kind }
     }
+
+    pub fn pitches(self) -> impl Iterator<Item = Pitch> {
+        self.kind
+            .intervals()
+            .map(move |interval| self.root.pitch() + interval)
+    }
+
+    pub fn notes(self) -> impl Iterator<Item = MidiNote> {
+        self.kind
+            .intervals()
+            .map(move |interval| self.root + interval)
+    }
 }
 
 pub struct ChordDisplay {
@@ -127,14 +139,6 @@ impl ChordKind {
             ],
         };
         array.iter().copied().collect()
-    }
-
-    pub fn pitches(&self, root: Pitch) -> impl Iterator<Item = Pitch> {
-        self.intervals().map(move |interval| root + interval)
-    }
-
-    pub fn notes(&self, root: MidiNote) -> impl Iterator<Item = MidiNote> {
-        self.intervals().map(move |interval| root + interval)
     }
 
     pub fn to_str(self) -> &'static str {
