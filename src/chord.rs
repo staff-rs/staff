@@ -1,10 +1,9 @@
-use core::fmt;
-
 use crate::{
     midi::{MidiNote, MidiNoteDisplay},
     set::Set,
     Interval, Pitch,
 };
+use core::fmt;
 
 pub fn functions<I>(notes: I, root: MidiNote) -> impl Iterator<Item = Interval>
 where
@@ -30,7 +29,7 @@ impl fmt::Display for Chord {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChordKind {
     Major,
     Minor,
@@ -41,11 +40,37 @@ impl ChordKind {
         [Self::Major, Self::Minor]
     }
 
-    pub fn to_str(self) -> &'static str {
-        match self {
-            Self::Major => "",
-            Self::Minor => "m",
-        }
+    pub fn from_intervals(intervals: Set<Interval>) -> Option<Self> {
+        Self::all()
+            .into_iter()
+            .find(move |kind| kind.intervals() == intervals)
+    }
+
+    /// ```
+    /// use music::chord::ChordKind;
+    /// use music::midi::{MidiNote, Octave};
+    /// use music::Pitch;
+    ///
+    /// let root = MidiNote::new(Pitch::C, Octave::FOUR);
+    /// let mut matches = ChordKind::match_notes(
+    ///     root,
+    ///     [
+    ///         MidiNote::new(Pitch::E, Octave::FOUR),
+    ///         root,
+    ///         MidiNote::new(Pitch::G, Octave::FOUR),
+    ///     ],
+    /// );
+    ///
+    /// assert_eq!(matches.next(), Some(ChordKind::Major))
+    /// ```
+    pub fn match_notes<I>(root: MidiNote, notes: I) -> impl Iterator<Item = Self>
+    where
+        I: IntoIterator<Item = MidiNote>,
+    {
+        let functions: Set<Interval> = functions(notes, root).collect();
+        functions
+            .modes()
+            .flat_map(|intervals| Self::from_intervals(intervals).into_iter())
     }
 
     pub fn intervals(&self) -> Set<Interval> {
@@ -72,14 +97,11 @@ impl ChordKind {
         self.intervals().map(move |interval| root + interval)
     }
 
-    pub fn matches(root: MidiNote, notes: &[MidiNote]) -> impl Iterator<Item = Self> {
-        let functions: Set<Interval> = functions(notes.iter().copied(), root).collect();
-
-        functions.modes().flat_map(|intervals| {
-            Self::all()
-                .into_iter()
-                .filter(move |kind| kind.intervals() == intervals)
-        })
+    pub fn to_str(self) -> &'static str {
+        match self {
+            Self::Major => "",
+            Self::Minor => "m",
+        }
     }
 }
 
@@ -90,12 +112,13 @@ mod tests {
 
     #[test]
     fn f() {
-        let matches = ChordKind::matches(
-            MidiNote::new(Pitch::C, Octave::FOUR),
-            &[
+        let root = MidiNote::new(Pitch::C, Octave::FOUR);
+        let matches = ChordKind::match_notes(
+            root,
+            [
                 MidiNote::new(Pitch::E, Octave::FOUR),
+                root,
                 MidiNote::new(Pitch::G, Octave::FOUR),
-                MidiNote::new(Pitch::C, Octave::FOUR),
             ],
         );
 

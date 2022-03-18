@@ -1,33 +1,11 @@
-use core::fmt;
+use crate::{Interval, Pitch};
 use std::ops::{Add, Sub};
 
-use crate::{note::Note, Interval, Pitch};
+mod display;
+pub use display::MidiNoteDisplay;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Octave(i8);
-
-impl Octave {
-    pub const NEGATIVE_ONE: Self = Self(-1);
-    pub const ZERO: Self = Self(-1);
-    pub const ONE: Self = Self(1);
-    pub const TWO: Self = Self(2);
-    pub const THREE: Self = Self(3);
-    pub const FOUR: Self = Self(4);
-    pub const FIVE: Self = Self(5);
-    pub const SIX: Self = Self(6);
-    pub const SEVEN: Self = Self(7);
-    pub const EIGHT: Self = Self(8);
-
-    pub const fn into_i8(self) -> i8 {
-        self.0
-    }
-}
-
-impl fmt::Display for Octave {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+mod octave;
+pub use octave::Octave;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MidiNote(u8);
@@ -77,7 +55,7 @@ impl MidiNote {
     /// assert_eq!(note.octave(), Octave::NEGATIVE_ONE);
     /// ```
     pub const fn octave(self) -> Octave {
-        Octave((self.into_byte() / (Pitch::B.into_byte() + 1)) as i8 - 1)
+        Octave::from_midi(self)
     }
 
     pub fn frequency(self) -> f64 {
@@ -104,25 +82,5 @@ impl Sub for MidiNote {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Interval::new((self.into_byte() as i8 - rhs.into_byte() as i8).abs() as _)
-    }
-}
-
-pub struct MidiNoteDisplay {
-    midi_note: MidiNote,
-    note: Note,
-}
-
-impl MidiNoteDisplay {
-    pub fn from_sharp(midi_note: MidiNote) -> Self {
-        Self {
-            midi_note,
-            note: Note::from_sharp(midi_note.pitch()),
-        }
-    }
-}
-
-impl fmt::Display for MidiNoteDisplay {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", self.note, self.midi_note.octave())
     }
 }
