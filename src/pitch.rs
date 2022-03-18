@@ -76,6 +76,11 @@ impl Pitch {
     pub const fn sub(self, rhs: Self) -> Interval {
         Interval::new(self.0 - rhs.0)
     }
+
+    pub fn transpose(self, key: Pitch, to: Pitch) -> Pitch {
+        let f = self - key;
+        to + f
+    }
 }
 
 impl From<Letter> for Pitch {

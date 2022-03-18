@@ -1,8 +1,8 @@
-mod pitch_note;
-pub use pitch_note::PitchNote;
-
 use crate::{pitch::Pitch, Interval};
 use core::fmt::{self, Debug};
+
+mod pitch_note;
+pub use pitch_note::PitchNote;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Letter(u8);

@@ -1,57 +1,6 @@
-use crate::{
-    midi::{MidiNote, MidiNoteDisplay},
-    set::Set,
-    Interval, Pitch,
-};
-use core::fmt;
+use crate::{midi::MidiNote, set::Set, Interval};
 
-pub fn functions<I>(notes: I, root: MidiNote) -> impl Iterator<Item = Interval>
-where
-    I: IntoIterator<Item = MidiNote>,
-{
-    notes.into_iter().map(move |note| note - root)
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Chord {
-    pub root: MidiNote,
-    pub kind: ChordKind,
-}
-
-impl Chord {
-    pub fn new(root: MidiNote, kind: ChordKind) -> Self {
-        Self { root, kind }
-    }
-
-    pub fn pitches(self) -> impl Iterator<Item = Pitch> {
-        self.kind
-            .intervals()
-            .map(move |interval| self.root.pitch() + interval)
-    }
-
-    pub fn notes(self) -> impl Iterator<Item = MidiNote> {
-        self.kind
-            .intervals()
-            .map(move |interval| self.root + interval)
-    }
-}
-
-pub struct ChordDisplay {
-    root: MidiNoteDisplay,
-    kind: ChordKind,
-}
-
-impl ChordDisplay {
-    pub fn new(root: MidiNoteDisplay, kind: ChordKind) -> Self {
-        Self { root, kind }
-    }
-}
-
-impl fmt::Display for ChordDisplay {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", self.root, self.kind.to_str())
-    }
-}
+use super::functions;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChordKind {
@@ -150,32 +99,5 @@ impl ChordKind {
             Self::DominantSeventh => "7",
             Self::HalfDiminished => "m7b5",
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{midi::Octave, Pitch};
-
-    #[test]
-    fn f() {
-        let root = MidiNote::new(Pitch::C, Octave::FOUR);
-        let matches = ChordKind::match_notes(
-            root,
-            [
-                MidiNote::new(Pitch::E, Octave::FOUR),
-                root,
-                MidiNote::new(Pitch::G, Octave::FOUR),
-            ],
-        );
-
-        for chord in matches {
-            dbg!(chord);
-        }
-
-        let root = MidiNote::new(Pitch::C, Octave::FOUR);
-        let c = ChordDisplay::new(MidiNoteDisplay::from_sharp(root), ChordKind::Minor);
-        println!("{}", c);
     }
 }

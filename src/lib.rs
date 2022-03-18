@@ -15,14 +15,9 @@ pub mod midi;
 pub mod note;
 
 mod pitch;
-
 pub use pitch::Pitch;
 
 pub mod scale;
 
-pub mod set;
-
-pub fn transpose(key: Pitch, note: Pitch, to: Pitch) -> Pitch {
-    let f = key - note;
-    to + f
-}
+mod set;
+pub use set::Set;
