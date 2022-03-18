@@ -12,18 +12,30 @@ where
     notes.into_iter().map(move |note| note - root)
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct Chord {
+    pub root: MidiNote,
+    pub kind: ChordKind,
+}
+
+impl Chord {
+    pub fn new(root: MidiNote, kind: ChordKind) -> Self {
+        Self { root, kind }
+    }
+}
+
+pub struct ChordDisplay {
     root: MidiNoteDisplay,
     kind: ChordKind,
 }
 
-impl Chord {
+impl ChordDisplay {
     pub fn new(root: MidiNoteDisplay, kind: ChordKind) -> Self {
         Self { root, kind }
     }
 }
 
-impl fmt::Display for Chord {
+impl fmt::Display for ChordDisplay {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}{}", self.root, self.kind.to_str())
     }
@@ -32,7 +44,11 @@ impl fmt::Display for Chord {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChordKind {
     Major,
+    MajorSeventh,
     Minor,
+    MinorSeventh,
+    DominantSeventh,
+    HalfDiminished,
 }
 
 impl ChordKind {
@@ -74,19 +90,43 @@ impl ChordKind {
     }
 
     pub fn intervals(&self) -> Set<Interval> {
-        let array = match self {
-            Self::Major => [
+        let array: &[_] = match self {
+            Self::Major => &[
                 Interval::UNISON,
                 Interval::MAJOR_THIRD,
                 Interval::PERFECT_FIFTH,
             ],
-            Self::Minor => [
+            Self::MajorSeventh => &[
                 Interval::UNISON,
                 Interval::MAJOR_THIRD,
                 Interval::PERFECT_FIFTH,
+                Interval::MAJOR_SEVENTH,
+            ],
+            Self::Minor => &[
+                Interval::UNISON,
+                Interval::MAJOR_THIRD,
+                Interval::PERFECT_FIFTH,
+            ],
+            Self::MinorSeventh => &[
+                Interval::UNISON,
+                Interval::MAJOR_THIRD,
+                Interval::PERFECT_FIFTH,
+                Interval::MINOR_SEVENTH,
+            ],
+            Self::DominantSeventh => &[
+                Interval::UNISON,
+                Interval::MAJOR_THIRD,
+                Interval::PERFECT_FIFTH,
+                Interval::MINOR_SEVENTH,
+            ],
+            Self::HalfDiminished => &[
+                Interval::UNISON,
+                Interval::MINOR_THIRD,
+                Interval::TRITONE,
+                Interval::MINOR_SEVENTH,
             ],
         };
-        array.into_iter().collect()
+        array.iter().copied().collect()
     }
 
     pub fn pitches(&self, root: Pitch) -> impl Iterator<Item = Pitch> {
@@ -100,7 +140,11 @@ impl ChordKind {
     pub fn to_str(self) -> &'static str {
         match self {
             Self::Major => "",
+            Self::MajorSeventh => "M7",
             Self::Minor => "m",
+            Self::MinorSeventh => "m7",
+            Self::DominantSeventh => "7",
+            Self::HalfDiminished => "m7b5",
         }
     }
 }
@@ -127,7 +171,7 @@ mod tests {
         }
 
         let root = MidiNote::new(Pitch::C, Octave::FOUR);
-        let c = Chord::new(MidiNoteDisplay::from_sharp(root), ChordKind::Minor);
+        let c = ChordDisplay::new(MidiNoteDisplay::from_sharp(root), ChordKind::Minor);
         println!("{}", c);
     }
 }

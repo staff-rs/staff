@@ -5,7 +5,7 @@ use crate::{
 };
 use core::mem::{self, MaybeUninit};
 
-pub const MAJOR_SCALE: [Interval; 7] = [
+pub const MAJOR_SCALE: &[Interval] = &[
     Interval::MAJOR_SECOND,
     Interval::MAJOR_SECOND,
     Interval::MINOR_SECOND,
@@ -13,6 +13,16 @@ pub const MAJOR_SCALE: [Interval; 7] = [
     Interval::MAJOR_SECOND,
     Interval::MAJOR_SECOND,
     Interval::MINOR_SECOND,
+];
+
+pub const NATURAL_MINOR_SCALE: &[Interval] = &[
+    Interval::MAJOR_SECOND,
+    Interval::MINOR_SECOND,
+    Interval::MAJOR_SECOND,
+    Interval::MAJOR_SECOND,
+    Interval::MINOR_SECOND,
+    Interval::MAJOR_SECOND,
+    Interval::MAJOR_SECOND,
 ];
 
 pub struct Scale<'a> {
@@ -31,7 +41,11 @@ impl<'a> Scale<'a> {
     }
 
     pub const fn major(root: PitchNote) -> Self {
-        Self::new(root, &MAJOR_SCALE)
+        Self::new(root, MAJOR_SCALE)
+    }
+
+    pub const fn natural_minor(root: PitchNote) -> Self {
+        Self::new(root, NATURAL_MINOR_SCALE)
     }
 
     pub const fn next_note(&mut self) -> Option<PitchNote> {

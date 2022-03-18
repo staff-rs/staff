@@ -8,11 +8,14 @@ pub mod chord;
 mod interval;
 pub use interval::Interval;
 
+pub mod key;
+
 pub mod midi;
 
 pub mod note;
 
 mod pitch;
+
 pub use pitch::Pitch;
 
 pub mod scale;
