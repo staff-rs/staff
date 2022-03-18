@@ -36,6 +36,12 @@ impl Letter {
 
 impl fmt::Debug for Letter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
+impl fmt::Display for Letter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_char())
     }
 }
@@ -184,5 +190,18 @@ impl Note {
     /// ```
     pub const fn is_enharmonic(self, other: Self) -> bool {
         Pitch::from_note(self).into_byte() == Pitch::from_note(other).into_byte()
+    }
+}
+
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let accidental = match self.accidental {
+            Accidental::Natrual => "",
+            Accidental::Sharp => "#",
+            Accidental::DoubleSharp => "##",
+            Accidental::Flat => "b",
+            Accidental::DoubleFlat => "bb",
+        };
+        write!(f, "{}{}", self.letter, accidental)
     }
 }

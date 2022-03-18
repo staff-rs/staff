@@ -1,6 +1,7 @@
+use core::fmt;
 use std::ops::{Add, Sub};
 
-use crate::{Interval, Pitch};
+use crate::{note::Note, Interval, Pitch};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Octave(i8);
@@ -19,6 +20,12 @@ impl Octave {
 
     pub const fn into_i8(self) -> i8 {
         self.0
+    }
+}
+
+impl fmt::Display for Octave {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -97,5 +104,25 @@ impl Sub for MidiNote {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Interval::new((self.into_byte() as i8 - rhs.into_byte() as i8).abs() as _)
+    }
+}
+
+pub struct MidiNoteDisplay {
+    midi_note: MidiNote,
+    note: Note,
+}
+
+impl MidiNoteDisplay {
+    pub fn from_sharp(midi_note: MidiNote) -> Self {
+        Self {
+            midi_note,
+            note: Note::from_sharp(midi_note.pitch()),
+        }
+    }
+}
+
+impl fmt::Display for MidiNoteDisplay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}{}", self.note, self.midi_note.octave())
     }
 }
