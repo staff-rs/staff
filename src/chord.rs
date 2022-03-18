@@ -1,19 +1,12 @@
-use crate::{midi::MidiNote, set::Set, Interval};
+use crate::{midi::MidiNote, set::Set, Interval, Pitch};
 
-pub fn major(root: MidiNote) -> [MidiNote; 3] {
-    [
-        root,
-        root + Interval::MAJOR_THIRD,
-        root + Interval::PERFECT_FIFTH,
-    ]
-}
-
-pub fn functions<I>(chord: I, root: MidiNote) -> impl Iterator<Item = Interval>
+pub fn functions<I>(notes: I, root: MidiNote) -> impl Iterator<Item = Interval>
 where
     I: IntoIterator<Item = MidiNote>,
 {
-    chord.into_iter().map(move |note| note - root)
+    notes.into_iter().map(move |note| note - root)
 }
+
 
 #[derive(Debug)]
 pub enum ChordKind {
@@ -36,16 +29,24 @@ impl ChordKind {
             .collect(),
         }
     }
-}
 
-pub fn detect(root: MidiNote, notes: &[MidiNote]) -> impl Iterator<Item = ChordKind> {
-    let functions: Set<Interval> = functions(notes.iter().copied(), root).collect();
+    pub fn pitches(&self, root: Pitch) -> impl Iterator<Item = Pitch> {
+        self.intervals().map(move |interval| root + interval)
+    }
 
-    functions.modes().flat_map(|intervals| {
-        ChordKind::all()
-            .into_iter()
-            .filter(move |kind| kind.intervals() == intervals)
-    })
+    pub fn notes(&self, root: MidiNote) -> impl Iterator<Item = MidiNote> {
+        self.intervals().map(move |interval| root + interval)
+    }
+
+    pub fn matches(root: MidiNote, notes: &[MidiNote]) -> impl Iterator<Item = Self> {
+        let functions: Set<Interval> = functions(notes.iter().copied(), root).collect();
+
+        functions.modes().flat_map(|intervals| {
+            Self::all()
+                .into_iter()
+                .filter(move |kind| kind.intervals() == intervals)
+        })
+    }
 }
 
 #[cfg(test)]
@@ -55,7 +56,7 @@ mod tests {
 
     #[test]
     fn f() {
-        let matches = detect(
+        let matches = ChordKind::matches(
             MidiNote::new(Pitch::C, Octave::FOUR),
             &[
                 MidiNote::new(Pitch::E, Octave::FOUR),
