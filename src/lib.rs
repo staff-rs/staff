@@ -23,6 +23,7 @@ mod pitch;
 pub use pitch::Pitch;
 
 pub mod scale;
+pub use scale::Scale;
 
 mod set;
 pub use set::Set;

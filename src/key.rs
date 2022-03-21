@@ -1,12 +1,12 @@
-use core::fmt;
-use core::{array::IntoIter, fmt::Write};
-
+use crate::scale::Degree;
 use crate::{
     chord::{Chord, ChordKind},
-    midi::MidiNote,
     scale::Scale,
     Interval, Pitch,
 };
+use core::fmt;
+use core::ops::Add;
+use core::{array::IntoIter, fmt::Write};
 
 pub struct KeySignature {
     sharps: u8,
@@ -64,17 +64,20 @@ impl fmt::Display for KeySignature {
     }
 }
 
-pub struct Key {
-    scale: Scale<MidiNote, IntoIter<Interval, 7>>,
+pub struct Key<T> {
+    scale: Scale<T, IntoIter<Interval, 7>>,
     kinds: [ChordKind; 7],
 }
 
-impl Key {
-    pub fn new(scale: Scale<MidiNote, IntoIter<Interval, 7>>, kinds: [ChordKind; 7]) -> Self {
+impl<T> Key<T>
+where
+    T: Degree + Add<Interval>,
+{
+    pub fn new(scale: Scale<T, IntoIter<Interval, 7>>, kinds: [ChordKind; 7]) -> Self {
         Self { scale, kinds }
     }
 
-    pub fn major(root: MidiNote) -> Self {
+    pub fn major(root: T) -> Self {
         Self::new(
             Scale::major(root),
             [
@@ -89,7 +92,7 @@ impl Key {
         )
     }
 
-    pub fn natural_minor(root: MidiNote) -> Self {
+    pub fn natural_minor(root: T) -> Self {
         Self::new(
             Scale::natural_minor(root),
             [
@@ -104,7 +107,7 @@ impl Key {
         )
     }
 
-    pub fn chords(self) -> impl Iterator<Item = Chord> {
+    pub fn chords(self) -> impl Iterator<Item = Chord<T>> {
         self.scale
             .zip(self.kinds.into_iter())
             .map(move |(note, kind)| Chord::new(note, kind))
@@ -113,7 +116,10 @@ impl Key {
 
 #[cfg(test)]
 mod tests {
-    use crate::{midi::Octave, Pitch};
+    use crate::{
+        midi::{MidiNote, Octave},
+        Pitch,
+    };
 
     use super::*;
 

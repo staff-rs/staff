@@ -5,10 +5,20 @@ use crate::{
     Interval,
 };
 
+/// The degree of a `Scale`.
 pub trait Degree: Copy {
     fn next_degree(self, interval: Interval) -> Self
     where
         Self: Sized;
+}
+
+impl Degree for Pitch {
+    fn next_degree(self, interval: Interval) -> Self
+    where
+        Self: Sized,
+    {
+        self + interval
+    }
 }
 
 impl Degree for PitchNote {
@@ -26,17 +36,17 @@ impl Degree for PitchNote {
                 Interval::MINOR_SECOND => Accidental::Flat,
                 Interval::MAJOR_SECOND => Accidental::DoubleFlat,
                 Interval::MAJOR_SEVENTH => Accidental::Sharp,
-                _ => todo!(),
+                _ => unimplemented!(),
             }
         } else {
             match pitch.sub(natural_pitch) {
                 Interval::MINOR_SECOND => Accidental::Sharp,
                 Interval::MAJOR_SECOND => Accidental::DoubleSharp,
-                _ => todo!(),
+                _ => unimplemented!(),
             }
         };
 
-        PitchNote::new(pitch, Note::new(letter, accidental))
+        PitchNote::new_unchecked(pitch, Note::new(letter, accidental))
     }
 }
 

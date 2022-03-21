@@ -1,4 +1,5 @@
-use crate::{midi::MidiNote, Interval, Pitch};
+use crate::{midi::MidiNote, Interval};
+use core::ops::Add;
 
 mod display;
 pub use display::ChordDisplay;
@@ -14,23 +15,20 @@ where
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Chord {
-    pub root: MidiNote,
+pub struct Chord<T> {
+    pub root: T,
     pub kind: ChordKind,
 }
 
-impl Chord {
-    pub fn new(root: MidiNote, kind: ChordKind) -> Self {
+impl<T> Chord<T>
+where
+    T: Add<Interval> + Copy,
+{
+    pub fn new(root: T, kind: ChordKind) -> Self {
         Self { root, kind }
     }
 
-    pub fn pitches(self) -> impl Iterator<Item = Pitch> {
-        self.kind
-            .intervals()
-            .map(move |interval| self.root.pitch() + interval)
-    }
-
-    pub fn notes(self) -> impl Iterator<Item = MidiNote> {
+    pub fn notes(self) -> impl Iterator<Item = T::Output> {
         self.kind
             .intervals()
             .map(move |interval| self.root + interval)

@@ -73,7 +73,7 @@ impl Note {
     /// ```
     /// use music::{Letter, Note};
     ///
-    /// let note = Note::sharp(Letter::D);
+    /// let note = Note::double_sharp(Letter::D);
     /// assert_eq!(note.to_string(), "D##");
     /// ```
     pub const fn double_sharp(letter: Letter) -> Self {

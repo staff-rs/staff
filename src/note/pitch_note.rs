@@ -8,20 +8,20 @@ pub struct PitchNote {
 }
 
 impl PitchNote {
-    pub const fn new(pitch: Pitch, note: Note) -> Self {
+    pub const fn new_unchecked(pitch: Pitch, note: Note) -> Self {
         Self { pitch, note }
     }
 
     pub const fn natural(letter: Letter) -> Self {
-        Self::new(Pitch::natural(letter), Note::natural(letter))
+        Self::new_unchecked(Pitch::natural(letter), Note::natural(letter))
     }
 
     pub const fn from_flat(pitch: Pitch) -> Self {
-        Self::new(pitch, Note::from_flat(pitch))
+        Self::new_unchecked(pitch, Note::from_flat(pitch))
     }
 
     pub const fn from_sharp(pitch: Pitch) -> Self {
-        Self::new(pitch, Note::from_sharp(pitch))
+        Self::new_unchecked(pitch, Note::from_sharp(pitch))
     }
 
     pub const fn pitch(self) -> Pitch {

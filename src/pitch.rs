@@ -41,7 +41,7 @@ impl Pitch {
             Letter::G => Self::G,
             Letter::A => Self::A,
             Letter::B => Self::B,
-            _ => todo!(),
+            _ => unreachable!(),
         }
     }
 
@@ -85,7 +85,7 @@ impl From<Letter> for Pitch {
             Letter::G => Self::G,
             Letter::A => Self::A,
             Letter::B => Self::B,
-            _ => todo!(),
+            _ => unreachable!(),
         }
     }
 }
