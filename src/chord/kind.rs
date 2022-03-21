@@ -1,6 +1,5 @@
-use crate::{midi::MidiNote, set::Set, Interval};
-
-use super::functions;
+use crate::{set::Set, Interval};
+use core::ops::Sub;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChordKind {
@@ -40,11 +39,13 @@ impl ChordKind {
     ///
     /// assert_eq!(matches.next(), Some(ChordKind::Major))
     /// ```
-    pub fn match_notes<I>(root: MidiNote, notes: I) -> impl Iterator<Item = Self>
+    pub fn match_notes<T, I>(root: T, notes: I) -> impl Iterator<Item = Self>
     where
-        I: IntoIterator<Item = MidiNote>,
+        T: Sub<Output = Interval> + Clone,
+        I: IntoIterator<Item = T>,
     {
-        let functions: Set<Interval> = functions(notes, root).collect();
+        let functions: Set<Interval> = notes.into_iter().map(|note| note - root.clone()).collect();
+
         functions
             .modes()
             .flat_map(|intervals| Self::from_intervals(intervals).into_iter())

@@ -1,5 +1,5 @@
-use crate::{midi::MidiNote, Interval};
-use core::ops::Add;
+use crate::Interval;
+use core::ops::{Add, Sub};
 
 mod display;
 pub use display::ChordDisplay;
@@ -7,14 +7,7 @@ pub use display::ChordDisplay;
 mod kind;
 pub use kind::ChordKind;
 
-pub fn functions<I>(notes: I, root: MidiNote) -> impl Iterator<Item = Interval>
-where
-    I: IntoIterator<Item = MidiNote>,
-{
-    notes.into_iter().map(move |note| note - root)
-}
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Chord<T> {
     pub root: T,
     pub kind: ChordKind,
@@ -28,6 +21,30 @@ where
         Self { root, kind }
     }
 
+    /// Match chords with a given `root` from an iterator of notes.
+    /// See [`ChordKind::match_notes`] for more info.
+    /// ```
+    /// use music::chord::{Chord, ChordKind};
+    /// use music::Pitch;
+    ///
+    /// let root = Pitch::C;
+    /// let notes = [
+    ///         Pitch::E,
+    ///         root,
+    ///         Pitch::G
+    ///     ];
+    ///
+    /// let mut matches = Chord::match_notes(root, notes);
+    /// assert_eq!(matches.next(), Some(Chord::new(Pitch::C, ChordKind::Major)))
+    /// ```
+    pub fn match_notes<I>(root: T, notes: I) -> impl Iterator<Item = Self>
+    where
+        T: Sub<Output = Interval> + Clone,
+        I: IntoIterator<Item = T>,
+    {
+        ChordKind::match_notes(root, notes).map(move |kind| Self::new(root, kind))
+    }
+
     pub fn notes(self) -> impl Iterator<Item = T::Output> {
         self.kind
             .intervals()
@@ -39,7 +56,7 @@ where
 mod tests {
     use super::*;
     use crate::{
-        midi::{MidiNoteDisplay, Octave},
+        midi::{MidiNote, MidiNoteDisplay, Octave},
         Pitch,
     };
 
