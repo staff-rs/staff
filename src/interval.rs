@@ -1,5 +1,7 @@
 use core::ops::Add;
 
+use crate::Accidental;
+
 /// Music interval in semitones.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Interval {
@@ -32,6 +34,12 @@ impl Interval {
 
     pub const fn semitones(self) -> u8 {
         self.semitones
+    }
+}
+
+impl From<Accidental> for Interval {
+    fn from(accidental: Accidental) -> Self {
+        accidental.interval()
     }
 }
 

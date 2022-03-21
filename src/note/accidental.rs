@@ -10,7 +10,7 @@ pub enum Accidental {
 }
 
 impl Accidental {
-    pub fn interval(self) -> Interval {
+    pub const fn interval(self) -> Interval {
         match self {
             Self::Natural => Interval::UNISON,
             Self::Flat | Self::Sharp => Interval::MINOR_SECOND,
