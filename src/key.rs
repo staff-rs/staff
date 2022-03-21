@@ -14,16 +14,16 @@ pub struct KeySignature {
 
 impl KeySignature {
     /// ```
-    /// use music::key::KeySignature;
-    /// use music::Pitch;
+    /// use music_theory::key::KeySignature;
+    /// use music_theory::Pitch;
     ///
     /// let key = KeySignature::major(Pitch::D);
     /// assert_eq!(key.to_string(), "##")
     /// ```
     ///
     /// ```
-    /// use music::key::KeySignature;
-    /// use music::Pitch;
+    /// use music_theory::key::KeySignature;
+    /// use music_theory::Pitch;
     ///
     /// let key = KeySignature::major(Pitch::F);
     /// assert_eq!(key.to_string(), "b")

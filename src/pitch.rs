@@ -27,7 +27,7 @@ impl Pitch {
 
     /// Returns the natural pitch for the given `Letter`.
     /// ```
-    /// use music::{Pitch, Letter};
+    /// use music_theory::{Pitch, Letter};
     ///
     /// let pitch = Pitch::natural(Letter::F);
     /// assert_eq!(pitch, Pitch::F);

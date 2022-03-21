@@ -1,21 +1,37 @@
 use crate::{set::Set, Interval};
 use core::ops::Sub;
 
+/// Named hord intervals
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChordKind {
+    /// Major
     Major,
+    /// Major seventh (maj7)
     MajorSeventh,
+    /// Minor (m)
     Minor,
+    /// Minor seventh (m7)
     MinorSeventh,
+    /// Dominant seventh (7)
     DominantSeventh,
+    /// Half diminished (m7b5)
     HalfDiminished,
 }
 
 impl ChordKind {
-    pub fn all() -> [Self; 2] {
-        [Self::Major, Self::Minor]
+    /// Return an array of all `ChordKind`s.
+    pub fn all() -> [Self; 6] {
+        [
+            Self::Major,
+            Self::MajorSeventh,
+            Self::Minor,
+            Self::MinorSeventh,
+            Self::DominantSeventh,
+            Self::HalfDiminished,
+        ]
     }
 
+    /// Find a `ChordKind` from a [`Set`] of intervals.
     pub fn from_intervals(intervals: Set<Interval>) -> Option<Self> {
         Self::all()
             .into_iter()
@@ -23,9 +39,9 @@ impl ChordKind {
     }
 
     /// ```
-    /// use music::chord::ChordKind;
-    /// use music::midi::{MidiNote, Octave};
-    /// use music::Pitch;
+    /// use music_theory::chord::ChordKind;
+    /// use music_theory::midi::{MidiNote, Octave};
+    /// use music_theory::Pitch;
     ///
     /// let root = MidiNote::new(Pitch::C, Octave::FOUR);
     /// let mut matches = ChordKind::match_notes(
@@ -51,6 +67,7 @@ impl ChordKind {
             .flat_map(|intervals| Self::from_intervals(intervals).into_iter())
     }
 
+    /// Return the `Set` of intervals for self.
     pub fn intervals(&self) -> Set<Interval> {
         let array: &[_] = match self {
             Self::Major => &[
@@ -91,6 +108,7 @@ impl ChordKind {
         array.iter().copied().collect()
     }
 
+    /// Return a constant `&'static str` label for self.
     pub fn to_str(self) -> &'static str {
         match self {
             Self::Major => "",

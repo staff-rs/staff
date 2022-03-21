@@ -1,19 +1,18 @@
 use crate::{Interval, Pitch};
 use core::ops::{Add, Sub};
 
-mod display;
-pub use display::MidiNoteDisplay;
-
 mod octave;
 pub use octave::Octave;
 
+/// MIDI note represented as a byte.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MidiNote(u8);
 
 impl MidiNote {
+    /// Create a new `MidiNote` from a `Pitch` and `Octave`.
     /// ```
-    /// use music::midi::{Octave, MidiNote};
-    /// use music::Pitch;
+    /// use music_theory::midi::{Octave, MidiNote};
+    /// use music_theory::Pitch;
     ///
     /// let note = MidiNote::new(Pitch::A, Octave::FOUR);
     /// assert_eq!(note.into_byte(), 69);
@@ -24,13 +23,14 @@ impl MidiNote {
         )
     }
 
+    /// Create a new `MidiNote` from a byte.
     pub const fn from_byte(byte: u8) -> Self {
         Self(byte)
     }
 
     /// ```
-    /// use music::midi::MidiNote;
-    /// use music::Pitch;
+    /// use music_theory::midi::MidiNote;
+    /// use music_theory::Pitch;
     ///
     /// let note = MidiNote::from_byte(108);
     /// assert_eq!(note.pitch(), Pitch::C);
@@ -40,8 +40,8 @@ impl MidiNote {
     }
 
     /// ```
-    /// use music::midi::{Octave, MidiNote};
-    /// use music::Pitch;
+    /// use music_theory::midi::{Octave, MidiNote};
+    /// use music_theory::Pitch;
     ///
     /// let note = MidiNote::new(Pitch::C, Octave::EIGHT);
     /// assert_eq!(note.octave(), Octave::EIGHT);
@@ -49,7 +49,7 @@ impl MidiNote {
     ///
     /// Midi notes start at octave -1.
     /// ```
-    /// use music::midi::{Octave, MidiNote};
+    /// use music_theory::midi::{Octave, MidiNote};
     ///
     /// let note = MidiNote::from_byte(11);
     /// assert_eq!(note.octave(), Octave::NEGATIVE_ONE);
@@ -65,6 +65,7 @@ impl MidiNote {
         a_freq * 2f64.powf((self.into_byte() as i8 - a_midi) as f64 / 12.)
     }
 
+    /// Return the byte representation of `self`.
     pub const fn into_byte(self) -> u8 {
         self.0
     }
