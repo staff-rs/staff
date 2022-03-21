@@ -1,31 +1,14 @@
-use crate::{pitch::Pitch, Interval};
+use crate::{pitch::Pitch};
 use core::fmt::{self, Debug};
+
+mod accidental;
+pub use accidental::Accidental;
 
 mod letter;
 pub use letter::Letter;
 
 mod pitch_note;
 pub use pitch_note::PitchNote;
-
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Accidental {
-    Natrual,
-    Flat,
-    DoubleFlat,
-    Sharp,
-    DoubleSharp,
-}
-
-impl Accidental {
-    pub fn interval(self) -> Interval {
-        match self {
-            Self::Natrual => Interval::UNISON,
-            Self::Flat | Self::Sharp => Interval::MINOR_SECOND,
-            Self::DoubleFlat | Self::DoubleSharp => Interval::MAJOR_SECOND,
-        }
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Note {
@@ -64,7 +47,7 @@ impl Note {
             Pitch::A => Self::natural(Letter::A),
             Pitch::A_SHARP => Self::sharp(Letter::A),
             Pitch::B => Self::natural(Letter::B),
-            _ => todo!(),
+            _ => unreachable!(),
         }
     }
 
@@ -82,7 +65,7 @@ impl Note {
             Pitch::A => Self::natural(Letter::A),
             Pitch::A_SHARP => Self::flat(Letter::B),
             Pitch::B => Self::natural(Letter::B),
-            _ => todo!(),
+            _ => unreachable!(),
         }
     }
 

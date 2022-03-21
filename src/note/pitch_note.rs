@@ -37,7 +37,7 @@ impl From<Note> for PitchNote {
     fn from(note: Note) -> Self {
         Self {
             pitch: note.into(),
-            note: note,
+            note,
         }
     }
 }
