@@ -10,6 +10,9 @@ pub use interval::Interval;
 
 pub mod key;
 
+mod letter;
+pub use letter::Letter;
+
 pub mod midi;
 
 pub mod note;

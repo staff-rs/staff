@@ -1,5 +1,6 @@
 use core::ops::Add;
 
+/// Music interval in semitones.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Interval {
     semitones: u8,

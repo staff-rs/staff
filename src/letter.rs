@@ -1,5 +1,6 @@
 use core::fmt;
 
+/// Letter of a natural pitch
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Letter(u8);
 
@@ -25,7 +26,7 @@ impl Letter {
             Self::E => 'E',
             Self::F => 'F',
             Self::G => 'G',
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }

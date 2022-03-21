@@ -1,11 +1,7 @@
+use crate::{note::Note, Interval, Letter, midi::MidiNote};
 use std::ops::{Add, Sub};
 
-use crate::{
-    note::{Accidental, Letter, Note},
-    Interval,
-};
-
-// TODO custom debug
+/// Pitch class that can be found on the chromatic scale.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Pitch(u8);
 
@@ -29,6 +25,13 @@ impl Pitch {
 
     pub const B: Self = Self(11);
 
+    /// Returns the natural pitch for the given `Letter`.
+    /// ```
+    /// use music::{Pitch, Letter};
+    ///
+    /// let pitch = Pitch::natural(Letter::F);
+    /// assert_eq!(pitch, Pitch::F);
+    /// ```
     pub const fn natural(letter: Letter) -> Self {
         match letter {
             Letter::C => Self::C,
@@ -48,17 +51,6 @@ impl Pitch {
 
     pub const fn from_byte_unchecked(byte: u8) -> Self {
         Self(byte)
-    }
-
-    pub const fn from_note(note: Note) -> Self {
-        let natural = Self::natural(note.letter);
-        match note.accidental {
-            Accidental::Natrual => natural,
-            Accidental::Flat => natural.sub_interval(Interval::MINOR_SECOND),
-            Accidental::DoubleFlat => natural.sub_interval(Interval::MAJOR_SECOND),
-            Accidental::Sharp => natural.add_interval(Interval::MINOR_SECOND),
-            Accidental::DoubleSharp => natural.add_interval(Interval::MAJOR_SECOND),
-        }
     }
 
     pub const fn add_interval(self, interval: Interval) -> Self {
@@ -100,7 +92,13 @@ impl From<Letter> for Pitch {
 
 impl From<Note> for Pitch {
     fn from(note: Note) -> Self {
-        Self::from_note(note)
+        note.pitch()
+    }
+}
+
+impl From<MidiNote> for Pitch {
+    fn from(midi: MidiNote) -> Self {
+        midi.pitch()
     }
 }
 

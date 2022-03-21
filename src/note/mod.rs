@@ -1,11 +1,8 @@
-use crate::{pitch::Pitch};
+use crate::{pitch::Pitch, Interval, Letter};
 use core::fmt::{self, Debug};
 
 mod accidental;
 pub use accidental::Accidental;
-
-mod letter;
-pub use letter::Letter;
 
 mod pitch_note;
 pub use pitch_note::PitchNote;
@@ -89,7 +86,7 @@ impl Note {
     /// assert_eq!(note.into_flat(), Note::natural(Letter::E))
     /// ```
     pub const fn into_flat(self) -> Self {
-        Self::from_flat(Pitch::from_note(self))
+        Self::from_flat(self.pitch())
     }
 
     /// Returns the enharmonic note for `self` in sharp notation.
@@ -112,7 +109,25 @@ impl Note {
     /// assert_eq!(note.into_sharp(), Note::natural(Letter::C))
     /// ```
     pub const fn into_sharp(self) -> Self {
-        Self::from_sharp(Pitch::from_note(self))
+        Self::from_sharp(self.pitch())
+    }
+
+    /// Returns the pitch of the given `Note`.
+    /// ```
+    /// use music::{Pitch, Letter};
+    ///
+    /// let pitch = Pitch::natural(Letter::F);
+    /// assert_eq!(pitch, Pitch::F);
+    /// ```
+    pub const fn pitch(self) -> Pitch {
+        let natural = Pitch::natural(self.letter);
+        match self.accidental {
+            Accidental::Natrual => natural,
+            Accidental::Flat => natural.sub_interval(Interval::MINOR_SECOND),
+            Accidental::DoubleFlat => natural.sub_interval(Interval::MAJOR_SECOND),
+            Accidental::Sharp => natural.add_interval(Interval::MINOR_SECOND),
+            Accidental::DoubleSharp => natural.add_interval(Interval::MAJOR_SECOND),
+        }
     }
 
     /// Returns `true` if the `self` is enharmonically equivalent to `other`.
@@ -134,7 +149,7 @@ impl Note {
     /// assert!(note.is_enharmonic(note))
     /// ```
     pub const fn is_enharmonic(self, other: Self) -> bool {
-        Pitch::from_note(self).into_byte() == Pitch::from_note(other).into_byte()
+        self.pitch().into_byte() == other.pitch().into_byte()
     }
 }
 
