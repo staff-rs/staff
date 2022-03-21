@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{array::IntoIter, fmt::Write};
+use core::{array::IntoIter, fmt::Write};
 
 use crate::{
     chord::{Chord, ChordKind},

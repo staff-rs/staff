@@ -1,5 +1,5 @@
 use crate::{Interval, Pitch};
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set<T> {

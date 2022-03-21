@@ -1,5 +1,5 @@
 use crate::{note::Note, Interval, Letter, midi::MidiNote};
-use std::ops::{Add, Sub};
+use core::ops::{Add, Sub};
 
 /// Pitch class that can be found on the chromatic scale.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]

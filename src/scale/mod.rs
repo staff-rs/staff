@@ -1,6 +1,6 @@
 use crate::Interval;
 use core::mem::{self};
-use std::array::IntoIter;
+use core::array::IntoIter;
 
 mod degree;
 pub use degree::Degree;

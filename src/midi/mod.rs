@@ -1,5 +1,5 @@
 use crate::{Interval, Pitch};
-use std::ops::{Add, Sub};
+use core::ops::{Add, Sub};
 
 mod display;
 pub use display::MidiNoteDisplay;
@@ -58,6 +58,7 @@ impl MidiNote {
         Octave::from_midi(self)
     }
 
+    #[cfg(feature = "std")]
     pub fn frequency(self) -> f64 {
         let a_midi = 69;
         let a_freq = 440.;
