@@ -2,7 +2,7 @@ use crate::Interval;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Accidental {
-    Natrual,
+    Natural,
     Flat,
     DoubleFlat,
     Sharp,
@@ -12,7 +12,7 @@ pub enum Accidental {
 impl Accidental {
     pub fn interval(self) -> Interval {
         match self {
-            Self::Natrual => Interval::UNISON,
+            Self::Natural => Interval::UNISON,
             Self::Flat | Self::Sharp => Interval::MINOR_SECOND,
             Self::DoubleFlat | Self::DoubleSharp => Interval::MAJOR_SECOND,
         }

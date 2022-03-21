@@ -1,4 +1,4 @@
-use crate::{note::Note, Interval, Letter, midi::MidiNote};
+use crate::{midi::MidiNote, note::Note, Interval, Letter};
 use core::ops::{Add, Sub};
 
 /// Pitch class that can be found on the chromatic scale.

@@ -14,22 +14,73 @@ pub struct Note {
 }
 
 impl Note {
+    /// Create a new `Note` from a `Letter` and `Accidental`.
+    /// ```
+    /// use music::{Accidental, Letter, Note};
+    ///
+    /// let note = Note::new(Letter::D, Accidental::Sharp);
+    /// assert_eq!(note.to_string(), "D#");
+    /// ```
     pub const fn new(letter: Letter, accidental: Accidental) -> Self {
         Self { letter, accidental }
     }
 
+    /// Create a new natural `Note` from a `Letter` with [`Accidental::Natural`].
+    /// ```
+    /// use music::{Letter, Note};
+    ///
+    /// let note = Note::natural(Letter::E);
+    /// assert_eq!(note.to_string(), "E");
+    /// ```
     pub const fn natural(letter: Letter) -> Self {
-        Self::new(letter, Accidental::Natrual)
+        Self::new(letter, Accidental::Natural)
     }
 
+    /// Create a new `Note` from a `Letter` with [`Accidental::Flat`].
+    /// ```
+    /// use music::{Letter, Note};
+    ///
+    /// let note = Note::flat(Letter::F);
+    /// assert_eq!(note.to_string(), "Fb");
+    /// ```
     pub const fn flat(letter: Letter) -> Self {
         Self::new(letter, Accidental::Flat)
     }
 
+    /// Create a new `Note` from a `Letter` with [`Accidental::DoubleFlat`].
+    /// ```
+    /// use music::{Letter, Note};
+    ///
+    /// let note = Note::double_flat(Letter::G);
+    /// assert_eq!(note.to_string(), "Gbb");
+    /// ```
+    pub const fn double_flat(letter: Letter) -> Self {
+        Self::new(letter, Accidental::DoubleFlat)
+    }
+
+    /// Create a new `Note` from a `Letter` with [`Accidental::Sharp`].
+    /// ```
+    /// use music::{Letter, Note};
+    ///
+    /// let note = Note::sharp(Letter::E);
+    /// assert_eq!(note.to_string(), "E#");
+    /// ```
     pub const fn sharp(letter: Letter) -> Self {
         Self::new(letter, Accidental::Sharp)
     }
 
+    /// Create a new `Note` from a `Letter` with [`Accidental::DoubleSharp`].
+    /// ```
+    /// use music::{Letter, Note};
+    ///
+    /// let note = Note::sharp(Letter::D);
+    /// assert_eq!(note.to_string(), "D##");
+    /// ```
+    pub const fn double_sharp(letter: Letter) -> Self {
+        Self::new(letter, Accidental::DoubleSharp)
+    }
+
+    /// Return the `Note` for the given `Pitch`.
     pub const fn from_sharp(pitch: Pitch) -> Self {
         match pitch {
             Pitch::C => Self::natural(Letter::C),
@@ -48,6 +99,7 @@ impl Note {
         }
     }
 
+    /// Return the `Note` for the given `Pitch`.
     pub const fn from_flat(pitch: Pitch) -> Self {
         match pitch {
             Pitch::C => Self::natural(Letter::C),
@@ -72,7 +124,7 @@ impl Note {
     ///
     /// Convert a `Note` in sharp notation to flats
     /// ```
-    /// use music::note::{Letter, Note};
+    /// use music::{Letter, Note};
     ///
     /// let note = Note::sharp(Letter::G);
     /// assert_eq!(note.into_flat(), Note::flat(Letter::A))
@@ -80,7 +132,7 @@ impl Note {
     ///
     /// Find a natural enharmonic note
     /// ```
-    /// use music::note::{Letter, Note};
+    /// use music::{Letter, Note};
     ///
     /// let note = Note::flat(Letter::F);
     /// assert_eq!(note.into_flat(), Note::natural(Letter::E))
@@ -95,7 +147,7 @@ impl Note {
     ///
     /// Convert a `Note` in flat notation to sharps
     /// ```
-    /// use music::note::{Letter, Note};
+    /// use music::{Letter, Note};
     ///
     /// let note = Note::flat(Letter::D);
     /// assert_eq!(note.into_sharp(), Note::sharp(Letter::C))
@@ -103,7 +155,7 @@ impl Note {
     ///
     /// Find a natural enharmonic note
     /// ```
-    /// use music::note::{Letter, Note};
+    /// use music::{Letter, Note};
     ///
     /// let note = Note::sharp(Letter::B);
     /// assert_eq!(note.into_sharp(), Note::natural(Letter::C))
@@ -122,7 +174,7 @@ impl Note {
     pub const fn pitch(self) -> Pitch {
         let natural = Pitch::natural(self.letter);
         match self.accidental {
-            Accidental::Natrual => natural,
+            Accidental::Natural => natural,
             Accidental::Flat => natural.sub_interval(Interval::MINOR_SECOND),
             Accidental::DoubleFlat => natural.sub_interval(Interval::MAJOR_SECOND),
             Accidental::Sharp => natural.add_interval(Interval::MINOR_SECOND),
@@ -135,7 +187,7 @@ impl Note {
     /// # Examples
     ///
     /// ```
-    /// use music::note::{Letter, Note};
+    /// use music::{Letter, Note};
     ///
     /// let note = Note::flat(Letter::D);
     /// assert!(note.is_enharmonic(Note::sharp(Letter::C)))
@@ -143,7 +195,7 @@ impl Note {
     ///
     /// This function will also return true if the notes are the same.
     /// ```
-    /// use music::note::{Letter, Note};
+    /// use music::{Letter, Note};
     ///
     /// let note = Note::natural(Letter::C);
     /// assert!(note.is_enharmonic(note))
@@ -156,7 +208,7 @@ impl Note {
 impl fmt::Display for Note {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let accidental = match self.accidental {
-            Accidental::Natrual => "",
+            Accidental::Natural => "",
             Accidental::Sharp => "#",
             Accidental::DoubleSharp => "##",
             Accidental::Flat => "b",

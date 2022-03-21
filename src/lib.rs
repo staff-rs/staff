@@ -17,6 +17,7 @@ pub use letter::Letter;
 pub mod midi;
 
 pub mod note;
+pub use note::{Accidental, Note};
 
 mod pitch;
 pub use pitch::Pitch;

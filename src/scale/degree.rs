@@ -22,7 +22,7 @@ impl Degree for PitchNote {
 
         let accidental = if natural_pitch.into_byte() >= pitch.into_byte() {
             match natural_pitch.sub(pitch) {
-                Interval::UNISON => Accidental::Natrual,
+                Interval::UNISON => Accidental::Natural,
                 Interval::MINOR_SECOND => Accidental::Flat,
                 Interval::MAJOR_SECOND => Accidental::DoubleFlat,
                 Interval::MAJOR_SEVENTH => Accidental::Sharp,
