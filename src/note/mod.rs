@@ -84,18 +84,17 @@ impl Note {
     pub const fn from_sharp(pitch: Pitch) -> Self {
         match pitch {
             Pitch::C => Self::natural(Natural::C),
-            Pitch::C_SHARP => Self::sharp(Natural::C),
+            Pitch::CSharp => Self::sharp(Natural::C),
             Pitch::D => Self::natural(Natural::D),
-            Pitch::D_SHARP => Self::sharp(Natural::D),
+            Pitch::DSharp => Self::sharp(Natural::D),
             Pitch::E => Self::natural(Natural::E),
             Pitch::F => Self::natural(Natural::F),
-            Pitch::F_SHARP => Self::sharp(Natural::F),
+            Pitch::FSharp => Self::sharp(Natural::F),
             Pitch::G => Self::natural(Natural::G),
-            Pitch::G_SHARP => Self::sharp(Natural::G),
+            Pitch::GSharp => Self::sharp(Natural::G),
             Pitch::A => Self::natural(Natural::A),
-            Pitch::A_SHARP => Self::sharp(Natural::A),
+            Pitch::ASharp => Self::sharp(Natural::A),
             Pitch::B => Self::natural(Natural::B),
-            _ => unreachable!(),
         }
     }
 
@@ -103,18 +102,17 @@ impl Note {
     pub const fn from_flat(pitch: Pitch) -> Self {
         match pitch {
             Pitch::C => Self::natural(Natural::C),
-            Pitch::C_SHARP => Self::flat(Natural::D),
+            Pitch::CSharp => Self::flat(Natural::D),
             Pitch::D => Self::natural(Natural::D),
-            Pitch::D_SHARP => Self::flat(Natural::E),
+            Pitch::DSharp => Self::flat(Natural::E),
             Pitch::E => Self::natural(Natural::E),
             Pitch::F => Self::natural(Natural::F),
-            Pitch::F_SHARP => Self::flat(Natural::G),
+            Pitch::FSharp => Self::flat(Natural::G),
             Pitch::G => Self::natural(Natural::G),
-            Pitch::G_SHARP => Self::flat(Natural::A),
+            Pitch::GSharp => Self::flat(Natural::A),
             Pitch::A => Self::natural(Natural::A),
-            Pitch::A_SHARP => Self::flat(Natural::B),
+            Pitch::ASharp => Self::flat(Natural::B),
             Pitch::B => Self::natural(Natural::B),
-            _ => unreachable!(),
         }
     }
 
