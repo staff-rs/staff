@@ -1,4 +1,4 @@
-use super::{Letter, Note};
+use super::{Natural, Note};
 use crate::pitch::Pitch;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -12,7 +12,7 @@ impl PitchNote {
         Self { pitch, note }
     }
 
-    pub const fn natural(letter: Letter) -> Self {
+    pub const fn natural(letter: Natural) -> Self {
         Self::new_unchecked(Pitch::natural(letter), Note::natural(letter))
     }
 

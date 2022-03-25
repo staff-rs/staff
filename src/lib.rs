@@ -1,5 +1,4 @@
 #![cfg_attr(not(test), no_std)]
-
 #![feature(const_mut_refs)]
 #![feature(const_replace)]
 #![feature(maybe_uninit_uninit_array)]
@@ -13,7 +12,7 @@ pub use interval::Interval;
 pub mod key;
 
 mod letter;
-pub use letter::Letter;
+pub use letter::Natural;
 
 pub mod midi;
 

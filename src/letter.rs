@@ -1,20 +1,23 @@
 use core::fmt;
 
-/// Letter of a natural pitch
+/// Natural of a natural pitch
+#[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Letter(u8);
+pub enum Natural {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+}
 
-impl Letter {
-    pub const A: Self = Self(0);
-    pub const B: Self = Self(1);
-    pub const C: Self = Self(2);
-    pub const D: Self = Self(3);
-    pub const E: Self = Self(4);
-    pub const F: Self = Self(5);
-    pub const G: Self = Self(6);
-
+impl Natural {
     pub const fn next(self) -> Self {
-        Self((self.0 + 1) % (Self::G.0 + 1))
+        let byte = (self as u8 + 1) % (Self::G as u8 + 1);
+        // Safety: `byte` is guranteed to be in range of `Natural`
+        unsafe { core::mem::transmute(byte) }
     }
 
     pub const fn to_char(self) -> char {
@@ -26,12 +29,11 @@ impl Letter {
             Self::E => 'E',
             Self::F => 'F',
             Self::G => 'G',
-            _ => unreachable!(),
         }
     }
 }
 
-impl TryFrom<char> for Letter {
+impl TryFrom<char> for Natural {
     type Error = char;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
@@ -49,13 +51,13 @@ impl TryFrom<char> for Letter {
     }
 }
 
-impl fmt::Debug for Letter {
+impl fmt::Debug for Natural {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self)
     }
 }
 
-impl fmt::Display for Letter {
+impl fmt::Display for Natural {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_char())
     }

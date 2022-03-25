@@ -1,4 +1,4 @@
-use crate::{pitch::Pitch, Interval, Letter};
+use crate::{pitch::Pitch, Interval, Natural};
 use core::fmt::{self, Debug};
 
 mod accidental;
@@ -9,92 +9,92 @@ pub use pitch_note::PitchNote;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Note {
-    pub letter: Letter,
+    pub letter: Natural,
     pub accidental: Accidental,
 }
 
 impl Note {
-    /// Create a new `Note` from a `Letter` and `Accidental`.
+    /// Create a new `Note` from a `Natural` and `Accidental`.
     /// ```
-    /// use music_theory::{Accidental, Letter, Note};
+    /// use music_theory::{Accidental, Natural, Note};
     ///
-    /// let note = Note::new(Letter::D, Accidental::Sharp);
+    /// let note = Note::new(Natural::D, Accidental::Sharp);
     /// assert_eq!(note.to_string(), "D#");
     /// ```
-    pub const fn new(letter: Letter, accidental: Accidental) -> Self {
+    pub const fn new(letter: Natural, accidental: Accidental) -> Self {
         Self { letter, accidental }
     }
 
-    /// Create a new natural `Note` from a `Letter` with [`Accidental::Natural`].
+    /// Create a new natural `Note` from a `Natural` with [`Accidental::Natural`].
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::natural(Letter::E);
+    /// let note = Note::natural(Natural::E);
     /// assert_eq!(note.to_string(), "E");
     /// ```
-    pub const fn natural(letter: Letter) -> Self {
+    pub const fn natural(letter: Natural) -> Self {
         Self::new(letter, Accidental::Natural)
     }
 
-    /// Create a new `Note` from a `Letter` with [`Accidental::Flat`].
+    /// Create a new `Note` from a `Natural` with [`Accidental::Flat`].
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::flat(Letter::F);
+    /// let note = Note::flat(Natural::F);
     /// assert_eq!(note.to_string(), "Fb");
     /// ```
-    pub const fn flat(letter: Letter) -> Self {
+    pub const fn flat(letter: Natural) -> Self {
         Self::new(letter, Accidental::Flat)
     }
 
-    /// Create a new `Note` from a `Letter` with [`Accidental::DoubleFlat`].
+    /// Create a new `Note` from a `Natural` with [`Accidental::DoubleFlat`].
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::double_flat(Letter::G);
+    /// let note = Note::double_flat(Natural::G);
     /// assert_eq!(note.to_string(), "Gbb");
     /// ```
-    pub const fn double_flat(letter: Letter) -> Self {
+    pub const fn double_flat(letter: Natural) -> Self {
         Self::new(letter, Accidental::DoubleFlat)
     }
 
-    /// Create a new `Note` from a `Letter` with [`Accidental::Sharp`].
+    /// Create a new `Note` from a `Natural` with [`Accidental::Sharp`].
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::sharp(Letter::E);
+    /// let note = Note::sharp(Natural::E);
     /// assert_eq!(note.to_string(), "E#");
     /// ```
-    pub const fn sharp(letter: Letter) -> Self {
+    pub const fn sharp(letter: Natural) -> Self {
         Self::new(letter, Accidental::Sharp)
     }
 
-    /// Create a new `Note` from a `Letter` with [`Accidental::DoubleSharp`].
+    /// Create a new `Note` from a `Natural` with [`Accidental::DoubleSharp`].
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::double_sharp(Letter::D);
+    /// let note = Note::double_sharp(Natural::D);
     /// assert_eq!(note.to_string(), "D##");
     /// ```
-    pub const fn double_sharp(letter: Letter) -> Self {
+    pub const fn double_sharp(letter: Natural) -> Self {
         Self::new(letter, Accidental::DoubleSharp)
     }
 
     /// Return the `Note` for the given `Pitch`.
     pub const fn from_sharp(pitch: Pitch) -> Self {
         match pitch {
-            Pitch::C => Self::natural(Letter::C),
-            Pitch::C_SHARP => Self::sharp(Letter::C),
-            Pitch::D => Self::natural(Letter::D),
-            Pitch::D_SHARP => Self::sharp(Letter::D),
-            Pitch::E => Self::natural(Letter::E),
-            Pitch::F => Self::natural(Letter::F),
-            Pitch::F_SHARP => Self::sharp(Letter::F),
-            Pitch::G => Self::natural(Letter::G),
-            Pitch::G_SHARP => Self::sharp(Letter::G),
-            Pitch::A => Self::natural(Letter::A),
-            Pitch::A_SHARP => Self::sharp(Letter::A),
-            Pitch::B => Self::natural(Letter::B),
+            Pitch::C => Self::natural(Natural::C),
+            Pitch::C_SHARP => Self::sharp(Natural::C),
+            Pitch::D => Self::natural(Natural::D),
+            Pitch::D_SHARP => Self::sharp(Natural::D),
+            Pitch::E => Self::natural(Natural::E),
+            Pitch::F => Self::natural(Natural::F),
+            Pitch::F_SHARP => Self::sharp(Natural::F),
+            Pitch::G => Self::natural(Natural::G),
+            Pitch::G_SHARP => Self::sharp(Natural::G),
+            Pitch::A => Self::natural(Natural::A),
+            Pitch::A_SHARP => Self::sharp(Natural::A),
+            Pitch::B => Self::natural(Natural::B),
             _ => unreachable!(),
         }
     }
@@ -102,18 +102,18 @@ impl Note {
     /// Return the `Note` for the given `Pitch`.
     pub const fn from_flat(pitch: Pitch) -> Self {
         match pitch {
-            Pitch::C => Self::natural(Letter::C),
-            Pitch::C_SHARP => Self::flat(Letter::D),
-            Pitch::D => Self::natural(Letter::D),
-            Pitch::D_SHARP => Self::flat(Letter::E),
-            Pitch::E => Self::natural(Letter::E),
-            Pitch::F => Self::natural(Letter::F),
-            Pitch::F_SHARP => Self::flat(Letter::G),
-            Pitch::G => Self::natural(Letter::G),
-            Pitch::G_SHARP => Self::flat(Letter::A),
-            Pitch::A => Self::natural(Letter::A),
-            Pitch::A_SHARP => Self::flat(Letter::B),
-            Pitch::B => Self::natural(Letter::B),
+            Pitch::C => Self::natural(Natural::C),
+            Pitch::C_SHARP => Self::flat(Natural::D),
+            Pitch::D => Self::natural(Natural::D),
+            Pitch::D_SHARP => Self::flat(Natural::E),
+            Pitch::E => Self::natural(Natural::E),
+            Pitch::F => Self::natural(Natural::F),
+            Pitch::F_SHARP => Self::flat(Natural::G),
+            Pitch::G => Self::natural(Natural::G),
+            Pitch::G_SHARP => Self::flat(Natural::A),
+            Pitch::A => Self::natural(Natural::A),
+            Pitch::A_SHARP => Self::flat(Natural::B),
+            Pitch::B => Self::natural(Natural::B),
             _ => unreachable!(),
         }
     }
@@ -124,18 +124,18 @@ impl Note {
     ///
     /// Convert a `Note` in sharp notation to flats
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::sharp(Letter::G);
-    /// assert_eq!(note.into_flat(), Note::flat(Letter::A))
+    /// let note = Note::sharp(Natural::G);
+    /// assert_eq!(note.into_flat(), Note::flat(Natural::A))
     /// ```
     ///
     /// Find a natural enharmonic note
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::flat(Letter::F);
-    /// assert_eq!(note.into_flat(), Note::natural(Letter::E))
+    /// let note = Note::flat(Natural::F);
+    /// assert_eq!(note.into_flat(), Note::natural(Natural::E))
     /// ```
     pub const fn into_flat(self) -> Self {
         Self::from_flat(self.pitch())
@@ -147,18 +147,18 @@ impl Note {
     ///
     /// Convert a `Note` in flat notation to sharps
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::flat(Letter::D);
-    /// assert_eq!(note.into_sharp(), Note::sharp(Letter::C))
+    /// let note = Note::flat(Natural::D);
+    /// assert_eq!(note.into_sharp(), Note::sharp(Natural::C))
     /// ```
     ///
     /// Find a natural enharmonic note
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::sharp(Letter::B);
-    /// assert_eq!(note.into_sharp(), Note::natural(Letter::C))
+    /// let note = Note::sharp(Natural::B);
+    /// assert_eq!(note.into_sharp(), Note::natural(Natural::C))
     /// ```
     pub const fn into_sharp(self) -> Self {
         Self::from_sharp(self.pitch())
@@ -166,9 +166,9 @@ impl Note {
 
     /// Returns the pitch of the given `Note`.
     /// ```
-    /// use music_theory::{Pitch, Letter};
+    /// use music_theory::{Pitch, Natural};
     ///
-    /// let pitch = Pitch::natural(Letter::F);
+    /// let pitch = Pitch::natural(Natural::F);
     /// assert_eq!(pitch, Pitch::F);
     /// ```
     pub const fn pitch(self) -> Pitch {
@@ -187,17 +187,17 @@ impl Note {
     /// # Examples
     ///
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::flat(Letter::D);
-    /// assert!(note.is_enharmonic(Note::sharp(Letter::C)))
+    /// let note = Note::flat(Natural::D);
+    /// assert!(note.is_enharmonic(Note::sharp(Natural::C)))
     /// ```
     ///
     /// This function will also return true if the notes are the same.
     /// ```
-    /// use music_theory::{Letter, Note};
+    /// use music_theory::{Natural, Note};
     ///
-    /// let note = Note::natural(Letter::C);
+    /// let note = Note::natural(Natural::C);
     /// assert!(note.is_enharmonic(note))
     /// ```
     pub const fn is_enharmonic(self, other: Self) -> bool {

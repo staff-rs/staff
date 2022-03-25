@@ -1,4 +1,4 @@
-use crate::{midi::MidiNote, note::Note, Interval, Letter};
+use crate::{midi::MidiNote, note::Note, Interval, Natural};
 use core::ops::{Add, Sub};
 
 /// Pitch class that can be found on the chromatic scale.
@@ -25,23 +25,22 @@ impl Pitch {
 
     pub const B: Self = Self(11);
 
-    /// Returns the natural pitch for the given `Letter`.
+    /// Returns the natural pitch for the given `Natural`.
     /// ```
-    /// use music_theory::{Pitch, Letter};
+    /// use music_theory::{Pitch, Natural};
     ///
-    /// let pitch = Pitch::natural(Letter::F);
+    /// let pitch = Pitch::natural(Natural::F);
     /// assert_eq!(pitch, Pitch::F);
     /// ```
-    pub const fn natural(letter: Letter) -> Self {
+    pub const fn natural(letter: Natural) -> Self {
         match letter {
-            Letter::C => Self::C,
-            Letter::D => Self::D,
-            Letter::E => Self::E,
-            Letter::F => Self::F,
-            Letter::G => Self::G,
-            Letter::A => Self::A,
-            Letter::B => Self::B,
-            _ => unreachable!(),
+            Natural::C => Self::C,
+            Natural::D => Self::D,
+            Natural::E => Self::E,
+            Natural::F => Self::F,
+            Natural::G => Self::G,
+            Natural::A => Self::A,
+            Natural::B => Self::B,
         }
     }
 
@@ -75,17 +74,16 @@ impl Pitch {
     }
 }
 
-impl From<Letter> for Pitch {
-    fn from(letter: Letter) -> Self {
+impl From<Natural> for Pitch {
+    fn from(letter: Natural) -> Self {
         match letter {
-            Letter::C => Self::C,
-            Letter::D => Self::D,
-            Letter::E => Self::E,
-            Letter::F => Self::F,
-            Letter::G => Self::G,
-            Letter::A => Self::A,
-            Letter::B => Self::B,
-            _ => unreachable!(),
+            Natural::C => Self::C,
+            Natural::D => Self::D,
+            Natural::E => Self::E,
+            Natural::F => Self::F,
+            Natural::G => Self::G,
+            Natural::A => Self::A,
+            Natural::B => Self::B,
         }
     }
 }
