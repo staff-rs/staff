@@ -1,9 +1,5 @@
 use crate::scale::Degree;
-use crate::{
-    chord::{Chord, ChordKind},
-    scale::Scale,
-    Interval, Pitch,
-};
+use crate::{chord::ChordKind, scale::Scale, Interval, Pitch};
 use core::fmt;
 use core::ops::Add;
 use core::{array::IntoIter, fmt::Write};
@@ -14,16 +10,16 @@ pub struct KeySignature {
 
 impl KeySignature {
     /// ```
-    /// use music_theory::key::KeySignature;
-    /// use music_theory::Pitch;
+    /// use music_note::key::KeySignature;
+    /// use music_note::Pitch;
     ///
     /// let key = KeySignature::major(Pitch::D);
     /// assert_eq!(key.to_string(), "##")
     /// ```
     ///
     /// ```
-    /// use music_theory::key::KeySignature;
-    /// use music_theory::Pitch;
+    /// use music_note::key::KeySignature;
+    /// use music_note::Pitch;
     ///
     /// let key = KeySignature::major(Pitch::F);
     /// assert_eq!(key.to_string(), "b")
@@ -107,11 +103,13 @@ where
         )
     }
 
+    /*
     pub fn chords(self) -> impl Iterator<Item = Chord<T>> {
         self.scale
             .zip(self.kinds.into_iter())
             .map(move |(note, kind)| Chord::new(note, kind))
     }
+    */
 }
 
 #[cfg(test)]
@@ -126,8 +124,10 @@ mod tests {
     #[test]
     fn f() {
         let key = Key::major(MidiNote::new(Pitch::C, Octave::FOUR));
+        /*
         for chord in key.chords() {
             dbg!(chord);
         }
+        */
     }
 }

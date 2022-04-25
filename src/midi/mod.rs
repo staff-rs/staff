@@ -11,8 +11,8 @@ pub struct MidiNote(u8);
 impl MidiNote {
     /// Create a new `MidiNote` from a `Pitch` and `Octave`.
     /// ```
-    /// use music_theory::midi::{Octave, MidiNote};
-    /// use music_theory::Pitch;
+    /// use music_note::midi::{Octave, MidiNote};
+    /// use music_note::Pitch;
     ///
     /// let note = MidiNote::new(Pitch::A, Octave::FOUR);
     /// assert_eq!(note.into_byte(), 69);
@@ -29,8 +29,8 @@ impl MidiNote {
     }
 
     /// ```
-    /// use music_theory::midi::MidiNote;
-    /// use music_theory::Pitch;
+    /// use music_note::midi::MidiNote;
+    /// use music_note::Pitch;
     ///
     /// let note = MidiNote::from_byte(108);
     /// assert_eq!(note.pitch(), Pitch::C);
@@ -40,8 +40,8 @@ impl MidiNote {
     }
 
     /// ```
-    /// use music_theory::midi::{Octave, MidiNote};
-    /// use music_theory::Pitch;
+    /// use music_note::midi::{Octave, MidiNote};
+    /// use music_note::Pitch;
     ///
     /// let note = MidiNote::new(Pitch::C, Octave::EIGHT);
     /// assert_eq!(note.octave(), Octave::EIGHT);
@@ -49,7 +49,7 @@ impl MidiNote {
     ///
     /// Midi notes start at octave -1.
     /// ```
-    /// use music_theory::midi::{Octave, MidiNote};
+    /// use music_note::midi::{Octave, MidiNote};
     ///
     /// let note = MidiNote::from_byte(11);
     /// assert_eq!(note.octave(), Octave::NEGATIVE_ONE);
@@ -57,8 +57,6 @@ impl MidiNote {
     pub const fn octave(self) -> Octave {
         Octave::from_midi(self)
     }
-
- 
 
     #[cfg(feature = "std")]
     pub fn frequency(self) -> f64 {

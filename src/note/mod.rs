@@ -16,7 +16,7 @@ pub struct Note {
 impl Note {
     /// Create a new `Note` from a `Natural` and `Accidental`.
     /// ```
-    /// use music_theory::{Accidental, Natural, Note};
+    /// use music_note::{Accidental, Natural, Note};
     ///
     /// let note = Note::new(Natural::D, Accidental::Sharp);
     /// assert_eq!(note.to_string(), "D#");
@@ -27,7 +27,7 @@ impl Note {
 
     /// Create a new natural `Note` from a `Natural` with [`Accidental::Natural`].
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::natural(Natural::E);
     /// assert_eq!(note.to_string(), "E");
@@ -38,7 +38,7 @@ impl Note {
 
     /// Create a new `Note` from a `Natural` with [`Accidental::Flat`].
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::flat(Natural::F);
     /// assert_eq!(note.to_string(), "Fb");
@@ -49,7 +49,7 @@ impl Note {
 
     /// Create a new `Note` from a `Natural` with [`Accidental::DoubleFlat`].
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::double_flat(Natural::G);
     /// assert_eq!(note.to_string(), "Gbb");
@@ -60,7 +60,7 @@ impl Note {
 
     /// Create a new `Note` from a `Natural` with [`Accidental::Sharp`].
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::sharp(Natural::E);
     /// assert_eq!(note.to_string(), "E#");
@@ -71,7 +71,7 @@ impl Note {
 
     /// Create a new `Note` from a `Natural` with [`Accidental::DoubleSharp`].
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::double_sharp(Natural::D);
     /// assert_eq!(note.to_string(), "D##");
@@ -122,7 +122,7 @@ impl Note {
     ///
     /// Convert a `Note` in sharp notation to flats
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::sharp(Natural::G);
     /// assert_eq!(note.into_flat(), Note::flat(Natural::A))
@@ -130,7 +130,7 @@ impl Note {
     ///
     /// Find a natural enharmonic note
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::flat(Natural::F);
     /// assert_eq!(note.into_flat(), Note::natural(Natural::E))
@@ -145,7 +145,7 @@ impl Note {
     ///
     /// Convert a `Note` in flat notation to sharps
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::flat(Natural::D);
     /// assert_eq!(note.into_sharp(), Note::sharp(Natural::C))
@@ -153,7 +153,7 @@ impl Note {
     ///
     /// Find a natural enharmonic note
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::sharp(Natural::B);
     /// assert_eq!(note.into_sharp(), Note::natural(Natural::C))
@@ -164,7 +164,7 @@ impl Note {
 
     /// Returns the pitch of the given `Note`.
     /// ```
-    /// use music_theory::{Pitch, Natural};
+    /// use music_note::{Pitch, Natural};
     ///
     /// let pitch = Pitch::natural(Natural::F);
     /// assert_eq!(pitch, Pitch::F);
@@ -185,7 +185,7 @@ impl Note {
     /// # Examples
     ///
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::flat(Natural::D);
     /// assert!(note.is_enharmonic(Note::sharp(Natural::C)))
@@ -193,7 +193,7 @@ impl Note {
     ///
     /// This function will also return true if the notes are the same.
     /// ```
-    /// use music_theory::{Natural, Note};
+    /// use music_note::{Natural, Note};
     ///
     /// let note = Note::natural(Natural::C);
     /// assert!(note.is_enharmonic(note))

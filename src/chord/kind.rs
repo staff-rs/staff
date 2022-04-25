@@ -39,9 +39,9 @@ impl ChordKind {
     }
 
     /// ```
-    /// use music_theory::chord::ChordKind;
-    /// use music_theory::midi::{MidiNote, Octave};
-    /// use music_theory::Pitch;
+    /// use music_note::chord::ChordKind;
+    /// use music_note::midi::{MidiNote, Octave};
+    /// use music_note::Pitch;
     ///
     /// let root = MidiNote::new(Pitch::C, Octave::FOUR);
     /// let mut matches = ChordKind::match_notes(
