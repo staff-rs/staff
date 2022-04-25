@@ -1,23 +1,22 @@
-use crate::{midi::MidiNote, Accidental, Interval};
-use core::ops::{Add, Sub};
+use crate::{midi::MidiNote, Interval};
 
 mod kind;
 pub use kind::ChordKind;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum ChordAccidental {
     Natural,
     Sharp,
     Flat,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Seventh {
     Major,
     Minor,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Third {
     Major,
     Minor,
@@ -25,9 +24,8 @@ pub enum Third {
     Sus4,
 }
 
-#[derive(Debug)]
-pub struct Chord {
-    root: MidiNote,
+#[derive(Clone, Copy, Debug)]
+pub struct Builder {
     bass: Option<MidiNote>,
     no_root: bool,
     third: Third,
@@ -36,15 +34,12 @@ pub struct Chord {
     seventh: Option<ChordAccidental>,
     ninth: Option<ChordAccidental>,
     eleventh: Option<ChordAccidental>,
+    thirteenth: Option<ChordAccidental>
 }
 
-impl Chord {
-    pub fn m<I>(root: MidiNote, notes: I) -> Self
-    where
-        I: IntoIterator<Item = MidiNote>,
-    {
-        let mut me = Self {
-            root,
+impl Default for Builder {
+    fn default() -> Self {
+        Self {
             bass: None,
             no_root: true,
             third: Third::Major,
@@ -53,34 +48,98 @@ impl Chord {
             seventh: None,
             ninth: None,
             eleventh: None,
-        };
+            thirteenth: None
+        }
+    }
+}
+
+impl Builder {
+    pub fn bass(mut self, bass: MidiNote) -> Self {
+        self.bass = Some(bass);
+        self
+    }
+
+    pub fn no_root(mut self) -> Self {
+        self.no_root = true;
+        self
+    }
+
+    pub fn third(mut self, third: Third) -> Self {
+        self.third = third;
+        self
+    }
+
+    pub fn major(self) -> Self {
+        self.third(Third::Major)
+    }
+
+    pub fn minor(self) -> Self {
+        self.third(Third::Minor)
+    }
+
+    pub fn sus2(self) -> Self {
+        self.third(Third::Sus2)
+    }
+
+    pub fn sus4(self) -> Self {
+        self.third(Third::Sus4)
+    }
+
+    pub fn build(self, root: MidiNote) -> Chord {
+        Chord {
+            root,
+            builder: self,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Chord {
+    root: MidiNote,
+    builder: Builder,
+}
+
+impl Chord {
+    pub fn builder() -> Builder {
+        Builder::default()
+    }
+
+    pub fn empty(root: MidiNote) -> Self {
+        Self::builder().build(root)
+    }
+
+    pub fn matches<I>(root: MidiNote, notes: I) -> Self
+    where
+        I: IntoIterator<Item = MidiNote>,
+    {
+        let mut me = Self::empty(root);
 
         for note in notes {
             if note > root {
                 let interval = note - root;
                 match interval {
                     Interval::UNISON => {
-                        me.no_root = false;
+                        me.builder.no_root = false;
                     }
                     Interval::MAJOR_SECOND => {
-                        me.third = Third::Sus2;
+                        me.builder.third = Third::Sus2;
                     }
                     Interval::MINOR_THIRD => {
-                        me.third = Third::Minor;
+                        me.builder.third = Third::Minor;
                     }
-                    Interval::MAJOR_THIRD => me.third = Third::Major,
+                    Interval::MAJOR_THIRD => me.builder.third = Third::Major,
                     Interval::PERFECT_FOURTH => {
-                        me.third = Third::Sus4;
+                        me.builder.third = Third::Sus4;
                     }
                     Interval::PERFECT_FIFTH => {
-                        me.fifth = Some(ChordAccidental::Natural);
+                        me.builder.fifth = Some(ChordAccidental::Natural);
                     }
-                    Interval::MINOR_SEVENTH => me.seventh = Some(ChordAccidental::Flat),
-                    Interval::MAJOR_SEVENTH => me.seventh = Some(ChordAccidental::Natural),
+                    Interval::MINOR_SEVENTH => me.builder.seventh = Some(ChordAccidental::Flat),
+                    Interval::MAJOR_SEVENTH => me.builder.seventh = Some(ChordAccidental::Natural),
                     _ => todo!(),
                 }
             } else {
-                me.bass = Some(note);
+                me.builder.bass = Some(note);
             }
         }
 
@@ -90,8 +149,6 @@ impl Chord {
 
 #[cfg(test)]
 mod tests {
-    use std::mem::size_of;
-
     use crate::{
         midi::{MidiNote, Octave},
         Pitch,
@@ -99,7 +156,7 @@ mod tests {
 
     #[test]
     fn f() {
-        dbg!(super::Chord::m(
+        dbg!(super::Chord::matches(
             MidiNote::new(Pitch::C, Octave::FOUR),
             [
                 MidiNote::new(Pitch::C, Octave::FOUR),
