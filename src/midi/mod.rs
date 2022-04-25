@@ -58,6 +58,8 @@ impl MidiNote {
         Octave::from_midi(self)
     }
 
+ 
+
     #[cfg(feature = "std")]
     pub fn frequency(self) -> f64 {
         let a_midi = 69;

@@ -1,9 +1,10 @@
 [package]
-name = "music-theory"
+name = "music-note"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+description = "Music theory library with midi, notes, scales, and more"
+repository = "https://github.com/matthunz/music-theory"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[lib]
+name = "music_note"
