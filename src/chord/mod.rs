@@ -1,122 +1,37 @@
-use crate::{midi::MidiNote, Interval};
+use crate::Interval;
+use core::ops::Sub;
+
+mod builder;
+pub use builder::{Builder, ChordAccidental, Third};
 
 mod kind;
 pub use kind::ChordKind;
 
 #[derive(Clone, Copy, Debug)]
-pub enum ChordAccidental {
-    Natural,
-    Sharp,
-    Flat,
+pub struct Chord<T> {
+    root: T,
+    builder: Builder<T>,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum Seventh {
-    Major,
-    Minor,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum Third {
-    Major,
-    Minor,
-    Sus2,
-    Sus4,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Builder {
-    bass: Option<MidiNote>,
-    no_root: bool,
-    third: Third,
-    fifth: Option<ChordAccidental>,
-    sixth: bool,
-    seventh: Option<ChordAccidental>,
-    ninth: Option<ChordAccidental>,
-    eleventh: Option<ChordAccidental>,
-    thirteenth: Option<ChordAccidental>
-}
-
-impl Default for Builder {
-    fn default() -> Self {
-        Self {
-            bass: None,
-            no_root: true,
-            third: Third::Major,
-            fifth: None,
-            sixth: false,
-            seventh: None,
-            ninth: None,
-            eleventh: None,
-            thirteenth: None
-        }
-    }
-}
-
-impl Builder {
-    pub fn bass(mut self, bass: MidiNote) -> Self {
-        self.bass = Some(bass);
-        self
-    }
-
-    pub fn no_root(mut self) -> Self {
-        self.no_root = true;
-        self
-    }
-
-    pub fn third(mut self, third: Third) -> Self {
-        self.third = third;
-        self
-    }
-
-    pub fn major(self) -> Self {
-        self.third(Third::Major)
-    }
-
-    pub fn minor(self) -> Self {
-        self.third(Third::Minor)
-    }
-
-    pub fn sus2(self) -> Self {
-        self.third(Third::Sus2)
-    }
-
-    pub fn sus4(self) -> Self {
-        self.third(Third::Sus4)
-    }
-
-    pub fn build(self, root: MidiNote) -> Chord {
-        Chord {
-            root,
-            builder: self,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Chord {
-    root: MidiNote,
-    builder: Builder,
-}
-
-impl Chord {
-    pub fn builder() -> Builder {
+impl<T> Chord<T> {
+    pub fn builder() -> Builder<T> {
         Builder::default()
     }
 
-    pub fn empty(root: MidiNote) -> Self {
+    pub fn empty(root: T) -> Self {
         Self::builder().build(root)
     }
 
-    pub fn matches<I>(root: MidiNote, notes: I) -> Self
+    pub fn matches<I>(root: T, notes: I) -> Self
     where
-        I: IntoIterator<Item = MidiNote>,
+        I: IntoIterator<Item = T>,
+        T: PartialOrd + Sub<Output = Interval> + Clone,
     {
         let mut me = Self::empty(root);
 
         for note in notes {
-            if note > root {
-                let interval = note - root;
+            if note > me.root {
+                let interval = note - me.root.clone();
                 match interval {
                     Interval::UNISON => {
                         me.builder.no_root = false;
