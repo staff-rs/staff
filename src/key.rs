@@ -111,23 +111,3 @@ where
     }
     */
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{
-        midi::{MidiNote, Octave},
-        Pitch,
-    };
-
-    use super::*;
-
-    #[test]
-    fn f() {
-        let key = Key::major(MidiNote::new(Pitch::C, Octave::FOUR));
-        /*
-        for chord in key.chords() {
-            dbg!(chord);
-        }
-        */
-    }
-}

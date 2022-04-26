@@ -10,7 +10,7 @@ impl Octave {
     /// Octave -1
     pub const NEGATIVE_ONE: Self = Self(-1);
     /// Octave 0
-    pub const ZERO: Self = Self(-1);
+    pub const ZERO: Self = Self(0);
     /// Octave 1
     pub const ONE: Self = Self(1);
     /// Octave 2

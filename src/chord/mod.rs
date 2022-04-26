@@ -163,12 +163,3 @@ impl Iterator for Iter {
         self.low.next().or_else(|| self.high.next())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Chord;
-    use crate::Pitch;
-
-    #[test]
-    fn f() {}
-}

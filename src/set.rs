@@ -1,6 +1,5 @@
 use crate::{Interval, Pitch};
 use core::marker::PhantomData;
-use core::ops::Index;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set<T> {

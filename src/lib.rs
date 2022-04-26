@@ -12,6 +12,8 @@ pub use interval::Interval;
 
 pub mod key;
 
+pub mod keyboard;
+
 mod letter;
 pub use letter::Natural;
 
