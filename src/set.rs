@@ -60,7 +60,7 @@ where
         self.bits >> item.into() & 1 == 1
     }
 
-    pub fn split(&mut self, item: T) -> (Self, Self) {
+    pub fn split(self, item: T) -> (Self, Self) {
         let byte = item.into();
         (
             Self::new(self.bits & ((1 << byte) - 1)),

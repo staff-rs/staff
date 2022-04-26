@@ -1,5 +1,4 @@
 use crate::{Interval, Pitch, Set};
-use core::ops::Sub;
 
 mod kind;
 pub use kind::ChordKind;
@@ -20,6 +19,32 @@ impl Chord {
         }
     }
 
+    pub fn major(root: Pitch) -> Self {
+        Self::new(root)
+            .pitch(root)
+            .interval(Interval::MAJOR_THIRD)
+            .interval(Interval::PERFECT_FIFTH)
+    }
+
+    pub fn bass(mut self, pitch: Pitch) -> Self {
+        self.bass = Some(pitch);
+        self
+    }
+
+    pub fn pitch(mut self, pitch: Pitch) -> Self {
+        self.notes.push(pitch);
+        self
+    }
+
+    pub fn interval(self, interval: Interval) -> Self {
+        let pitch = self.root + interval;
+        self.pitch(pitch)
+    }
+
+    pub fn seventh(self) -> Self {
+        self.interval(Interval::MINOR_SEVENTH)
+    }
+
     pub fn is_rootless(&self) -> bool {
         !self.notes.contains(self.root)
     }
@@ -32,10 +57,11 @@ impl IntoIterator for Chord {
 
     fn into_iter(self) -> Self::IntoIter {
         let (high, low) = if let Some(bass) = self.bass {
-            self.notes.clone().split(bass)
+            self.notes.split(bass)
         } else {
             (Set::default(), self.notes)
         };
+
         Iter { low, high }
     }
 }
@@ -55,26 +81,12 @@ impl Iterator for Iter {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        midi::{MidiNote, Octave},
-        Pitch,
-    };
-
     use super::Chord;
+    use crate::Pitch;
 
     #[test]
     fn f() {
-        let mut c = Chord::new(Pitch::C);
-        c.notes.push(Pitch::C);
-        c.notes.push(Pitch::E);
-        c.notes.push(Pitch::G);
-
-        c.bass = Some(Pitch::E);
-
-        let (a, b) = c.notes.split(Pitch::E);
-        dbg!(a.collect::<Vec<_>>());
-        dbg!(b.collect::<Vec<_>>());
-
+        let c = Chord::major(Pitch::C).bass(Pitch::E);
         let notes: Vec<_> = c.into_iter().collect();
         dbg!(notes);
     }
