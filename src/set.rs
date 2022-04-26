@@ -1,7 +1,8 @@
 use crate::{Interval, Pitch};
 use core::marker::PhantomData;
+use core::ops::Index;
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set<T> {
     bits: u16,
     _marker: PhantomData<T>,
@@ -49,6 +50,22 @@ where
 {
     pub fn push(&mut self, item: T) {
         self.bits |= 1 << item.into() as u16;
+    }
+
+    pub fn remove(&mut self, item: T) {
+        self.bits |= !(1 << item.into()) as u16;
+    }
+
+    pub fn contains(&self, item: T) -> bool {
+        self.bits >> item.into() & 1 == 1
+    }
+
+    pub fn split(&mut self, item: T) -> (Self, Self) {
+        let byte = item.into();
+        (
+            Self::new(self.bits & ((1 << byte) - 1)),
+            Self::new((self.bits >> byte) << byte),
+        )
     }
 }
 
