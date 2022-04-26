@@ -5,6 +5,7 @@
 #![feature(const_ptr_read)]
 
 pub mod chord;
+pub use chord::Chord;
 
 mod interval;
 pub use interval::Interval;

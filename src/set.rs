@@ -98,6 +98,17 @@ impl FromIterator<Pitch> for Set<Pitch> {
     }
 }
 
+impl<T> Extend<T> for Set<T>
+where
+    T: Into<u8>,
+{
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        for item in iter {
+            self.push(item);
+        }
+    }
+}
+
 impl Iterator for Set<Interval> {
     type Item = Interval;
 
