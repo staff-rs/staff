@@ -28,6 +28,8 @@ impl Interval {
     pub const MINOR_SEVENTH: Self = Self::new(10);
     pub const MAJOR_SEVENTH: Self = Self::new(11);
 
+    pub const THIRTEENTH: Self = Self::new(21);
+
     pub const fn new(semitones: u8) -> Self {
         Self { semitones }
     }
@@ -40,6 +42,12 @@ impl Interval {
 impl From<Accidental> for Interval {
     fn from(accidental: Accidental) -> Self {
         accidental.interval()
+    }
+}
+
+impl From<u8> for Interval {
+    fn from(semitones: u8) -> Self {
+        Self::new(semitones)
     }
 }
 

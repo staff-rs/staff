@@ -1,5 +1,6 @@
-use crate::{midi::MidiNote, Chord, Pitch};
+use crate::{midi::MidiNote, Pitch};
 
+/*
 pub struct Keyboard {
     keys: [bool; 128],
 }
@@ -58,3 +59,5 @@ impl Keyboard {
         chord
     }
 }
+
+*/

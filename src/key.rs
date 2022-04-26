@@ -1,9 +1,10 @@
 use crate::scale::Degree;
-use crate::{chord::ChordKind, scale::Scale, Interval, Pitch};
+use crate::{scale::Scale, Interval, Pitch};
 use core::fmt;
 use core::ops::Add;
 use core::{array::IntoIter, fmt::Write};
 
+/*
 pub struct KeySignature {
     sharps: u8,
 }
@@ -111,3 +112,5 @@ where
     }
     */
 }
+
+ */

@@ -8,3 +8,6 @@ repository = "https://github.com/matthunz/music-theory"
 
 [lib]
 name = "music_note"
+
+[dependencies]
+num-traits = "0.2.14"

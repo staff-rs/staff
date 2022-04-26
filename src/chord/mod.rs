@@ -1,27 +1,153 @@
-use crate::{Interval, Pitch, Set};
+use crate::{set::IntervalSet, Interval, Pitch};
 
-mod kind;
-pub use kind::ChordKind;
-
-pub struct Inversions {
-    chord: Chord,
-    pitches: Set<Pitch>,
+pub struct Builder {
+    pub bass: Option<Pitch>,
+    pub is_inversion: bool,
+    pub intervals: IntervalSet,
 }
 
-impl Iterator for Inversions {
-    type Item = Chord;
+impl Builder {
+    pub fn interval(mut self, interval: Interval) -> Self {
+        self.intervals.push(interval);
+        self
+    }
 
-    fn next(&mut self) -> Option<Self::Item> {
-        self.pitches.next().map(|pitch| self.chord.inversion(pitch))
+    pub fn root(self) -> Self {
+        self.interval(Interval::UNISON)
+    }
+
+    pub fn major(self) -> Self {
+        self.root()
+            .interval(Interval::MAJOR_THIRD)
+            .interval(Interval::PERFECT_FIFTH)
+    }
+
+    pub fn seventh(self) -> Self {
+        self.major().interval(Interval::MINOR_SEVENTH)
+    }
+
+    /// ```
+    /// use music_note::{Chord, Pitch};
+    ///
+    /// // C/B
+    /// let chord = Chord::builder()
+    ///     .major()
+    ///     .bass(Pitch::B)
+    ///     .build(Pitch::C);
+    ///
+    /// let notes = [Pitch::B, Pitch::C, Pitch::E, Pitch::G];
+    /// assert!(chord.into_iter().eq(notes));
+    /// ```
+    pub fn bass(mut self, pitch: Pitch) -> Self {
+        self.bass = Some(pitch);
+        self
+    }
+
+    /// ```
+    /// use music_note::{Chord, Pitch};
+    ///
+    /// // C Major (1st inversion)
+    /// let chord = Chord::builder()
+    ///     .major()
+    ///     .inversion(Pitch::E)
+    ///     .build(Pitch::C);
+    ///
+    /// let notes = [Pitch::E, Pitch::G, Pitch::C];
+    /// assert!(chord.into_iter().eq(notes));
+    /// ```
+    pub fn inversion(mut self, pitch: Pitch) -> Self {
+        self.is_inversion = true;
+        self.bass(pitch)
+    }
+
+    pub fn build(self, root: Pitch) -> Chord {
+        Chord {
+            root,
+            builder: self,
+        }
     }
 }
 
+pub struct Chord {
+    root: Pitch,
+    builder: Builder,
+}
+
+impl Chord {
+    pub fn builder() -> Builder {
+        Builder {
+            bass: None,
+            is_inversion: false,
+            intervals: IntervalSet::default(),
+        }
+    }
+
+    pub fn intervals(self) -> Intervals {
+        let (high, low) = if let Some(bass) = self.builder.bass {
+            let bass_interval =
+                Interval::new((self.root.into_byte() as i8 - bass.into_byte() as i8).abs() as u8);
+            if self.builder.is_inversion {
+                self.builder.intervals.split(bass_interval)
+            } else {
+                (
+                    self.builder.intervals,
+                    [bass_interval].into_iter().collect(),
+                )
+            }
+        } else {
+            (IntervalSet::default(), self.builder.intervals)
+        };
+
+        Intervals { low, high }
+    }
+}
+
+impl IntoIterator for Chord {
+    type Item = Pitch;
+
+    type IntoIter = Iter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        Iter {
+            root: self.root,
+            intervals: self.intervals(),
+        }
+    }
+}
+
+pub struct Intervals {
+    low: IntervalSet,
+    high: IntervalSet,
+}
+
+impl Iterator for Intervals {
+    type Item = Interval;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.low.next().or_else(|| self.high.next())
+    }
+}
+
+pub struct Iter {
+    root: Pitch,
+    intervals: Intervals,
+}
+
+impl Iterator for Iter {
+    type Item = Pitch;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.intervals.next().map(|interval| self.root + interval)
+    }
+}
+
+/*
 #[derive(Clone, Copy)]
 pub struct Chord {
     pub root: Pitch,
     pub bass: Option<Pitch>,
     pub is_inversion: bool,
-    pub pitches: Set<Pitch>,
+    pub pitches: Set<Interval, >,
 }
 
 impl Chord {
@@ -163,3 +289,5 @@ impl Iterator for Iter {
         self.low.next().or_else(|| self.high.next())
     }
 }
+
+*/
