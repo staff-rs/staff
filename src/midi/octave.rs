@@ -28,6 +28,10 @@ impl Octave {
     /// Octave 8
     pub const EIGHT: Self = Self(8);
 
+    pub fn new_unchecked(num: i8) -> Self {
+        Self(num)
+    }
+
     /// Return the `Octave` of the given midinote.
     pub const fn from_midi(note: MidiNote) -> Self {
         Self((note.into_byte() / (Pitch::B.into_byte() + 1)) as i8 - 1)

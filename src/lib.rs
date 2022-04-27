@@ -30,3 +30,22 @@ pub use scale::Scale;
 
 mod set;
 pub use set::Set;
+
+/// ```
+/// use music_note::{midi_note, Pitch};
+/// use music_note::midi::Octave;
+///
+/// let midi = midi!(C, 4);
+///
+/// assert_eq!(midi.pitch(), Pitch::C);
+/// assert_eq!(midi.octave(), Octave::FOUR);
+/// ```
+#[macro_export]
+macro_rules! midi {
+    ($pitch:ident, $octave:literal) => {
+        music_note::midi::MidiNote::new(
+            music_note::Pitch::$pitch,
+            music_note::midi::Octave::new_unchecked($octave),
+        )
+    };
+}

@@ -58,18 +58,14 @@ impl Chord {
     }
 
     /// ```
-    /// use music_note::{Chord, Pitch};
-    /// use music_note::midi::{MidiNote, Octave};
+    /// use music_note::{midi_note, Chord, Pitch};
     ///
-    /// let root = MidiNote::new(Pitch::C, Octave::FOUR);
     /// let chord = Chord::from_midi(
-    ///     root,
-    ///     [
-    ///         MidiNote::new(Pitch::E, Octave::THREE),
-    ///         MidiNote::new(Pitch::G, Octave::THREE),
-    ///         root
-    ///     ]
+    ///     midi!(C, 4),
+    ///     [midi!(E, 3), midi!(G, 3), midi!(C, 4)]
     /// );
+    ///
+    /// assert_eq!(chord.to_string(), "C/E");
     ///
     /// let pitches = [Pitch::E, Pitch::G, Pitch::C];
     /// assert!(chord.into_iter().eq(pitches));
