@@ -1,4 +1,4 @@
-use crate::{set::IntervalSet, Interval, Pitch};
+use crate::{midi::MidiNote, set::IntervalSet, Interval, Pitch};
 use core::fmt::{self, Write};
 
 mod builder;
@@ -24,6 +24,15 @@ impl Chord {
             .interval(Interval::PERFECT_FIFTH)
     }
 
+    /// ```
+    /// use music_note::{Chord, Pitch};
+    ///
+    /// // D7
+    /// let chord = Chord::seventh().build(Pitch::D);
+    ///
+    /// let notes = [Pitch::D, Pitch::FSharp, Pitch::A, Pitch::C];
+    /// assert!(chord.into_iter().eq(notes));
+    /// ```
     pub fn seventh() -> Builder {
         Self::major().interval(Interval::MINOR_SEVENTH)
     }
@@ -48,11 +57,42 @@ impl Chord {
         }
     }
 
+    pub fn analyze<I>(root: Pitch, iter: I) -> Self
+    where
+        I: IntoIterator<Item = MidiNote>,
+    {
+        let mut iter = iter.into_iter();
+
+        let mut intervals = IntervalSet::default();
+
+        let bass_note = iter.next().unwrap();
+        let bass_pitch = bass_note.pitch();
+        intervals.push(bass_pitch - root);
+
+        let bass = if bass_pitch != root {
+            Some(bass_pitch)
+        } else {
+            None
+        };
+
+        intervals.extend(iter.map(|midi| midi.pitch() - root));
+
+        Self {
+            root,
+            builder: Builder {
+                bass,
+                is_inversion: false,
+                intervals: intervals,
+            },
+        }
+    }
+
     pub fn root(self) -> Pitch {
         self.root
     }
 
     pub fn intervals(self) -> Intervals {
+        // TODO maybe use rotate_right?
         let (high, low) = if let Some(bass) = self.builder.bass {
             let bass_interval =
                 Interval::new((self.root.into_byte() as i8 - bass.into_byte() as i8).abs() as u8);
@@ -113,8 +153,7 @@ impl Iterator for Iter {
 
 impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // TODO
-        f.write_char('C')?;
+        self.root.fmt(f)?;
 
         if self.builder.intervals.contains(Interval::MINOR_THIRD) {
             f.write_char('m')?
@@ -137,6 +176,10 @@ impl fmt::Display for Chord {
             f.write_str("maj7")?
         }
 
+        if let Some(bass) = self.builder.bass {
+            write!(f, "/{}", bass)?;
+        }
+
         if !self.builder.intervals.contains(Interval::UNISON) {
             f.write_str("(no root)")?
         }
@@ -151,11 +194,26 @@ impl fmt::Display for Chord {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Chord, Pitch};
+    use crate::{
+        midi::{MidiNote, Octave},
+        Chord, Pitch,
+    };
 
     #[test]
     fn f() {
         let chord = Chord::seventh().build(Pitch::C);
         println!("{}", chord);
+
+        println!(
+            "{}",
+            Chord::analyze(
+                Pitch::C,
+                [
+                    MidiNote::new(Pitch::E, Octave::THREE),
+                    MidiNote::new(Pitch::G, Octave::THREE),
+                    MidiNote::new(Pitch::C, Octave::FOUR)
+                ]
+            )
+        );
     }
 }

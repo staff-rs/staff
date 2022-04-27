@@ -20,8 +20,7 @@ impl Builder {
     /// use music_note::{Chord, Pitch};
     ///
     /// // C/B
-    /// let chord = Chord::builder()
-    ///     .major()
+    /// let chord = Chord::major()
     ///     .bass(Pitch::B)
     ///     .build(Pitch::C);
     ///
@@ -37,8 +36,7 @@ impl Builder {
     /// use music_note::{Chord, Pitch};
     ///
     /// // C Major (1st inversion)
-    /// let chord = Chord::builder()
-    ///     .major()
+    /// let chord = Chord::major()
     ///     .inversion(Pitch::E)
     ///     .build(Pitch::C);
     ///

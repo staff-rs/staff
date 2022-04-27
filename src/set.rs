@@ -5,7 +5,7 @@ use core::marker::PhantomData;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set<T, U> {
-    bits: U,
+    pub bits: U,
     _marker: PhantomData<T>,
 }
 

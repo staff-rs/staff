@@ -1,6 +1,6 @@
 use crate::{midi::MidiNote, note::Note, Interval, Natural};
-use core::mem;
 use core::ops::{Add, Sub};
+use core::{fmt, mem};
 
 /// Pitch class that can be found on the chromatic scale.
 #[repr(u8)]
@@ -111,5 +111,25 @@ impl Sub for Pitch {
 
     fn sub(self, rhs: Self) -> Interval {
         self.sub(rhs)
+    }
+}
+
+impl fmt::Display for Pitch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            Pitch::C => "C",
+            Pitch::CSharp => "C#",
+            Pitch::D => "D",
+            Pitch::DSharp => "D#",
+            Pitch::E => "E",
+            Pitch::F => "F",
+            Pitch::FSharp => "F#",
+            Pitch::G => "G",
+            Pitch::GSharp => "G#",
+            Pitch::A => "A",
+            Pitch::ASharp => "A#",
+            Pitch::B => "B",
+        };
+        f.write_str(s)
     }
 }
