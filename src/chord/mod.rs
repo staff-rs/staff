@@ -1,72 +1,8 @@
 use crate::{set::IntervalSet, Interval, Pitch};
+use core::fmt::{self, Write};
 
-pub struct Builder {
-    pub bass: Option<Pitch>,
-    pub is_inversion: bool,
-    pub intervals: IntervalSet,
-}
-
-impl Builder {
-    pub fn interval(mut self, interval: Interval) -> Self {
-        self.intervals.push(interval);
-        self
-    }
-
-    pub fn root(self) -> Self {
-        self.interval(Interval::UNISON)
-    }
-
-    pub fn major(self) -> Self {
-        self.root()
-            .interval(Interval::MAJOR_THIRD)
-            .interval(Interval::PERFECT_FIFTH)
-    }
-
-    pub fn seventh(self) -> Self {
-        self.major().interval(Interval::MINOR_SEVENTH)
-    }
-
-    /// ```
-    /// use music_note::{Chord, Pitch};
-    ///
-    /// // C/B
-    /// let chord = Chord::builder()
-    ///     .major()
-    ///     .bass(Pitch::B)
-    ///     .build(Pitch::C);
-    ///
-    /// let notes = [Pitch::B, Pitch::C, Pitch::E, Pitch::G];
-    /// assert!(chord.into_iter().eq(notes));
-    /// ```
-    pub fn bass(mut self, pitch: Pitch) -> Self {
-        self.bass = Some(pitch);
-        self
-    }
-
-    /// ```
-    /// use music_note::{Chord, Pitch};
-    ///
-    /// // C Major (1st inversion)
-    /// let chord = Chord::builder()
-    ///     .major()
-    ///     .inversion(Pitch::E)
-    ///     .build(Pitch::C);
-    ///
-    /// let notes = [Pitch::E, Pitch::G, Pitch::C];
-    /// assert!(chord.into_iter().eq(notes));
-    /// ```
-    pub fn inversion(mut self, pitch: Pitch) -> Self {
-        self.is_inversion = true;
-        self.bass(pitch)
-    }
-
-    pub fn build(self, root: Pitch) -> Chord {
-        Chord {
-            root,
-            builder: self,
-        }
-    }
-}
+mod builder;
+pub use builder::Builder;
 
 pub struct Chord {
     root: Pitch,
@@ -74,12 +10,46 @@ pub struct Chord {
 }
 
 impl Chord {
+    pub fn major() -> Builder {
+        Self::builder()
+            .root()
+            .interval(Interval::MAJOR_THIRD)
+            .interval(Interval::PERFECT_FIFTH)
+    }
+
+    pub fn minor() -> Builder {
+        Self::builder()
+            .root()
+            .interval(Interval::MAJOR_THIRD)
+            .interval(Interval::PERFECT_FIFTH)
+    }
+
+    pub fn seventh() -> Builder {
+        Self::major().interval(Interval::MINOR_SEVENTH)
+    }
+
+    pub fn major_seventh() -> Builder {
+        Self::major().interval(Interval::MAJOR_SEVENTH)
+    }
+
+    pub fn minor_seventh() -> Builder {
+        Self::minor().interval(Interval::MINOR_SEVENTH)
+    }
+
+    pub fn minor_major_seventh() -> Builder {
+        Self::minor().interval(Interval::MAJOR_SEVENTH)
+    }
+
     pub fn builder() -> Builder {
         Builder {
             bass: None,
             is_inversion: false,
             intervals: IntervalSet::default(),
         }
+    }
+
+    pub fn root(self) -> Pitch {
+        self.root
     }
 
     pub fn intervals(self) -> Intervals {
@@ -141,153 +111,51 @@ impl Iterator for Iter {
     }
 }
 
-/*
-#[derive(Clone, Copy)]
-pub struct Chord {
-    pub root: Pitch,
-    pub bass: Option<Pitch>,
-    pub is_inversion: bool,
-    pub pitches: Set<Interval, >,
-}
+impl fmt::Display for Chord {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO
+        f.write_char('C')?;
 
-impl Chord {
-    pub fn new(root: Pitch, bass: Option<Pitch>, is_inversion: bool, pitches: Set<Pitch>) -> Self {
-        Self {
-            root,
-            bass,
-            is_inversion,
-            pitches,
+        if self.builder.intervals.contains(Interval::MINOR_THIRD) {
+            f.write_char('m')?
+        } else if self.builder.intervals.contains(Interval::MAJOR_SECOND) {
+            f.write_str("sus2")?
+        } else if self.builder.intervals.contains(Interval::PERFECT_FOURTH) {
+            f.write_str("sus4")?
         }
-    }
 
-    pub fn from_root(root: Pitch) -> Self {
-        Self::new(root, None, false, Set::default())
-    }
-
-    pub fn triad(root: Pitch, third: Interval, fifth: Interval) -> Self {
-        let mut me = Self::from_root(root);
-        me.extend([Interval::UNISON, third, fifth]);
-        me
-    }
-
-    /// ```
-    /// use music_note::{Chord, Pitch};
-    ///
-    /// // C Major
-    /// let chord = Chord::major(Pitch::C);
-    ///
-    /// let notes = [Pitch::C, Pitch::E, Pitch::G];
-    /// assert!(chord.into_iter().eq(notes));
-    /// ```
-    pub fn major(root: Pitch) -> Self {
-        Self::triad(root, Interval::MAJOR_THIRD, Interval::PERFECT_FIFTH)
-    }
-
-    pub fn minor(root: Pitch) -> Self {
-        Self::triad(root, Interval::MINOR_THIRD, Interval::PERFECT_FIFTH)
-    }
-
-    pub fn half_diminished(root: Pitch) -> Self {
-        Self::triad(root, Interval::MINOR_THIRD, Interval::TRITONE)
-    }
-
-    /// ```
-    /// use music_note::{Chord, Pitch};
-    ///
-    /// // C Major (1st inversion)
-    /// let chord = Chord::major(Pitch::C).inversion(Pitch::E);
-    ///
-    /// let notes = [Pitch::E, Pitch::G, Pitch::C];
-    /// assert!(chord.into_iter().eq(notes));
-    /// ```
-    pub fn inversion(mut self, pitch: Pitch) -> Self {
-        self.is_inversion = true;
-        self.with_bass(pitch)
-    }
-
-    /// ```
-    /// use music_note::{Chord, Pitch};
-    ///
-    /// // C/B
-    /// let chord = Chord::major(Pitch::C).with_bass(Pitch::B);
-    ///
-    /// let notes = [Pitch::B, Pitch::C, Pitch::E, Pitch::G];
-    /// assert!(chord.into_iter().eq(notes));
-    /// ```
-    pub fn with_bass(mut self, pitch: Pitch) -> Self {
-        self.bass = Some(pitch);
-        self
-    }
-
-    pub fn with_interval(mut self, interval: Interval) -> Self {
-        self.extend([interval]);
-        self
-    }
-
-    pub fn with_seventh(self) -> Self {
-        self.with_interval(Interval::MINOR_SEVENTH)
-    }
-
-    pub fn with_major_seventh(self) -> Self {
-        self.with_interval(Interval::MAJOR_SEVENTH)
-    }
-
-    pub fn is_rootless(self) -> bool {
-        !self.pitches.contains(self.root)
-    }
-
-    pub fn inversions(self) -> Inversions {
-        Inversions {
-            chord: self,
-            pitches: self.pitches,
+        let mut has_fifth = true;
+        if self.builder.intervals.contains(Interval::TRITONE) {
+            f.write_str("b5")?
+        } else if !self.builder.intervals.contains(Interval::PERFECT_FIFTH) {
+            has_fifth = false;
         }
+
+        if self.builder.intervals.contains(Interval::MINOR_SEVENTH) {
+            f.write_char('7')?
+        } else if self.builder.intervals.contains(Interval::MAJOR_SEVENTH) {
+            f.write_str("maj7")?
+        }
+
+        if !self.builder.intervals.contains(Interval::UNISON) {
+            f.write_str("(no root)")?
+        }
+
+        if !has_fifth {
+            f.write_str("(no5)")?
+        }
+
+        Ok(())
     }
 }
 
-impl Extend<Pitch> for Chord {
-    fn extend<T: IntoIterator<Item = Pitch>>(&mut self, iter: T) {
-        self.pitches.extend(iter);
+#[cfg(test)]
+mod tests {
+    use crate::{Chord, Pitch};
+
+    #[test]
+    fn f() {
+        let chord = Chord::seventh().build(Pitch::C);
+        println!("{}", chord);
     }
 }
-
-impl Extend<Interval> for Chord {
-    fn extend<T: IntoIterator<Item = Interval>>(&mut self, iter: T) {
-        let root = self.root;
-        self.extend(iter.into_iter().map(|interval| root + interval))
-    }
-}
-
-impl IntoIterator for Chord {
-    type Item = Pitch;
-
-    type IntoIter = Iter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        let (high, low) = if let Some(bass) = self.bass {
-            if self.is_inversion {
-                self.pitches.split(bass)
-            } else {
-                (self.pitches, [bass].into_iter().collect())
-            }
-        } else {
-            (Set::default(), self.pitches)
-        };
-
-        Iter { low, high }
-    }
-}
-
-pub struct Iter {
-    low: Set<Pitch>,
-    high: Set<Pitch>,
-}
-
-impl Iterator for Iter {
-    type Item = Pitch;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.low.next().or_else(|| self.high.next())
-    }
-}
-
-*/
