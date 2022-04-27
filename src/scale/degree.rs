@@ -7,25 +7,17 @@ use crate::{
 
 /// The degree of a `Scale`.
 pub trait Degree: Copy {
-    fn next_degree(self, interval: Interval) -> Self
-    where
-        Self: Sized;
+    fn next_degree(self, interval: Interval) -> Self;
 }
 
 impl Degree for Pitch {
-    fn next_degree(self, interval: Interval) -> Self
-    where
-        Self: Sized,
-    {
+    fn next_degree(self, interval: Interval) -> Self {
         self + interval
     }
 }
 
 impl Degree for PitchNote {
-    fn next_degree(self, interval: Interval) -> Self
-    where
-        Self: Sized,
-    {
+    fn next_degree(self, interval: Interval) -> Self {
         let pitch = self.pitch().add_interval(interval);
         let letter = self.note().letter.next();
         let natural_pitch = Pitch::natural(letter);
@@ -51,10 +43,7 @@ impl Degree for PitchNote {
 }
 
 impl Degree for MidiNote {
-    fn next_degree(self, interval: Interval) -> Self
-    where
-        Self: Sized,
-    {
+    fn next_degree(self, interval: Interval) -> Self {
         self + interval
     }
 }
