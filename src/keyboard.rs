@@ -1,6 +1,5 @@
-use crate::{midi::MidiNote, Pitch};
+use crate::{midi::MidiNote, Chord};
 
-/*
 pub struct Keyboard {
     keys: [bool; 128],
 }
@@ -32,32 +31,12 @@ impl Keyboard {
     }
 
     pub fn chord(&self) -> Option<Chord> {
-        let mut pitches = self.midi_notes().map(|note| note.pitch());
-        if let Some(root) = pitches.next() {
-            let mut chord = Chord::from_root(root);
-            chord.extend(pitches);
-            Some(chord)
-        } else {
-            None
-        }
+        self.midi_notes()
+            .next()
+            .map(|root| self.chord_with_root(root))
     }
 
-    pub fn chord_with_root(&self, root: Pitch) -> Chord {
-        let mut chord = Chord::from_root(root);
-
-        let mut pitches = self.midi_notes().map(|note| note.pitch());
-        if let Some(pitch) = pitches.next() {
-            chord.pitches.push(pitch);
-
-            if pitch != root {
-                chord.bass = Some(pitch);
-            }
-
-            chord.extend(pitches);
-        }
-
-        chord
+    pub fn chord_with_root(&self, root: MidiNote) -> Chord {
+        Chord::from_midi(root, self.midi_notes())
     }
 }
-
-*/

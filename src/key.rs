@@ -1,10 +1,6 @@
-use crate::scale::Degree;
-use crate::{scale::Scale, Interval, Pitch};
-use core::fmt;
-use core::ops::Add;
-use core::{array::IntoIter, fmt::Write};
+use crate::{Interval, Pitch};
+use core::fmt::{self, Write};
 
-/*
 pub struct KeySignature {
     sharps: u8,
 }
@@ -60,57 +56,3 @@ impl fmt::Display for KeySignature {
         Ok(())
     }
 }
-
-pub struct Key<T> {
-    scale: Scale<T, IntoIter<Interval, 7>>,
-    kinds: [ChordKind; 7],
-}
-
-impl<T> Key<T>
-where
-    T: Degree + Add<Interval>,
-{
-    pub fn new(scale: Scale<T, IntoIter<Interval, 7>>, kinds: [ChordKind; 7]) -> Self {
-        Self { scale, kinds }
-    }
-
-    pub fn major(root: T) -> Self {
-        Self::new(
-            Scale::major(root),
-            [
-                ChordKind::MajorSeventh,
-                ChordKind::MinorSeventh,
-                ChordKind::MinorSeventh,
-                ChordKind::MajorSeventh,
-                ChordKind::DominantSeventh,
-                ChordKind::MinorSeventh,
-                ChordKind::HalfDiminished,
-            ],
-        )
-    }
-
-    pub fn natural_minor(root: T) -> Self {
-        Self::new(
-            Scale::natural_minor(root),
-            [
-                ChordKind::MajorSeventh,
-                ChordKind::MinorSeventh,
-                ChordKind::MinorSeventh,
-                ChordKind::MajorSeventh,
-                ChordKind::DominantSeventh,
-                ChordKind::MinorSeventh,
-                ChordKind::HalfDiminished,
-            ],
-        )
-    }
-
-    /*
-    pub fn chords(self) -> impl Iterator<Item = Chord<T>> {
-        self.scale
-            .zip(self.kinds.into_iter())
-            .map(move |(note, kind)| Chord::new(note, kind))
-    }
-    */
-}
-
- */
