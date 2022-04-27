@@ -57,32 +57,58 @@ impl Chord {
         }
     }
 
-    pub fn analyze<I>(root: Pitch, iter: I) -> Self
+    /// ```
+    /// use music_note::{Chord, Pitch};
+    /// use music_note::midi::{MidiNote, Octave};
+    ///
+    /// let root = MidiNote::new(Pitch::C, Octave::FOUR);
+    /// let chord = Chord::from_midi(
+    ///     root,
+    ///     [
+    ///         MidiNote::new(Pitch::E, Octave::THREE),
+    ///         MidiNote::new(Pitch::G, Octave::THREE),
+    ///         root
+    ///     ]
+    /// );
+    ///
+    /// let pitches = [Pitch::E, Pitch::G, Pitch::C];
+    /// assert!(chord.into_iter().eq(pitches));
+    /// ```
+
+    pub fn from_midi<I>(root: MidiNote, iter: I) -> Self
     where
         I: IntoIterator<Item = MidiNote>,
     {
         let mut iter = iter.into_iter();
-
         let mut intervals = IntervalSet::default();
 
         let bass_note = iter.next().unwrap();
-        let bass_pitch = bass_note.pitch();
-        intervals.push(bass_pitch - root);
-
-        let bass = if bass_pitch != root {
-            Some(bass_pitch)
+        let root_pitch = root.pitch();
+        let bass = if bass_note != root {
+            let bass_pitch = bass_note.pitch();
+            intervals.push(bass_pitch - root_pitch);
+            Some(bass_note.pitch())
         } else {
+            intervals.push(Interval::UNISON);
             None
         };
 
-        intervals.extend(iter.map(|midi| midi.pitch() - root));
+        let is_inversion = if let Some(note) = iter.next() {
+            let ret = if note == root { false } else { true };
+
+            intervals.push(note.pitch() - root_pitch);
+            intervals.extend(iter.map(|midi| midi.pitch() - root_pitch));
+            ret
+        } else {
+            false
+        };
 
         Self {
-            root,
+            root: root.pitch(),
             builder: Builder {
                 bass,
-                is_inversion: false,
-                intervals: intervals,
+                is_inversion,
+                intervals,
             },
         }
     }
@@ -189,31 +215,5 @@ impl fmt::Display for Chord {
         }
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{
-        midi::{MidiNote, Octave},
-        Chord, Pitch,
-    };
-
-    #[test]
-    fn f() {
-        let chord = Chord::seventh().build(Pitch::C);
-        println!("{}", chord);
-
-        println!(
-            "{}",
-            Chord::analyze(
-                Pitch::C,
-                [
-                    MidiNote::new(Pitch::E, Octave::THREE),
-                    MidiNote::new(Pitch::G, Octave::THREE),
-                    MidiNote::new(Pitch::C, Octave::FOUR)
-                ]
-            )
-        );
     }
 }
