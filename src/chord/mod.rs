@@ -58,7 +58,7 @@ impl Chord {
     }
 
     /// ```
-    /// use music_note::{midi_note, Chord, Pitch};
+    /// use music_note::{midi, Chord, Pitch};
     ///
     /// let chord = Chord::from_midi(
     ///     midi!(C, 4),
@@ -93,7 +93,7 @@ impl Chord {
             let ret = if note == root { false } else { true };
 
             intervals.push(note.pitch() - root_pitch);
-            intervals.extend(iter.map(|midi| midi.pitch() - root_pitch));
+            intervals.extend(iter.map(|midi| midi - root));
             ret
         } else {
             false

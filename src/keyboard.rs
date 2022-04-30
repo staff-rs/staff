@@ -17,7 +17,7 @@ impl Keyboard {
         *self.key_mut(midi) = false;
     }
 
-    pub fn midi_notes(&self) -> impl Iterator<Item = MidiNote> + '_ {
+    pub fn midis(&self) -> impl Iterator<Item = MidiNote> + '_ {
         self.keys
             .iter()
             .enumerate()
@@ -31,12 +31,10 @@ impl Keyboard {
     }
 
     pub fn chord(&self) -> Option<Chord> {
-        self.midi_notes()
-            .next()
-            .map(|root| self.chord_with_root(root))
+        self.midis().next().map(|root| self.chord_with_root(root))
     }
 
     pub fn chord_with_root(&self, root: MidiNote) -> Chord {
-        Chord::from_midi(root, self.midi_notes())
+        Chord::from_midi(root, self.midis())
     }
 }

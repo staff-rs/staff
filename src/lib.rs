@@ -32,7 +32,7 @@ mod set;
 pub use set::Set;
 
 /// ```
-/// use music_note::{midi_note, Pitch};
+/// use music_note::{midi, Pitch};
 /// use music_note::midi::Octave;
 ///
 /// let midi = midi!(C, 4);
