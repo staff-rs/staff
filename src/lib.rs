@@ -12,10 +12,8 @@ pub use interval::Interval;
 
 pub mod key;
 
-pub mod keyboard;
-
-mod letter;
-pub use letter::Natural;
+mod natural;
+pub use natural::Natural;
 
 pub mod midi;
 
@@ -32,7 +30,7 @@ mod set;
 pub use set::Set;
 
 /// ```
-/// use music_note::{midi, Pitch};
+/// use music_note::{midi_note, Pitch};
 /// use music_note::midi::Octave;
 ///
 /// let midi = midi!(C, 4);

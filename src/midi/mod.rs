@@ -4,6 +4,9 @@ use core::ops::{Add, Sub};
 mod octave;
 pub use octave::Octave;
 
+mod midi_set;
+pub use midi_set::MidiSet;
+
 /// MIDI note represented as a byte.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MidiNote(u8);
@@ -84,5 +87,17 @@ impl Sub for MidiNote {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Interval::new((self.into_byte() as i8 - rhs.into_byte() as i8).abs() as _)
+    }
+}
+
+impl From<u8> for MidiNote {
+    fn from(byte: u8) -> Self {
+        Self::from_byte(byte)
+    }
+}
+
+impl From<MidiNote> for u8 {
+    fn from(midi: MidiNote) -> Self {
+        midi.into_byte()
     }
 }

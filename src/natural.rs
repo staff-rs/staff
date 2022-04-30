@@ -1,6 +1,6 @@
 use core::fmt;
 
-/// Natural of a natural pitch
+/// A natural pitch
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Natural {
