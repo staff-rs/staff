@@ -47,3 +47,9 @@ impl Degree for MidiNote {
         self + interval
     }
 }
+
+impl Degree for Note {
+    fn next_degree(self, interval: Interval) -> Self {
+        PitchNote::from(self).next_degree(interval).note()
+    }
+}

@@ -26,8 +26,7 @@ pub use pitch::Pitch;
 pub mod scale;
 pub use scale::Scale;
 
-mod set;
-pub use set::Set;
+pub mod set;
 
 /// ```
 /// use music_note::{midi_note, Pitch};

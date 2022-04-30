@@ -66,6 +66,12 @@ impl Pitch {
     }
 }
 
+impl From<u8> for Pitch {
+    fn from(byte: u8) -> Self {
+        Self::from_byte(byte)
+    }
+}
+
 impl From<Natural> for Pitch {
     fn from(letter: Natural) -> Self {
         match letter {

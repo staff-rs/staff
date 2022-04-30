@@ -1,5 +1,5 @@
 use super::MidiNote;
-use crate::Set;
+use crate::set::Set;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct MidiSet {

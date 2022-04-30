@@ -1,7 +1,19 @@
-use num_traits::{PrimInt, Zero};
-
 use crate::{Interval, Pitch};
 use core::marker::PhantomData;
+use num_traits::{PrimInt, Zero};
+
+pub type PitchSet = Set<Pitch, u16>;
+
+pub type IntervalSet = Set<Interval, u32>;
+
+impl IntervalSet {
+    pub fn modes(self) -> impl Iterator<Item = Self> {
+        self.enumerate().map(move |(index, _)| {
+            let rotated = self.bits.rotate_right(index as _);
+            Self::new(rotated)
+        })
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set<T, U> {
@@ -22,12 +34,21 @@ impl<T, U> Set<T, U> {
             _marker: PhantomData,
         }
     }
+}
 
-    /// Removes the least signifigant bit from `self` and returns its position
-    pub fn pop_bit(&mut self) -> Option<u8>
+impl<T, U> Set<T, U>
+where
+    U: PrimInt,
+{
+    pub fn all() -> Self
     where
         U: PrimInt,
     {
+        Self::new(U::max_value())
+    }
+
+    /// Removes the least signifigant bit from `self` and returns its position
+    pub fn pop_bit(&mut self) -> Option<u8> {
         if !self.bits.is_zero() {
             let trailing = self.bits.trailing_zeros();
             self.bits = self.bits & (self.bits - U::one());
@@ -64,34 +85,15 @@ where
     }
 }
 
-pub type IntervalSet = Set<Interval, u32>;
-
-impl IntervalSet {
-    pub fn modes(self) -> impl Iterator<Item = Self> {
-        self.enumerate().map(move |(index, _)| {
-            let rotated = self.bits.rotate_right(index as _);
-            Self::new(rotated)
-        })
-    }
-}
-
-impl FromIterator<Interval> for IntervalSet {
-    fn from_iter<T: IntoIterator<Item = Interval>>(iter: T) -> Self {
-        let mut pitch_set = Self::default();
-        for pitch in iter {
-            pitch_set.push(pitch);
-        }
-        pitch_set
-    }
-}
-
-impl FromIterator<Pitch> for Set<Pitch, u16> {
-    fn from_iter<T: IntoIterator<Item = Pitch>>(iter: T) -> Self {
-        let mut pitch_set = Self::default();
-        for pitch in iter {
-            pitch_set.push(pitch);
-        }
-        pitch_set
+impl<T, U> FromIterator<T> for Set<T, U>
+where
+    T: Into<u8>,
+    U: PrimInt,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut set = Self::default();
+        set.extend(iter);
+        set
     }
 }
 
