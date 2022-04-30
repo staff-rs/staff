@@ -4,6 +4,8 @@ use core::ops::{Add, Sub};
 mod octave;
 pub use octave::Octave;
 
+pub mod message;
+
 mod midi_set;
 pub use midi_set::MidiSet;
 
