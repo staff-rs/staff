@@ -10,31 +10,22 @@ pub enum Message {
     NoteOn(NoteMessage),
 }
 
-pub struct Messages<T> {
-    iter: T,
-}
-
-impl<T> Iterator for Messages<T>
-where
-    T: Iterator<Item = u8>,
-{
-    type Item = Message;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let status = self.iter.next().unwrap();
-        let msg = match status >> 4 {
+impl FromIterator<u8> for Message {
+    fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
+        let mut iter = iter.into_iter();
+        let status = iter.next().unwrap();
+        match status >> 4 {
             0b1000 => {
-                let note = MidiNote::from_byte(self.iter.next().unwrap());
-                let velocity = self.iter.next().unwrap();
+                let note = MidiNote::from_byte(iter.next().unwrap());
+                let velocity = iter.next().unwrap();
                 Message::NoteOff(NoteMessage { note, velocity })
             }
             0b1001 => {
-                let note = MidiNote::from_byte(self.iter.next().unwrap());
-                let velocity = self.iter.next().unwrap();
+                let note = MidiNote::from_byte(iter.next().unwrap());
+                let velocity = iter.next().unwrap();
                 Message::NoteOn(NoteMessage { note, velocity })
             }
             _ => todo!(),
-        };
-        Some(msg)
+        }
     }
 }
