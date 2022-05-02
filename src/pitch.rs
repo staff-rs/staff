@@ -86,12 +86,6 @@ impl From<Natural> for Pitch {
     }
 }
 
-impl From<Note> for Pitch {
-    fn from(note: Note) -> Self {
-        note.pitch()
-    }
-}
-
 impl From<MidiNote> for Pitch {
     fn from(midi: MidiNote) -> Self {
         midi.pitch()
@@ -117,6 +111,14 @@ impl Sub for Pitch {
 
     fn sub(self, rhs: Self) -> Interval {
         self.sub(rhs)
+    }
+}
+
+impl Sub<Interval> for Pitch {
+    type Output = Self;
+
+    fn sub(self, interval: Interval) -> Self {
+        self.sub_interval(interval)
     }
 }
 

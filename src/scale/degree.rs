@@ -1,6 +1,6 @@
 use crate::{
     midi::MidiNote,
-    note::{Accidental, Note, PitchNote},
+    note::{Accidental, Note},
     pitch::Pitch,
     Interval,
 };
@@ -16,40 +16,21 @@ impl Degree for Pitch {
     }
 }
 
-impl Degree for PitchNote {
-    fn next_degree(self, interval: Interval) -> Self {
-        let pitch = self.pitch().add_interval(interval);
-        let letter = self.note().letter.next();
-        let natural_pitch = Pitch::natural(letter);
-
-        let accidental = if natural_pitch.into_byte() >= pitch.into_byte() {
-            match natural_pitch.sub(pitch) {
-                Interval::UNISON => Accidental::Natural,
-                Interval::MINOR_SECOND => Accidental::Flat,
-                Interval::MAJOR_SECOND => Accidental::DoubleFlat,
-                Interval::MAJOR_SEVENTH => Accidental::Sharp,
-                _ => unimplemented!(),
-            }
-        } else {
-            match pitch.sub(natural_pitch) {
-                Interval::MINOR_SECOND => Accidental::Sharp,
-                Interval::MAJOR_SECOND => Accidental::DoubleSharp,
-                _ => unimplemented!(),
-            }
-        };
-
-        PitchNote::new_unchecked(pitch, Note::new(letter, accidental))
-    }
-}
-
 impl Degree for MidiNote {
     fn next_degree(self, interval: Interval) -> Self {
         self + interval
     }
 }
 
-impl Degree for Note {
+// TODO clone
+impl<A> Degree for Note<A>
+where
+    A: Copy + Accidental,
+{
     fn next_degree(self, interval: Interval) -> Self {
-        PitchNote::from(self).next_degree(interval).note()
+        let pitch = Pitch::from(self).add_interval(interval);
+        let natural = self.natural.next();
+        let accidental = A::from(natural, pitch);
+        Self::new(natural, accidental)
     }
 }

@@ -73,3 +73,53 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{Natural, Note, Scale};
+
+    #[test]
+    fn test_g_flat_major() {
+        let scale = Scale::major(Note::flat(Natural::G));
+
+        assert!(scale.eq([
+            Note::flat(Natural::G),
+            Note::flat(Natural::A),
+            Note::flat(Natural::B),
+            Note::flat(Natural::C),
+            Note::flat(Natural::D),
+            Note::flat(Natural::E),
+            Note::from(Natural::F),
+        ]))
+    }
+
+    #[test]
+    fn test_f_sharp_major() {
+        let scale = Scale::major(Note::sharp(Natural::F));
+
+        assert!(scale.eq([
+            Note::sharp(Natural::F),
+            Note::sharp(Natural::G),
+            Note::sharp(Natural::A),
+            Note::from(Natural::B),
+            Note::sharp(Natural::C),
+            Note::sharp(Natural::D),
+            Note::sharp(Natural::E),
+        ]))
+    }
+
+    #[test]
+    fn test_c_sharp_major() {
+        let scale = Scale::major(Note::sharp(Natural::C));
+
+        assert!(scale.eq([
+            Note::sharp(Natural::C),
+            Note::sharp(Natural::D),
+            Note::sharp(Natural::E),
+            Note::sharp(Natural::F),
+            Note::sharp(Natural::G),
+            Note::sharp(Natural::A),
+            Note::sharp(Natural::B),
+        ]))
+    }
+}
