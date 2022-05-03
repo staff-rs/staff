@@ -29,8 +29,8 @@ where
 {
     fn next_degree(self, interval: Interval) -> Self {
         let pitch = Pitch::from(self).add_interval(interval);
-        let natural = self.natural.next();
-        let accidental = A::from(natural, pitch);
+        let natural = self.natural().next();
+        let accidental = A::from_pitch(natural, pitch);
         Self::new(natural, accidental)
     }
 }

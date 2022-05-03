@@ -18,7 +18,7 @@ pub use natural::Natural;
 pub mod midi;
 
 pub mod note;
-pub use note::{Accidental, Note};
+pub use note::Note;
 
 mod pitch;
 pub use pitch::Pitch;

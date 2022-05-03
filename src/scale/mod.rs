@@ -25,6 +25,7 @@ pub const NATURAL_MINOR_SCALE: [Interval; 7] = [
     Interval::MAJOR_SECOND,
 ];
 
+/// A diatonic scale
 pub struct Scale<T, I> {
     degree: T,
     intervals: I,
@@ -45,6 +46,22 @@ where
 }
 
 impl<T: Degree> Scale<T, IntoIter<Interval, 7>> {
+    /// ```
+    /// use music_note::{Natural, Note, Scale};
+    ///
+    /// // F major scale
+    /// let scale = Scale::major(Note::from(Natural::F));
+    ///  
+    /// assert!(scale.eq([
+    ///     Note::from(Natural::F),
+    ///     Note::from(Natural::G),
+    ///     Note::from(Natural::A),
+    ///     Note::flat(Natural::B),
+    ///     Note::from(Natural::C),
+    ///     Note::from(Natural::D),
+    ///     Note::from(Natural::E),
+    /// ]))
+    /// ```
     #[inline]
     pub fn major(root: T) -> Self {
         Self::new(root, MAJOR_SCALE.into_iter())

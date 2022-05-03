@@ -1,4 +1,4 @@
-use crate::{midi::MidiNote, note::Note, Interval, Natural};
+use crate::{midi::MidiNote, Interval, Natural};
 use core::ops::{Add, Sub};
 use core::{fmt, mem};
 

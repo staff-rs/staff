@@ -6,9 +6,8 @@ pub use accidental::{Accidental, AccidentalKind, Flat, Sharp};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Note<A> {
-    pub natural: Natural,
-
-    pub accidental_kind: AccidentalKind,
+    natural: Natural,
+    accidental_kind: AccidentalKind,
     _accidental: PhantomData<A>,
 }
 
@@ -19,6 +18,22 @@ impl<A> Note<A> {
             accidental_kind: accidental,
             _accidental: PhantomData,
         }
+    }
+
+    pub fn natural(self) -> Natural {
+        self.natural
+    }
+
+    pub fn natural_mut(&mut self) -> &mut Natural {
+        &mut self.natural
+    }
+
+    pub fn accidental(self) -> AccidentalKind {
+        self.accidental_kind
+    }
+
+    pub fn accidental_mut(&mut self) -> &mut AccidentalKind {
+        &mut self.accidental_kind
     }
 }
 
@@ -47,7 +62,7 @@ where
     A: Accidental,
 {
     fn from(note: Note<A>) -> Self {
-        A::accidental(note.accidental_kind, note.natural)
+        A::into_pitch(note.accidental_kind, note.natural)
     }
 }
 

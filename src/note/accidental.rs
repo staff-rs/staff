@@ -8,16 +8,16 @@ pub enum AccidentalKind {
 }
 
 pub trait Accidental {
-    fn accidental(kind: AccidentalKind, natural: Natural) -> Pitch;
+    fn into_pitch(kind: AccidentalKind, natural: Natural) -> Pitch;
 
-    fn from(natural: Natural, pitch: Pitch) -> AccidentalKind;
+    fn from_pitch(natural: Natural, pitch: Pitch) -> AccidentalKind;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Sharp {}
 
 impl Accidental for Sharp {
-    fn accidental(kind: AccidentalKind, natural: Natural) -> Pitch {
+    fn into_pitch(kind: AccidentalKind, natural: Natural) -> Pitch {
         let pitch = Pitch::natural(natural);
         match kind {
             AccidentalKind::Natural => pitch,
@@ -26,7 +26,7 @@ impl Accidental for Sharp {
         }
     }
 
-    fn from(natural: Natural, pitch: Pitch) -> AccidentalKind {
+    fn from_pitch(natural: Natural, pitch: Pitch) -> AccidentalKind {
         let natural_pitch = Pitch::natural(natural);
         if pitch >= natural_pitch {
             match pitch.sub(natural_pitch) {
@@ -48,7 +48,7 @@ impl Accidental for Sharp {
 pub enum Flat {}
 
 impl Accidental for Flat {
-    fn accidental(kind: AccidentalKind, natural: Natural) -> Pitch {
+    fn into_pitch(kind: AccidentalKind, natural: Natural) -> Pitch {
         let pitch = Pitch::natural(natural);
         match kind {
             AccidentalKind::Natural => pitch,
@@ -57,7 +57,7 @@ impl Accidental for Flat {
         }
     }
 
-    fn from(natural: Natural, pitch: Pitch) -> AccidentalKind {
+    fn from_pitch(natural: Natural, pitch: Pitch) -> AccidentalKind {
         let natural_pitch = Pitch::natural(natural);
         if pitch >= natural_pitch {
             match pitch.sub(natural_pitch) {
