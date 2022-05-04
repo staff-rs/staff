@@ -11,6 +11,22 @@ impl<T> DiatonicScale<T>
 where
     T: Degree + Clone,
 {
+    /// ```
+    /// use music_note::{midi, Note, Scale};
+    ///
+    /// // C major
+    /// let scale = Scale::major(midi!(C, 4));
+    ///
+    /// assert!(scale.eq([
+    ///     midi!(C, 4),
+    ///     midi!(D, 4),
+    ///     midi!(E, 4),
+    ///     midi!(F, 4),
+    ///     midi!(G, 4),
+    ///     midi!(A, 4),
+    ///     midi!(B, 4),
+    /// ]));
+    /// ```
     pub fn major(root: T) -> Self {
         Self::from_array(
             root,
@@ -26,6 +42,22 @@ where
         )
     }
 
+    /// ```
+    /// use music_note::{Natural, Note, Scale};
+    ///
+    /// // B natural minor
+    /// let scale = Scale::natural_minor(Note::from(Natural::B));
+    ///
+    /// assert!(scale.eq([
+    ///     Note::from(Natural::B),
+    ///     Note::sharp(Natural::C),
+    ///     Note::from(Natural::D),
+    ///     Note::from(Natural::E),
+    ///     Note::sharp(Natural::F),
+    ///     Note::from(Natural::G),
+    ///     Note::from(Natural::A),
+    /// ]));
+    /// ```
     pub fn natural_minor(root: T) -> Self {
         Self::from_array(
             root,
@@ -44,6 +76,7 @@ where
     /// ```
     /// use music_note::{Natural, Note, Scale};
     ///
+    /// // A harmonic minor
     /// let scale = Scale::harmonic_minor(Note::from(Natural::A));
     ///
     /// assert!(scale.eq([
@@ -71,6 +104,22 @@ where
         )
     }
 
+    /// ```
+    /// use music_note::{Natural, Note, Scale};
+    ///
+    /// // E melodic minor
+    /// let scale = Scale::melodic_minor(Note::from(Natural::E));
+    ///
+    /// assert!(scale.eq([
+    ///     Note::from(Natural::E),
+    ///     Note::sharp(Natural::F),
+    ///     Note::from(Natural::G),
+    ///     Note::from(Natural::A),
+    ///     Note::from(Natural::B),
+    ///     Note::sharp(Natural::C),
+    ///     Note::sharp(Natural::D),
+    /// ]));
+    /// ```
     pub fn melodic_minor(root: T) -> Self {
         Self::from_array(
             root,
