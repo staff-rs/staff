@@ -1,93 +1,75 @@
+use crate::set::Set;
 use crate::Interval;
-use core::array::IntoIter;
-use core::mem::{self};
+use core::ops::Add;
 
 mod degree;
 pub use degree::Degree;
 
-pub const MAJOR_SCALE: [Interval; 7] = [
-    Interval::MAJOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MINOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MINOR_SECOND,
-];
-
-pub const NATURAL_MINOR_SCALE: [Interval; 7] = [
-    Interval::MAJOR_SECOND,
-    Interval::MINOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MINOR_SECOND,
-    Interval::MAJOR_SECOND,
-    Interval::MAJOR_SECOND,
-];
-
-/// A diatonic scale
-pub struct Scale<T, I> {
+pub struct Diatonic<T: Degree, U> {
     degree: T,
-    intervals: I,
+    state: T::State,
+    intervals: U,
 }
 
-impl<T, I> Scale<T, I>
+pub struct Scale<T, U> {
+    root: T,
+    intervals: U,
+}
+
+impl<T> Scale<T, Diatonic<T, Set<Interval, u16>>>
 where
-    T: Degree,
-    I: Iterator<Item = Interval>,
+    T: Degree + Clone,
 {
-    #[inline]
-    pub fn new(root: T, intervals: I) -> Self {
+    pub fn major(root: T) -> Self {
         Self {
-            degree: root,
-            intervals,
+            root: root.clone(),
+            intervals: Diatonic {
+                degree: root.clone(),
+                state: root.state(),
+                intervals: [
+                    Interval::UNISON,
+                    Interval::MAJOR_SECOND,
+                    Interval::MAJOR_THIRD,
+                    Interval::PERFECT_FOURTH,
+                    Interval::PERFECT_FIFTH,
+                    Interval::MAJOR_SIXTH,
+                    Interval::MAJOR_SEVENTH,
+                ]
+                .into_iter()
+                .collect(),
+            },
         }
     }
 }
 
-impl<T: Degree> Scale<T, IntoIter<Interval, 7>> {
-    /// ```
-    /// use music_note::{Natural, Note, Scale};
-    ///
-    /// // F major scale
-    /// let scale = Scale::major(Note::from(Natural::F));
-    ///  
-    /// assert!(scale.eq([
-    ///     Note::from(Natural::F),
-    ///     Note::from(Natural::G),
-    ///     Note::from(Natural::A),
-    ///     Note::flat(Natural::B),
-    ///     Note::from(Natural::C),
-    ///     Note::from(Natural::D),
-    ///     Note::from(Natural::E),
-    /// ]))
-    /// ```
-    #[inline]
-    pub fn major(root: T) -> Self {
-        Self::new(root, MAJOR_SCALE.into_iter())
-    }
+impl<T, U> Iterator for Scale<T, U>
+where
+    T: Add<Interval> + Clone,
+    U: Iterator<Item = Interval>,
+{
+    type Item = T::Output;
 
-    #[inline]
-    pub fn natural_minor(root: T) -> Self {
-        Self::new(root, NATURAL_MINOR_SCALE.into_iter())
+    fn next(&mut self) -> Option<Self::Item> {
+        self.intervals
+            .next()
+            .map(|interval| self.root.clone() + interval)
     }
 }
 
-impl<T, I> Iterator for Scale<T, I>
+impl<T, U> Iterator for Scale<T, Diatonic<T, U>>
 where
-    T: Degree,
-    I: Iterator<Item = Interval>,
+    T: Degree + Clone,
+    U: Iterator<Item = Interval>,
 {
     type Item = T;
 
-    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(interval) = self.intervals.next() {
-            let next = self.degree.next_degree(interval);
-            Some(mem::replace(&mut self.degree, next))
-        } else {
-            None
-        }
+        self.intervals.intervals.next().map(|interval| {
+            self.intervals
+                .degree
+                .clone()
+                .degree(&mut self.intervals.state, interval)
+        })
     }
 }
 

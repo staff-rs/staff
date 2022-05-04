@@ -2,35 +2,54 @@ use crate::{
     midi::MidiNote,
     note::{Accidental, Note},
     pitch::Pitch,
-    Interval,
+    Interval, Natural,
 };
 
-/// The degree of a `Scale`.
-pub trait Degree: Copy {
-    fn next_degree(self, interval: Interval) -> Self;
+pub trait Degree {
+    type State;
+
+    fn state(self) -> Self::State;
+
+    fn degree(self, state: &mut Self::State, interval: Interval) -> Self;
+}
+
+// TODO remove clone
+impl<A> Degree for Note<A>
+where
+    A: Accidental + Clone,
+{
+    type State = Natural;
+
+    fn state(self) -> Self::State {
+        self.natural()
+    }
+
+    fn degree(self, state: &mut Self::State, interval: Interval) -> Self {
+        let pitch = Pitch::from(self.clone()).add_interval(interval);
+        let accidental = A::from_pitch(*state, pitch);
+        let note = Self::new(*state, accidental);
+
+        *state = state.next();
+        note
+    }
 }
 
 impl Degree for Pitch {
-    fn next_degree(self, interval: Interval) -> Self {
+    type State = ();
+
+    fn state(self) -> Self::State {}
+
+    fn degree(self, _state: &mut Self::State, interval: Interval) -> Self {
         self + interval
     }
 }
 
 impl Degree for MidiNote {
-    fn next_degree(self, interval: Interval) -> Self {
-        self + interval
-    }
-}
+    type State = ();
 
-// TODO clone
-impl<A> Degree for Note<A>
-where
-    A: Copy + Accidental,
-{
-    fn next_degree(self, interval: Interval) -> Self {
-        let pitch = Pitch::from(self).add_interval(interval);
-        let natural = self.natural().next();
-        let accidental = A::from_pitch(natural, pitch);
-        Self::new(natural, accidental)
+    fn state(self) -> Self::State {}
+
+    fn degree(self, _state: &mut Self::State, interval: Interval) -> Self {
+        self + interval
     }
 }

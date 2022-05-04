@@ -23,6 +23,9 @@ impl Interval {
 
     pub const PERFECT_FIFTH: Self = Self::new(7);
 
+    pub const MINOR_SIXTH: Self = Self::new(8);
+    pub const MAJOR_SIXTH: Self = Self::new(9);
+
     pub const MINOR_SEVENTH: Self = Self::new(10);
     pub const MAJOR_SEVENTH: Self = Self::new(11);
 
