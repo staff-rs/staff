@@ -29,7 +29,7 @@ where
         let accidental = A::from_pitch(*state, pitch);
         let note = Self::new(*state, accidental);
 
-        *state = state.next();
+        *state = *state + 1;
         note
     }
 }

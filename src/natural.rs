@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{fmt, ops::Add};
 
 /// A natural pitch
 #[repr(u8)]
@@ -14,12 +14,6 @@ pub enum Natural {
 }
 
 impl Natural {
-    pub const fn next(self) -> Self {
-        let byte = (self as u8 + 1) % (Self::G as u8 + 1);
-        // Safety: `byte` is guranteed to be in range of `Natural`
-        unsafe { core::mem::transmute(byte) }
-    }
-
     pub const fn to_char(self) -> char {
         match self {
             Self::A => 'A',
@@ -48,6 +42,16 @@ impl TryFrom<char> for Natural {
             invalid => return Err(invalid),
         };
         Ok(letter)
+    }
+}
+
+impl Add<u8> for Natural {
+    type Output = Self;
+
+    fn add(self, rhs: u8) -> Self::Output {
+        let byte = (self as u8 + rhs) % (Self::G as u8 + 1);
+        // Safety: `byte` is guranteed to be in range of `Natural`
+        unsafe { core::mem::transmute(byte) }
     }
 }
 
