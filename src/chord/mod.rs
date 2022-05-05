@@ -52,6 +52,14 @@ impl Chord {
         Self::minor().interval(Interval::MAJOR_SEVENTH)
     }
 
+    pub fn half_diminished() -> Builder {
+        Self::builder()
+            .root()
+            .interval(Interval::MINOR_THIRD)
+            .interval(Interval::TRITONE)
+            .interval(Interval::MINOR_SEVENTH)
+    }
+
     pub fn builder() -> Builder {
         Builder {
             bass: None,
