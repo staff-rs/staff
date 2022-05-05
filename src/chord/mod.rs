@@ -60,20 +60,10 @@ impl Chord {
         }
     }
 
-    pub fn from_midi<I>(iter: I) -> Option<Self>
-    where
-        I: IntoIterator<Item = MidiNote>,
-    {
-        let mut notes = iter.into_iter();
-        notes
-            .next()
-            .map(|root| Self::from_midi_with_root(root, iter::once(root).chain(notes)))
-    }
-
     /// ```
     /// use music_note::{midi, Chord, Pitch};
     ///
-    /// let chord = Chord::from_midi_with_root(
+    /// let chord = Chord::from_midi(
     ///     midi!(C, 4),
     ///     [midi!(E, 3), midi!(G, 3), midi!(C, 4)]
     /// );
@@ -83,7 +73,7 @@ impl Chord {
     /// let pitches = [Pitch::E, Pitch::G, Pitch::C];
     /// assert!(chord.into_iter().eq(pitches));
     /// ```
-    pub fn from_midi_with_root<I>(root: MidiNote, iter: I) -> Self
+    pub fn from_midi<I>(root: MidiNote, iter: I) -> Self
     where
         I: IntoIterator<Item = MidiNote>,
     {
@@ -143,6 +133,15 @@ impl Chord {
         };
 
         Intervals { low, high }
+    }
+}
+
+impl FromIterator<MidiNote> for Chord {
+    fn from_iter<T: IntoIterator<Item = MidiNote>>(iter: T) -> Self {
+        let mut notes = iter.into_iter();
+        let root = notes.next().unwrap_or(MidiNote::from_byte(0));
+
+        Self::from_midi(root, iter::once(root).chain(notes))
     }
 }
 

@@ -5,7 +5,70 @@ use core::ops::Add;
 mod degree;
 pub use degree::Degree;
 
-pub type DiatonicScale<T> = Scale<T, Diatonic<T, Set<Interval, u16>>>;
+pub type ScaleIntervals = Set<Interval, u16>;
+
+impl ScaleIntervals {
+    pub fn major() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MAJOR_SECOND,
+            Interval::MAJOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::PERFECT_FIFTH,
+            Interval::MAJOR_SIXTH,
+            Interval::MAJOR_SEVENTH,
+        ])
+    }
+
+    pub fn natural_minor() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MAJOR_SECOND,
+            Interval::MINOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::PERFECT_FIFTH,
+            Interval::MINOR_SIXTH,
+            Interval::MINOR_SEVENTH,
+        ])
+    }
+
+    pub fn harmonic_minor() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MAJOR_SECOND,
+            Interval::MINOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::PERFECT_FIFTH,
+            Interval::MINOR_SIXTH,
+            Interval::MAJOR_SEVENTH,
+        ])
+    }
+
+    pub fn melodic_minor() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MAJOR_SECOND,
+            Interval::MINOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::PERFECT_FIFTH,
+            Interval::MAJOR_SIXTH,
+            Interval::MAJOR_SEVENTH,
+        ])
+    }
+
+    pub fn blues() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MINOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::TRITONE,
+            Interval::PERFECT_FIFTH,
+            Interval::MINOR_SEVENTH,
+        ])
+    }
+}
+
+pub type DiatonicScale<T> = Scale<T, Diatonic<T, ScaleIntervals>>;
 
 impl<T> DiatonicScale<T>
 where
@@ -28,18 +91,7 @@ where
     /// ]));
     /// ```
     pub fn major(root: T) -> Self {
-        Self::from_array(
-            root,
-            [
-                Interval::UNISON,
-                Interval::MAJOR_SECOND,
-                Interval::MAJOR_THIRD,
-                Interval::PERFECT_FOURTH,
-                Interval::PERFECT_FIFTH,
-                Interval::MAJOR_SIXTH,
-                Interval::MAJOR_SEVENTH,
-            ],
-        )
+        Self::diatonic(root, ScaleIntervals::major())
     }
 
     /// ```
@@ -59,18 +111,7 @@ where
     /// ]));
     /// ```
     pub fn natural_minor(root: T) -> Self {
-        Self::from_array(
-            root,
-            [
-                Interval::UNISON,
-                Interval::MAJOR_SECOND,
-                Interval::MINOR_THIRD,
-                Interval::PERFECT_FOURTH,
-                Interval::PERFECT_FIFTH,
-                Interval::MINOR_SIXTH,
-                Interval::MINOR_SEVENTH,
-            ],
-        )
+        Self::diatonic(root, ScaleIntervals::natural_minor())
     }
 
     /// ```
@@ -90,18 +131,7 @@ where
     /// ]));
     /// ```
     pub fn harmonic_minor(root: T) -> Self {
-        Self::from_array(
-            root,
-            [
-                Interval::UNISON,
-                Interval::MAJOR_SECOND,
-                Interval::MINOR_THIRD,
-                Interval::PERFECT_FOURTH,
-                Interval::PERFECT_FIFTH,
-                Interval::MINOR_SIXTH,
-                Interval::MAJOR_SEVENTH,
-            ],
-        )
+        Self::diatonic(root, ScaleIntervals::harmonic_minor())
     }
 
     /// ```
@@ -121,22 +151,7 @@ where
     /// ]));
     /// ```
     pub fn melodic_minor(root: T) -> Self {
-        Self::from_array(
-            root,
-            [
-                Interval::UNISON,
-                Interval::MAJOR_SECOND,
-                Interval::MINOR_THIRD,
-                Interval::PERFECT_FOURTH,
-                Interval::PERFECT_FIFTH,
-                Interval::MAJOR_SIXTH,
-                Interval::MAJOR_SEVENTH,
-            ],
-        )
-    }
-
-    fn from_array<const N: usize>(root: T, array: [Interval; N]) -> Self {
-        Self::diatonic(root, array.into_iter().collect())
+        Self::diatonic(root, ScaleIntervals::melodic_minor())
     }
 }
 
@@ -179,21 +194,9 @@ where
     }
 }
 
-impl<T> Scale<T, Set<Interval, u16>> {
+impl<T> Scale<T, ScaleIntervals> {
     pub fn blues(root: T) -> Self {
-        Self::new(
-            root,
-            [
-                Interval::UNISON,
-                Interval::MINOR_THIRD,
-                Interval::PERFECT_FOURTH,
-                Interval::TRITONE,
-                Interval::PERFECT_FIFTH,
-                Interval::MINOR_SEVENTH,
-            ]
-            .into_iter()
-            .collect(),
-        )
+        Self::new(root, ScaleIntervals::blues())
     }
 }
 

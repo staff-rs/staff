@@ -7,6 +7,6 @@ fn main() {
     keyboard.push(midi!(E, 4));
     keyboard.push(midi!(G, 4));
 
-    let chord = Chord::from_midi(keyboard).unwrap();
+    let chord = Chord::from_iter(keyboard);
     println!("C E G is a {} chord", chord);
 }
