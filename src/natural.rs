@@ -45,13 +45,18 @@ impl TryFrom<char> for Natural {
     }
 }
 
+impl From<u8> for Natural {
+    fn from(byte: u8) -> Self {
+        // Safety: `byte` is guranteed to be in range of `Natural`
+        unsafe { core::mem::transmute(byte % (Self::G as u8 + 1)) }
+    }
+}
+
 impl Add<u8> for Natural {
     type Output = Self;
 
     fn add(self, rhs: u8) -> Self::Output {
-        let byte = (self as u8 + rhs) % (Self::G as u8 + 1);
-        // Safety: `byte` is guranteed to be in range of `Natural`
-        unsafe { core::mem::transmute(byte) }
+        Self::from(self as u8 + rhs)
     }
 }
 

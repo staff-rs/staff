@@ -44,8 +44,7 @@ pub use chord::Chord;
 mod interval;
 pub use interval::Interval;
 
-mod key;
-pub use key::KeySignature;
+pub mod staff;
 
 mod natural;
 pub use natural::Natural;

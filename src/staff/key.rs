@@ -2,11 +2,12 @@ use crate::{Interval, Pitch};
 use core::fmt::{self, Write};
 
 /// A key signature represented as the total number of sharps or flats.
-pub struct KeySignature {
+#[derive(Clone, Copy, Debug)]
+pub struct Key {
     sharps: u8,
 }
 
-impl KeySignature {
+impl Key {
     /// ```
     /// use music_note::{KeySignature, Pitch};
     ///
@@ -42,7 +43,7 @@ impl KeySignature {
     }
 }
 
-impl fmt::Display for KeySignature {
+impl fmt::Display for Key {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.sharps <= 6 {
             for _ in 0..self.sharps {

@@ -156,18 +156,16 @@ where
 }
 
 pub struct Diatonic<T: Degree, U> {
-    degree: T,
     state: T::State,
     intervals: U,
 }
 
 impl<T, U> Diatonic<T, U>
 where
-    T: Degree + Clone,
+    T: Degree,
 {
     pub fn new(root: T, intervals: U) -> Self {
         Self {
-            degree: root.clone(),
             state: root.state(),
             intervals,
         }
@@ -223,8 +221,7 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         self.intervals.intervals.next().map(|interval| {
-            self.intervals
-                .degree
+            self.root
                 .clone()
                 .degree(&mut self.intervals.state, interval)
         })
