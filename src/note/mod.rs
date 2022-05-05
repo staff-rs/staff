@@ -4,7 +4,7 @@ use core::marker::PhantomData;
 mod accidental;
 pub use accidental::{Accidental, AccidentalKind, Flat, Sharp};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Note<A> {
     natural: Natural,
     accidental_kind: AccidentalKind,
@@ -56,6 +56,14 @@ impl Note<Sharp> {
         Self::new(natural, AccidentalKind::Double)
     }
 }
+
+impl<A> Clone for Note<A> {
+    fn clone(&self) -> Self {
+        Self::new(self.natural, self.accidental_kind)
+    }
+}
+
+impl<A> Copy for Note<A> {}
 
 impl<A> From<Note<A>> for Pitch
 where

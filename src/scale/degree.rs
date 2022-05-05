@@ -13,10 +13,9 @@ pub trait Degree {
     fn degree(self, state: &mut Self::State, interval: Interval) -> Self;
 }
 
-// TODO remove clone
 impl<A> Degree for Note<A>
 where
-    A: Accidental + Clone,
+    A: Accidental,
 {
     type State = Natural;
 
