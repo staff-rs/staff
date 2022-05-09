@@ -1,4 +1,5 @@
 use crate::{Interval, Pitch};
+use core::fmt;
 use core::ops::{Add, Sub};
 
 mod octave;
@@ -21,6 +22,7 @@ impl MidiNote {
     ///
     /// let note = MidiNote::new(Pitch::A, Octave::FOUR);
     /// assert_eq!(note.into_byte(), 69);
+    /// assert_eq!(note.to_string(), "A4");
     /// ```
     pub const fn new(pitch: Pitch, octave: Octave) -> Self {
         Self::from_byte(
@@ -101,5 +103,11 @@ impl From<u8> for MidiNote {
 impl From<MidiNote> for u8 {
     fn from(midi: MidiNote) -> Self {
         midi.into_byte()
+    }
+}
+
+impl fmt::Display for MidiNote {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}{}", self.pitch(), self.octave())
     }
 }
