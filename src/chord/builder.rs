@@ -1,5 +1,6 @@
 use crate::{set::IntervalSet, Chord, Interval, Pitch};
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Builder {
     pub bass: Option<Pitch>,
     pub is_inversion: bool,

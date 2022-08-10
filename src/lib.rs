@@ -45,6 +45,7 @@ mod interval;
 pub use interval::Interval;
 
 pub mod staff;
+pub use staff::{Key, Staff};
 
 mod natural;
 pub use natural::Natural;

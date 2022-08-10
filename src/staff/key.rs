@@ -9,16 +9,16 @@ pub struct Key {
 
 impl Key {
     /// ```
-    /// use music_note::{KeySignature, Pitch};
+    /// use music_note::{Key, Pitch};
     ///
-    /// let key = KeySignature::major(Pitch::D);
+    /// let key = Key::major(Pitch::D);
     /// assert_eq!(key.to_string(), "##")
     /// ```
     ///
     /// ```
-    /// use music_note::{KeySignature, Pitch};
+    /// use music_note::{Key, Pitch};
     ///
-    /// let key = KeySignature::major(Pitch::F);
+    /// let key = Key::major(Pitch::F);
     /// assert_eq!(key.to_string(), "b")
     /// ```
     pub fn major(root: Pitch) -> Self {

@@ -1,12 +1,19 @@
-use crate::{midi::MidiNote, set::IntervalSet, Interval, Pitch};
+use crate::{
+    midi::MidiNote,
+    note::{AccidentalKind, Flat},
+    set::IntervalSet,
+    Interval, Natural, Note, Pitch,
+};
 use core::{
     fmt::{self, Write},
     iter,
+    str::FromStr,
 };
 
 mod builder;
 pub use builder::Builder;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Chord {
     root: Pitch,
     builder: Builder,
@@ -230,5 +237,71 @@ impl fmt::Display for Chord {
         }
 
         Ok(())
+    }
+}
+
+impl FromStr for Chord {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut chars = s.chars();
+        let natural = match chars.next().unwrap() {
+            'A' => Natural::A,
+            'B' => Natural::B,
+            'C' => Natural::C,
+            'D' => Natural::D,
+            'E' => Natural::E,
+            'F' => Natural::F,
+            'G' => Natural::G,
+            _ => todo!(),
+        };
+        let mut next = chars.next();
+        let root: Pitch = match next {
+            Some('b') => {
+                next = chars.next();
+                if next == Some('b') {
+                    next = chars.next();
+                    Note::double_flat(natural).into()
+                } else {
+                    Note::flat(natural).into()
+                }
+            }
+            Some('#') => {
+                next = chars.next();
+                if next == Some('#') {
+                    next = chars.next();
+                    Note::double_sharp(natural).into()
+                } else {
+                    Note::sharp(natural).into()
+                }
+            }
+            _ => natural.into(),
+        };
+
+        let mut builder = Chord::major();
+
+        loop {
+            if let Some(c) = next {
+                match c {
+                    _ => todo!(),
+                }
+                next = chars.next();
+            } else {
+                break;
+            }
+        }
+
+        Ok(builder.build(root))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Chord, Pitch};
+
+    #[test]
+    fn it_parses_d_double_sharp_major() {
+        let chord: Chord = "D##".parse().unwrap();
+        assert_eq!(chord, Chord::major().build(Pitch::E));
     }
 }
