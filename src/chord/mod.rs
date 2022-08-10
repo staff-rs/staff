@@ -1,6 +1,5 @@
 use crate::{
     midi::MidiNote,
-    note::{AccidentalKind, Flat},
     set::IntervalSet,
     Interval, Natural, Note, Pitch,
 };
