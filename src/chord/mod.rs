@@ -278,11 +278,18 @@ impl FromStr for Chord {
             _ => natural.into(),
         };
 
-        let mut builder = Chord::major();
+        let mut builder = match next {
+            Some('m') => {
+                next = chars.next();
+                Chord::minor()
+            },
+            _ => Chord::major()
+        };
 
         loop {
             if let Some(c) = next {
                 match c {
+                    '7' => builder.intervals.push(Interval::MINOR_SEVENTH),
                     _ => todo!(),
                 }
                 next = chars.next();
@@ -303,5 +310,11 @@ mod tests {
     fn it_parses_d_double_sharp_major() {
         let chord: Chord = "D##".parse().unwrap();
         assert_eq!(chord, Chord::major().build(Pitch::E));
+    }
+
+    #[test]
+    fn it_parses_c_minor_seven() {
+        let chord: Chord = "Cm7".parse().unwrap();
+        assert_eq!(chord, Chord::minor_seventh().build(Pitch::C));
     }
 }
