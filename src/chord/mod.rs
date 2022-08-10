@@ -30,7 +30,7 @@ impl Chord {
     pub fn minor() -> Builder {
         Self::builder()
             .root()
-            .interval(Interval::MAJOR_THIRD)
+            .interval(Interval::MINOR_THIRD)
             .interval(Interval::PERFECT_FIFTH)
     }
 
