@@ -1,12 +1,14 @@
 use crate::{midi::MidiNote, set::IntervalSet, Interval, Natural, Note, Pitch};
 use core::{
     fmt::{self, Write},
-    iter,
     str::FromStr,
 };
 
 mod builder;
 pub use builder::Builder;
+
+mod iter;
+pub use iter::{Intervals, Iter};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Chord {
@@ -151,7 +153,7 @@ impl FromIterator<MidiNote> for Chord {
         let mut notes = iter.into_iter();
         let root = notes.next().unwrap_or(MidiNote::from_byte(0));
 
-        Self::from_midi(root, iter::once(root).chain(notes))
+        Self::from_midi(root, core::iter::once(root).chain(notes))
     }
 }
 
@@ -165,32 +167,6 @@ impl IntoIterator for Chord {
             root: self.root,
             intervals: self.intervals(),
         }
-    }
-}
-
-pub struct Intervals {
-    low: IntervalSet,
-    high: IntervalSet,
-}
-
-impl Iterator for Intervals {
-    type Item = Interval;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.low.next().or_else(|| self.high.next())
-    }
-}
-
-pub struct Iter {
-    root: Pitch,
-    intervals: Intervals,
-}
-
-impl Iterator for Iter {
-    type Item = Pitch;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.intervals.next().map(|interval| self.root + interval)
     }
 }
 
