@@ -1,5 +1,5 @@
 use crate::{Natural, Pitch};
-use core::marker::PhantomData;
+use core::{fmt, marker::PhantomData};
 
 mod accidental;
 pub use accidental::{Accidental, AccidentalKind, Flat, Sharp};
@@ -77,5 +77,15 @@ where
 impl<A> From<Natural> for Note<A> {
     fn from(natural: Natural) -> Self {
         Self::new(natural, AccidentalKind::Natural)
+    }
+}
+
+impl<A> fmt::Display for Note<A>
+where
+    A: Accidental,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.natural.fmt(f)?;
+        A::write_fmt(self.accidental_kind, f)
     }
 }

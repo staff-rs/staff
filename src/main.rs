@@ -55,20 +55,24 @@ fn main() {
                         _ => todo!(),
                     };
                     for note in Scale::major(root_note) {
-                        dbg!(note);
+                        println!("{}", note);
                     }
                 }
                 Some('#') => {
-                    let note = match chars.next() {
+                    let root_note = match chars.next() {
                         Some('#') => Note::double_sharp(natural),
                         None => Note::sharp(natural),
                         _ => todo!(),
                     };
-                    dbg!(note);
+                    for note in Scale::major(root_note) {
+                        println!("{}", note);
+                    }
                 }
                 None => {
-                    let note: Note<Flat> = natural.into();
-                    dbg!(note);
+                    let root_note: Note<Flat> = natural.into();
+                    for note in Scale::major(root_note) {
+                        println!("{}", note);
+                    }
                 }
                 _ => todo!(),
             };
