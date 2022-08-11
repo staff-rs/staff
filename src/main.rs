@@ -1,7 +1,12 @@
+use anyhow::bail;
 use clap::{ArgEnum, Parser, Subcommand};
 use staff::{
     note::{Accidental, Flat},
     Chord, Natural, Note, Scale,
+};
+use std::{
+    fmt::Display,
+    io::{self, Write},
 };
 
 #[derive(Parser)]
@@ -39,65 +44,74 @@ enum Mode {
     Dorian,
 }
 
-fn print_scale<A: Accidental>(root_note: Note<A>, mode: Mode) {
+type Result = anyhow::Result<()>;
+
+fn print_notes<I, T>(notes: I) -> Result
+where
+    I: IntoIterator<Item = T>,
+    T: Display,
+{
+    let mut iter = notes.into_iter().peekable();
+    let stdout = io::stdout();
+    let mut handle = stdout.lock();
+    while let Some(note) = iter.next() {
+        write!(handle, "{}", note)?;
+        if iter.peek().is_some() {
+            write!(handle, " ")?;
+        } else {
+            writeln!(handle)?;
+        }
+    }
+    Ok(())
+}
+
+fn print_scale<A: Accidental>(root_note: Note<A>, mode: Mode) -> Result {
     let scale = match mode {
         Mode::Major | Mode::Ionian => Scale::major(root_note),
         Mode::Minor | Mode::Aeolian => Scale::natural_minor(root_note),
         Mode::Dorian => Scale::dorian(root_note),
     };
-    let mut iter = scale.peekable();
-    while let Some(note) = iter.next() {
-        print!("{}", note);
-        if iter.peek().is_some() {
-            print!(" ");
-        } else {
-            println!()
-        }
-    }
+    print_notes(scale)
 }
 
-fn main() {
+fn main() -> Result {
     let cli = App::parse();
     match &cli.command {
         Command::Chord { name } => {
             let chord: Chord = name.parse().unwrap();
-            let mut iter = chord.into_iter().peekable();
-            while let Some(note) = iter.next() {
-                print!("{}", note);
-                if iter.peek().is_some() {
-                    print!(" ");
-                } else {
-                    println!()
-                }
-            }
+            print_notes(chord)
         }
         Command::Scale { root, mode } => {
             let mut chars = root.chars();
-            let natural: Natural = chars.next().unwrap().try_into().unwrap();
+            let natural: Natural = if let Some(c) = chars.next() {
+                c.try_into().unwrap()
+            } else {
+                bail!("Missing root note")
+            };
 
             match chars.next() {
                 Some('b') => {
                     let root_note = match chars.next() {
                         Some('b') => Note::double_flat(natural),
-                        None => Note::flat(natural),
-                        _ => todo!(),
+                        Some(c) => bail!("Invalid character `{}`", c),
+                        _ => Note::flat(natural),
                     };
-                    print_scale(root_note, *mode);
+                    print_scale(root_note, *mode)
                 }
                 Some('#') => {
                     let root_note = match chars.next() {
                         Some('#') => Note::double_sharp(natural),
+                        Some(c) => bail!("Invalid character `{}`", c),
                         None => Note::sharp(natural),
-                        _ => todo!(),
                     };
-                    print_scale(root_note, *mode);
+                    print_scale(root_note, *mode)
                 }
+                Some(c) => bail!("Invalid character `{}`", c),
                 None => {
                     let root_note: Note<Flat> = natural.into();
-                    print_scale(root_note, *mode);
+                    print_scale(root_note, *mode)
                 }
-                _ => todo!(),
-            };
+            }
         }
     }
 }
