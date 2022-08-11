@@ -49,7 +49,12 @@ impl Pitch {
     }
 
     pub const fn sub_interval(self, interval: Interval) -> Self {
-        Self::from_byte((self as u8 as i8 - interval.semitones() as i8).abs() as u8)
+        let byte = if self as u8 > interval.semitones() {
+            self as u8 - interval.semitones()
+        } else {
+            self as u8 + Self::B as u8 + 1 - interval.semitones()
+        };
+        Self::from_byte(byte)
     }
 
     pub const fn into_byte(self) -> u8 {

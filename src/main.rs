@@ -1,8 +1,7 @@
 use clap::{ArgEnum, Parser, Subcommand};
 use staff::{
-    midi::{MidiNote, Octave},
     note::{Accidental, Flat},
-    Chord, Natural, Note, Pitch, Scale,
+    Chord, Natural, Note, Scale,
 };
 
 #[derive(Parser)]
@@ -46,8 +45,14 @@ fn print_scale<A: Accidental>(root_note: Note<A>, mode: Mode) {
         Mode::Minor | Mode::Aeolian => Scale::natural_minor(root_note),
         Mode::Dorian => Scale::dorian(root_note),
     };
-    for note in scale {
-        println!("{}", note);
+    let mut iter = scale.peekable();
+    while let Some(note) = iter.next() {
+        print!("{}", note);
+        if iter.peek().is_some() {
+            print!(" ");
+        } else {
+            println!()
+        }
     }
 }
 
@@ -56,8 +61,14 @@ fn main() {
     match &cli.command {
         Command::Chord { name } => {
             let chord: Chord = name.parse().unwrap();
-            for note in chord {
-                println!("{}", note);
+            let mut iter = chord.into_iter().peekable();
+            while let Some(note) = iter.next() {
+                print!("{}", note);
+                if iter.peek().is_some() {
+                    print!(" ");
+                } else {
+                    println!()
+                }
             }
         }
         Command::Scale { root, mode } => {
