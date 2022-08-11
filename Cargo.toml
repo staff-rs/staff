@@ -1,13 +1,25 @@
 [package]
-name = "music-note"
-version = "0.3.1"
+name = "staff"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 description = "Music theory library with midi, notes, chords, scales, and more"
-repository = "https://github.com/matthunz/music-theory"
+repository = "https://github.com/matthunz/staff"
+
+[features]
+cli = ["clap"]
 
 [lib]
-name = "music_note"
+name = "staff"
+
+[[bin]]
+name = "staff"
+required-features = ["cli"]
 
 [dependencies]
 num-traits = "0.2.14"
+
+[dependencies.clap]
+version = "3.2.16"
+features = ["derive"]
+optional = true

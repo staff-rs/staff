@@ -1,5 +1,5 @@
-use music_note::midi::MidiSet;
-use music_note::{midi, Chord};
+use staff::midi::MidiSet;
+use staff::{midi, Chord};
 
 fn main() {
     let mut keyboard = MidiSet::default();

@@ -1,8 +1,4 @@
-use crate::{
-    midi::MidiNote,
-    set::IntervalSet,
-    Interval, Natural, Note, Pitch,
-};
+use crate::{midi::MidiNote, set::IntervalSet, Interval, Natural, Note, Pitch};
 use core::{
     fmt::{self, Write},
     iter,
@@ -34,7 +30,7 @@ impl Chord {
     }
 
     /// ```
-    /// use music_note::{Chord, Pitch};
+    /// use staff::{Chord, Pitch};
     ///
     /// // D7
     /// let chord = Chord::seventh().build(Pitch::D);
@@ -75,7 +71,7 @@ impl Chord {
     }
 
     /// ```
-    /// use music_note::{midi, Chord, Pitch};
+    /// use staff::{midi, Chord, Pitch};
     ///
     /// let chord = Chord::from_midi(
     ///     midi!(C, 4),
@@ -281,8 +277,8 @@ impl FromStr for Chord {
             Some('m') => {
                 next = chars.next();
                 Chord::minor()
-            },
-            _ => Chord::major()
+            }
+            _ => Chord::major(),
         };
 
         loop {

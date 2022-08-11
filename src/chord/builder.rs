@@ -18,7 +18,7 @@ impl Builder {
     }
 
     /// ```
-    /// use music_note::{Chord, Pitch};
+    /// use staff::{Chord, Pitch};
     ///
     /// // C/B
     /// let chord = Chord::major()
@@ -34,7 +34,7 @@ impl Builder {
     }
 
     /// ```
-    /// use music_note::{Chord, Pitch};
+    /// use staff::{Chord, Pitch};
     ///
     /// // C Major (1st inversion)
     /// let chord = Chord::major()

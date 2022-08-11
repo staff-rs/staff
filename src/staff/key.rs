@@ -9,14 +9,14 @@ pub struct Key {
 
 impl Key {
     /// ```
-    /// use music_note::{Key, Pitch};
+    /// use staff::{Key, Pitch};
     ///
     /// let key = Key::major(Pitch::D);
     /// assert_eq!(key.to_string(), "##")
     /// ```
     ///
     /// ```
-    /// use music_note::{Key, Pitch};
+    /// use staff::{Key, Pitch};
     ///
     /// let key = Key::major(Pitch::F);
     /// assert_eq!(key.to_string(), "b")

@@ -4,7 +4,7 @@
 //!
 //! Create a C Major (1st inversion) chord and iterate over its notes.
 //! ```
-//! use music_note::{midi, Chord, Pitch};
+//! use staff::{midi, Chord, Pitch};
 //!
 //! // C/E
 //! let chord = Chord::from_midi(
@@ -20,7 +20,7 @@
 //!
 //! Create a C Major scale and iterate over its notes.
 //! ```
-//! use music_note::{midi, Note, Scale};
+//! use staff::{midi, Note, Scale};
 //!
 //! // C major
 //! let scale = Scale::major(midi!(C, 4));
@@ -64,8 +64,8 @@ pub use scale::Scale;
 pub mod set;
 
 /// ```
-/// use music_note::{midi, Pitch};
-/// use music_note::midi::Octave;
+/// use staff::{midi, Pitch};
+/// use staff::midi::Octave;
 ///
 /// let midi = midi!(C, 4);
 ///
@@ -75,9 +75,9 @@ pub mod set;
 #[macro_export]
 macro_rules! midi {
     ($pitch:ident, $octave:literal) => {
-        music_note::midi::MidiNote::new(
-            music_note::Pitch::$pitch,
-            music_note::midi::Octave::new_unchecked($octave),
+        staff::midi::MidiNote::new(
+            staff::Pitch::$pitch,
+            staff::midi::Octave::new_unchecked($octave),
         )
     };
 }

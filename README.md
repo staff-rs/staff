@@ -1,7 +1,7 @@
 Music theory library with midi, notes, chords, scales, and more
 
 ```rust
-use music_note::{midi, Chord, Pitch};
+use staff::{midi, Chord, Pitch};
 
 let chord = Chord::from_midi(
     midi!(C, 4),

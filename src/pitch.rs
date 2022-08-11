@@ -23,7 +23,7 @@ pub enum Pitch {
 impl Pitch {
     /// Returns the natural pitch for the given `Natural`.
     /// ```
-    /// use music_note::{Pitch, Natural};
+    /// use staff::{Pitch, Natural};
     ///
     /// let pitch = Pitch::natural(Natural::F);
     /// assert_eq!(pitch, Pitch::F);

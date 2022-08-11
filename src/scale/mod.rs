@@ -75,7 +75,7 @@ where
     T: Degree + Clone,
 {
     /// ```
-    /// use music_note::{midi, Note, Scale};
+    /// use staff::{midi, Note, Scale};
     ///
     /// // C major
     /// let scale = Scale::major(midi!(C, 4));
@@ -95,7 +95,7 @@ where
     }
 
     /// ```
-    /// use music_note::{Natural, Note, Scale};
+    /// use staff::{Natural, Note, Scale};
     ///
     /// // B natural minor
     /// let scale = Scale::natural_minor(Note::from(Natural::B));
@@ -115,7 +115,7 @@ where
     }
 
     /// ```
-    /// use music_note::{Natural, Note, Scale};
+    /// use staff::{Natural, Note, Scale};
     ///
     /// // A harmonic minor
     /// let scale = Scale::harmonic_minor(Note::from(Natural::A));
@@ -135,7 +135,7 @@ where
     }
 
     /// ```
-    /// use music_note::{Natural, Note, Scale};
+    /// use staff::{Natural, Note, Scale};
     ///
     /// // E melodic minor
     /// let scale = Scale::melodic_minor(Note::from(Natural::E));
