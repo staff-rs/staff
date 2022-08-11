@@ -70,6 +70,7 @@ impl Accidental for Flat {
             match natural_pitch.sub(pitch) {
                 Interval::MINOR_SECOND => AccidentalKind::Single,
                 Interval::MAJOR_SECOND => AccidentalKind::Double,
+                Interval::MAJOR_SEVENTH => AccidentalKind::Single,
                 x => panic!("{:?}", x),
             }
         }

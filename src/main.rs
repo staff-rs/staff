@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use staff::{
     midi::{MidiNote, Octave},
     note::Flat,
-    Chord, Natural, Note, Pitch,
+    Chord, Natural, Note, Pitch, Scale,
 };
 
 #[derive(Parser)]
@@ -19,6 +19,10 @@ enum Command {
         /// Name (symbol) of the chord
         name: String,
     },
+    Scale {
+        root: String,
+        mode: String,
+    },
 }
 
 fn main() {
@@ -29,6 +33,45 @@ fn main() {
             for note in chord {
                 println!("{}", note);
             }
+        }
+        Command::Scale { root, mode } => {
+            let mut chars = root.chars();
+            let natural = match chars.next().unwrap() {
+                'A' => Natural::A,
+                'B' => Natural::B,
+                'C' => Natural::C,
+                'D' => Natural::D,
+                'E' => Natural::E,
+                'F' => Natural::F,
+                'G' => Natural::G,
+                _ => todo!(),
+            };
+
+            match chars.next() {
+                Some('b') => {
+                    let root_note = match chars.next() {
+                        Some('b') => Note::double_flat(natural),
+                        None => Note::flat(natural),
+                        _ => todo!(),
+                    };
+                    for note in Scale::major(root_note) {
+                        dbg!(note);
+                    }
+                }
+                Some('#') => {
+                    let note = match chars.next() {
+                        Some('#') => Note::double_sharp(natural),
+                        None => Note::sharp(natural),
+                        _ => todo!(),
+                    };
+                    dbg!(note);
+                }
+                None => {
+                    let note: Note<Flat> = natural.into();
+                    dbg!(note);
+                }
+                _ => todo!(),
+            };
         }
     }
 }

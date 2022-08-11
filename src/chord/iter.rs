@@ -1,6 +1,5 @@
 use crate::{set::IntervalSet, Interval, Pitch};
 
-
 pub struct Intervals {
     pub(super) low: IntervalSet,
     pub(super) high: IntervalSet,
