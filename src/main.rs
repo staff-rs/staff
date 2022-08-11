@@ -37,13 +37,14 @@ enum Mode {
     Minor,
     Ionian,
     Aeolian,
+    Dorian,
 }
 
 fn print_scale<A: Accidental>(root_note: Note<A>, mode: Mode) {
     let scale = match mode {
         Mode::Major | Mode::Ionian => Scale::major(root_note),
         Mode::Minor | Mode::Aeolian => Scale::natural_minor(root_note),
-        _ => todo!(),
+        Mode::Dorian => Scale::dorian(root_note),
     };
     for note in scale {
         println!("{}", note);
