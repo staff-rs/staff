@@ -216,16 +216,8 @@ impl FromStr for Chord {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut chars = s.chars();
-        let natural = match chars.next().unwrap() {
-            'A' => Natural::A,
-            'B' => Natural::B,
-            'C' => Natural::C,
-            'D' => Natural::D,
-            'E' => Natural::E,
-            'F' => Natural::F,
-            'G' => Natural::G,
-            _ => todo!(),
-        };
+        let natural: Natural = chars.next().unwrap().try_into().unwrap();
+
         let mut next = chars.next();
         let root: Pitch = match next {
             Some('b') => {

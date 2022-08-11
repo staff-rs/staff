@@ -1,4 +1,4 @@
-use core::{fmt, ops::Add};
+use core::{fmt, ops::Add, str::FromStr};
 
 /// A natural pitch
 #[repr(u8)]
@@ -33,13 +33,13 @@ impl TryFrom<char> for Natural {
     fn try_from(value: char) -> Result<Self, Self::Error> {
         let letter = match value {
             'A' => Self::A,
-            'B' => Self::A,
-            'C' => Self::A,
-            'D' => Self::A,
-            'E' => Self::A,
-            'F' => Self::A,
-            'G' => Self::A,
-            invalid => return Err(invalid),
+            'B' => Self::B,
+            'C' => Self::C,
+            'D' => Self::D,
+            'E' => Self::E,
+            'F' => Self::F,
+            'G' => Self::G,
+            _ => return Err(value),
         };
         Ok(letter)
     }
@@ -69,5 +69,14 @@ impl fmt::Debug for Natural {
 impl fmt::Display for Natural {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_char())
+    }
+}
+
+impl FromStr for Natural {
+    type Err = Option<char>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let c = s.chars().next().ok_or(None)?;
+        c.try_into().map_err(Some)
     }
 }

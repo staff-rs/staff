@@ -73,16 +73,7 @@ fn main() {
         }
         Command::Scale { root, mode } => {
             let mut chars = root.chars();
-            let natural = match chars.next().unwrap() {
-                'A' => Natural::A,
-                'B' => Natural::B,
-                'C' => Natural::C,
-                'D' => Natural::D,
-                'E' => Natural::E,
-                'F' => Natural::F,
-                'G' => Natural::G,
-                _ => todo!(),
-            };
+            let natural: Natural = chars.next().unwrap().try_into().unwrap();
 
             match chars.next() {
                 Some('b') => {
