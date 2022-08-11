@@ -1,6 +1,5 @@
-use core::fmt::{self, Write};
-
 use crate::{Interval, Natural, Pitch};
+use core::fmt::{self, Write};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AccidentalKind {

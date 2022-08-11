@@ -1,12 +1,12 @@
-use clap::{Parser, Subcommand};
+use clap::{ArgEnum, Parser, Subcommand};
 use staff::{
     midi::{MidiNote, Octave},
-    note::Flat,
+    note::{Accidental, Flat},
     Chord, Natural, Note, Pitch, Scale,
 };
 
 #[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version, about = "Music theory command-line interface", long_about = None)]
 struct App {
     #[clap(subcommand)]
     command: Command,
@@ -19,10 +19,35 @@ enum Command {
         /// Name (symbol) of the chord
         name: String,
     },
+
+    /// Display a scale's notes
     Scale {
+        /// Root note of the scale
         root: String,
-        mode: String,
+
+        /// Mode of the scale
+        #[clap(arg_enum, value_parser)]
+        mode: Mode,
     },
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
+enum Mode {
+    Major,
+    Minor,
+    Ionian,
+    Aeolian,
+}
+
+fn print_scale<A: Accidental>(root_note: Note<A>, mode: Mode) {
+    let scale = match mode {
+        Mode::Major | Mode::Ionian => Scale::major(root_note),
+        Mode::Minor | Mode::Aeolian => Scale::natural_minor(root_note),
+        _ => todo!(),
+    };
+    for note in scale {
+        println!("{}", note);
+    }
 }
 
 fn main() {
@@ -54,9 +79,7 @@ fn main() {
                         None => Note::flat(natural),
                         _ => todo!(),
                     };
-                    for note in Scale::major(root_note) {
-                        println!("{}", note);
-                    }
+                    print_scale(root_note, *mode);
                 }
                 Some('#') => {
                     let root_note = match chars.next() {
@@ -64,15 +87,11 @@ fn main() {
                         None => Note::sharp(natural),
                         _ => todo!(),
                     };
-                    for note in Scale::major(root_note) {
-                        println!("{}", note);
-                    }
+                    print_scale(root_note, *mode);
                 }
                 None => {
                     let root_note: Note<Flat> = natural.into();
-                    for note in Scale::major(root_note) {
-                        println!("{}", note);
-                    }
+                    print_scale(root_note, *mode);
                 }
                 _ => todo!(),
             };
