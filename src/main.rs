@@ -2,7 +2,7 @@ use anyhow::bail;
 use clap::{ArgEnum, Parser, Subcommand};
 use staff::{
     note::{Accidental, Flat},
-    Chord, Natural, Note, Scale,
+    Chord, Key, Natural, Note, Scale,
 };
 use std::{
     fmt::Display,
@@ -32,6 +32,12 @@ enum Command {
         /// Mode of the scale
         #[clap(arg_enum, value_parser)]
         mode: Mode,
+    },
+
+    /// Display the sharps or flats for a key
+    Key {
+        /// Root note of the key
+        root: String,
     },
 }
 
@@ -80,6 +86,33 @@ fn main() -> Result {
         Command::Chord { name } => {
             let chord: Chord = name.parse().unwrap();
             print_notes(chord)
+        }
+        Command::Key { root } => {
+            let mut chars = root.chars();
+            let natural: Natural = if let Some(c) = chars.next() {
+                c.try_into().unwrap()
+            } else {
+                bail!("Missing root note")
+            };
+
+            let pitch = match chars.next() {
+                Some('b') => match chars.next() {
+                    Some('b') => Note::double_flat(natural).into(),
+                    Some(c) => bail!("Invalid character `{}`", c),
+                    _ => Note::flat(natural).into(),
+                },
+                Some('#') => match chars.next() {
+                    Some('#') => Note::double_sharp(natural).into(),
+                    Some(c) => bail!("Invalid character `{}`", c),
+                    None => Note::sharp(natural).into(),
+                },
+                Some(c) => bail!("Invalid character `{}`", c),
+                None => natural.into(),
+            };
+
+            let key = Key::major(pitch);
+            println!("{}", key);
+            Ok(())
         }
         Command::Scale { root, mode } => {
             let mut chars = root.chars();
