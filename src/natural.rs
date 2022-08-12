@@ -32,13 +32,13 @@ impl TryFrom<char> for Natural {
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         let letter = match value {
-            'A' => Self::A,
-            'B' => Self::B,
-            'C' => Self::C,
-            'D' => Self::D,
-            'E' => Self::E,
-            'F' => Self::F,
-            'G' => Self::G,
+            'a' | 'A' => Self::A,
+            'b' | 'B' => Self::B,
+            'c' | 'C' => Self::C,
+            'd' | 'D' => Self::D,
+            'e' | 'E' => Self::E,
+            'f' | 'F' => Self::F,
+            'g' | 'G' => Self::G,
             _ => return Err(value),
         };
         Ok(letter)
