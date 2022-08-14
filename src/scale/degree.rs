@@ -71,18 +71,17 @@ impl Degree for MidiNote {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::Scale;
 
-    use super::*;
-
     #[test]
-    fn c() {
+    fn c_major() {
         let s = Scale::major(Note::from(Natural::C));
         dbg!(s.collect::<Vec<_>>());
     }
 
     #[test]
-    fn f() {
+    fn g_flat_major() {
         let s = Scale::major(Note::flat(Natural::G));
         dbg!(s.collect::<Vec<_>>());
     }

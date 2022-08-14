@@ -49,7 +49,7 @@ impl From<Note> for Pitch {
             Accidental::Flat => pitch - Interval::MINOR_SECOND,
             Accidental::DoubleFlat => pitch - Interval::MAJOR_SECOND,
             Accidental::Sharp => pitch + Interval::MINOR_SECOND,
-            Accidental::DoubleSharp => pitch + Interval::MAJOR_SECOND
+            Accidental::DoubleSharp => pitch + Interval::MAJOR_SECOND,
         }
     }
 }
