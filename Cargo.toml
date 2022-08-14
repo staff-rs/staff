@@ -19,6 +19,7 @@ required-features = ["cli"]
 [dependencies]
 num-traits = "0.2.14"
 anyhow = { version = "1.0.61", optional = true }
+thiserror = "1.0"
 
 [dependencies.clap]
 version = "3.2.16"

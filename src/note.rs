@@ -91,7 +91,7 @@ impl FromStr for Note {
             Some('b') => match chars.next() {
                 Some('b') => Self::double_flat(natural),
                 Some(c) => return Err(Some(c)),
-                _ => Note::flat(natural),
+                None => Note::flat(natural),
             },
             Some('#') => match chars.next() {
                 Some('#') => Note::double_sharp(natural),

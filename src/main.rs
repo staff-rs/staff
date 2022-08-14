@@ -1,6 +1,5 @@
-use anyhow::bail;
 use clap::{ArgEnum, Parser, Subcommand};
-use staff::{note::Accidental, Chord, Key, Natural, Note, Scale};
+use staff::{Chord, Key, Note, Scale};
 use std::{
     fmt::Display,
     io::{self, Write},
