@@ -69,7 +69,7 @@ where
     }
 
     pub fn remove(&mut self, item: T) {
-        self.bits = self.bits | !(U::one() << item.into() as usize);
+        self.bits = self.bits & !(U::one() << item.into() as usize);
     }
 
     pub fn contains(&self, item: T) -> bool {
@@ -118,5 +118,24 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         self.pop_bit().map(Into::into)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Set;
+
+    #[test]
+    fn push_and_remove_from_set() {
+        let initial = [0, 2];
+        let mut set: Set<u8, u8> = Set::from_iter(initial.into_iter());
+
+        set.push(1);
+        assert!(set.contains(1));
+        set.remove(1);
+        assert!(!set.contains(1));
+
+        assert!(set.contains(0));
+        assert!(set.contains(2));
     }
 }
