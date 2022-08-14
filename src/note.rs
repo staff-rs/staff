@@ -69,31 +69,52 @@ impl fmt::Display for Note {
 }
 
 impl FromStr for Note {
-    type Err = Option<char>;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut chars = s.chars();
         let natural: Natural = if let Some(c) = chars.next() {
             c.try_into().unwrap()
         } else {
-            return Err(None);
+            return Err(Error::Empty);
         };
 
-        let note = match chars.next() {
+        let accidental = match chars.next() {
             Some('b') => match chars.next() {
-                Some('b') => Self::double_flat(natural),
-                Some(c) => return Err(Some(c)),
-                None => Note::flat(natural),
+                Some('b') => Accidental::DoubleFlat,
+                Some(c) => return Err(c.into()),
+                None => Accidental::Flat,
             },
             Some('#') => match chars.next() {
-                Some('#') => Note::double_sharp(natural),
-                Some(c) => return Err(Some(c)),
-                None => Note::sharp(natural),
+                Some('#') => Accidental::DoubleSharp,
+                Some(c) => return Err(c.into()),
+                None => Accidental::Sharp,
             },
-            Some(c) => return Err(Some(c)),
-            None => natural.into(),
+            Some(c) => return Err(c.into()),
+            None => Accidental::Natural,
         };
 
-        Ok(note)
+        Ok(Self::new(natural, accidental))
+    }
+}
+
+#[derive(Debug)]
+pub enum Error {
+    Empty,
+    Invalid(char),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Empty => f.write_str("Empty note input"),
+            Self::Invalid(c) => write!(f, "Invalid character `{}`", c),
+        }
+    }
+}
+
+impl From<char> for Error {
+    fn from(c: char) -> Self {
+        Self::Invalid(c)
     }
 }
