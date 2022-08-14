@@ -1,4 +1,4 @@
-use crate::{Interval, Natural, Pitch};
+use crate::Natural;
 use core::{
     fmt::{self, Write},
     str::FromStr,
@@ -11,6 +11,18 @@ pub enum Accidental {
     DoubleFlat,
     Sharp,
     DoubleSharp,
+}
+
+impl fmt::Display for Accidental {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Accidental::Natural => Ok(()),
+            Accidental::Flat => f.write_char('b'),
+            Accidental::DoubleFlat => f.write_str("bb"),
+            Accidental::Sharp => f.write_char('#'),
+            Accidental::DoubleSharp => f.write_str("##"),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -44,19 +56,6 @@ impl Note {
     }
 }
 
-impl From<Note> for Pitch {
-    fn from(note: Note) -> Self {
-        let pitch: Pitch = note.natural.into();
-        match note.accidental {
-            Accidental::Natural => pitch,
-            Accidental::Flat => pitch - Interval::MINOR_SECOND,
-            Accidental::DoubleFlat => pitch - Interval::MAJOR_SECOND,
-            Accidental::Sharp => pitch + Interval::MINOR_SECOND,
-            Accidental::DoubleSharp => pitch + Interval::MAJOR_SECOND,
-        }
-    }
-}
-
 impl From<Natural> for Note {
     fn from(natural: Natural) -> Self {
         Self::new(natural, Accidental::Natural)
@@ -65,14 +64,7 @@ impl From<Natural> for Note {
 
 impl fmt::Display for Note {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.natural.fmt(f)?;
-        match self.accidental {
-            Accidental::Natural => Ok(()),
-            Accidental::Flat => f.write_char('b'),
-            Accidental::DoubleFlat => f.write_str("bb"),
-            Accidental::Sharp => f.write_char('#'),
-            Accidental::DoubleSharp => f.write_str("##"),
-        }
+        write!(f, "{}{}", self.natural, self.accidental)
     }
 }
 

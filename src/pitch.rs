@@ -1,3 +1,4 @@
+use crate::note::{Accidental, Note};
 use crate::{midi::MidiNote, Interval, Natural};
 use core::ops::{Add, Sub};
 use core::{fmt, mem};
@@ -94,6 +95,19 @@ impl From<Natural> for Pitch {
 impl From<MidiNote> for Pitch {
     fn from(midi: MidiNote) -> Self {
         midi.pitch()
+    }
+}
+
+impl From<Note> for Pitch {
+    fn from(note: Note) -> Self {
+        let pitch: Pitch = note.natural.into();
+        match note.accidental {
+            Accidental::Natural => pitch,
+            Accidental::Flat => pitch - Interval::MINOR_SECOND,
+            Accidental::DoubleFlat => pitch - Interval::MAJOR_SECOND,
+            Accidental::Sharp => pitch + Interval::MINOR_SECOND,
+            Accidental::DoubleSharp => pitch + Interval::MAJOR_SECOND,
+        }
     }
 }
 
