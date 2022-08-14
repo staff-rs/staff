@@ -71,7 +71,7 @@ where
     Ok(())
 }
 
-fn print_scale<A: Accidental>(root_note: Note<A>, mode: Mode) -> Result {
+fn print_scale<A: Accidental>(root_note: Note, mode: Mode) -> Result {
     let scale = match mode {
         Mode::Major | Mode::Ionian => Scale::major(root_note),
         Mode::Minor | Mode::Aeolian => Scale::natural_minor(root_note),

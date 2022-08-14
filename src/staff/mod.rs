@@ -1,4 +1,4 @@
-use crate::{note::Flat, Interval, Natural, Note, Pitch};
+use crate::{Interval, Natural, Note, Pitch};
 
 mod key;
 pub use key::Key;
@@ -16,14 +16,14 @@ impl<T> Staff<T> {
 
 impl<T> Iterator for Staff<T>
 where
-    T: Iterator<Item = Note<Flat>>,
+    T: Iterator<Item = Note>,
 {
     type Item = Pitch;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.notes.next().map(move |note| {
             let pitch = Pitch::from(note);
-            if note.natural() >= Natural::from(self.key.flats()) {
+            if note.natural >= Natural::from(self.key.flats()) {
                 pitch + Interval::MINOR_SECOND
             } else {
                 pitch

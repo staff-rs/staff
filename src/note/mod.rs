@@ -1,91 +1,68 @@
-use crate::{Natural, Pitch};
-use core::{fmt, marker::PhantomData};
+use crate::{Interval, Natural, Pitch};
+use core::fmt;
 
-mod accidental;
-pub use accidental::{Accidental, AccidentalKind, Flat, Sharp};
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Note<A> {
-    natural: Natural,
-    accidental_kind: AccidentalKind,
-    _accidental: PhantomData<A>,
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Accidental {
+    Natural,
+    Flat,
+    DoubleFlat,
+    Sharp,
+    DoubleSharp,
 }
 
-impl<A> Note<A> {
-    pub fn new(natural: Natural, accidental: AccidentalKind) -> Self {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Note {
+    pub natural: Natural,
+    pub accidental: Accidental,
+}
+
+impl Note {
+    pub fn new(natural: Natural, accidental: Accidental) -> Self {
         Self {
             natural,
-            accidental_kind: accidental,
-            _accidental: PhantomData,
+            accidental,
         }
     }
 
-    pub fn natural(self) -> Natural {
-        self.natural
-    }
-
-    pub fn natural_mut(&mut self) -> &mut Natural {
-        &mut self.natural
-    }
-
-    pub fn accidental(self) -> AccidentalKind {
-        self.accidental_kind
-    }
-
-    pub fn accidental_mut(&mut self) -> &mut AccidentalKind {
-        &mut self.accidental_kind
-    }
-}
-
-impl Note<Flat> {
     pub fn flat(natural: Natural) -> Self {
-        Self::new(natural, AccidentalKind::Single)
+        Self::new(natural, Accidental::Flat)
     }
 
     pub fn double_flat(natural: Natural) -> Self {
-        Self::new(natural, AccidentalKind::Double)
+        Self::new(natural, Accidental::DoubleFlat)
     }
-}
 
-impl Note<Sharp> {
     pub fn sharp(natural: Natural) -> Self {
-        Self::new(natural, AccidentalKind::Single)
+        Self::new(natural, Accidental::Sharp)
     }
 
     pub fn double_sharp(natural: Natural) -> Self {
-        Self::new(natural, AccidentalKind::Double)
+        Self::new(natural, Accidental::DoubleSharp)
     }
 }
 
-impl<A> Clone for Note<A> {
-    fn clone(&self) -> Self {
-        Self::new(self.natural, self.accidental_kind)
+impl From<Note> for Pitch {
+    fn from(note: Note) -> Self {
+        let pitch: Pitch = note.natural.into();
+        match note.accidental {
+            Accidental::Natural => pitch,
+            Accidental::Flat => pitch - Interval::MINOR_SECOND,
+            Accidental::DoubleFlat => pitch - Interval::MAJOR_SECOND,
+            Accidental::Sharp => pitch + Interval::MINOR_SECOND,
+            Accidental::DoubleSharp => pitch + Interval::MAJOR_SECOND
+        }
     }
 }
 
-impl<A> Copy for Note<A> {}
-
-impl<A> From<Note<A>> for Pitch
-where
-    A: Accidental,
-{
-    fn from(note: Note<A>) -> Self {
-        A::into_pitch(note.accidental_kind, note.natural)
-    }
-}
-
-impl<A> From<Natural> for Note<A> {
+impl From<Natural> for Note {
     fn from(natural: Natural) -> Self {
-        Self::new(natural, AccidentalKind::Natural)
+        Self::new(natural, Accidental::Natural)
     }
 }
 
-impl<A> fmt::Display for Note<A>
-where
-    A: Accidental,
-{
+impl fmt::Display for Note {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.natural.fmt(f)?;
-        A::write_fmt(self.accidental_kind, f)
+        todo!()
     }
 }

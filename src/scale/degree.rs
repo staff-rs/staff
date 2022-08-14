@@ -13,23 +13,39 @@ pub trait Degree {
     fn degree(self, state: &mut Self::State, interval: Interval) -> Self;
 }
 
-impl<A> Degree for Note<A>
-where
-    A: Accidental,
-{
+impl Degree for Note {
     type State = Natural;
 
     fn state(self) -> Self::State {
-        self.natural()
+        self.natural
     }
 
     fn degree(self, state: &mut Self::State, interval: Interval) -> Self {
-        let pitch = Pitch::from(self.clone()).add_interval(interval);
-        let accidental = A::from_pitch(*state, pitch);
-        let note = Self::new(*state, accidental);
+        let root: Pitch = self.into();
+        let pitch = root + interval;
 
+        let natural_pitch = Pitch::from(*state);
+        let natural = *state;
         *state = *state + 1;
-        note
+
+        let accidental = if pitch >= natural_pitch {
+            match pitch - natural_pitch {
+                Interval::UNISON => Accidental::Natural,
+                Interval::MINOR_SECOND => Accidental::Sharp,
+                Interval::MAJOR_SECOND => Accidental::DoubleSharp,
+                Interval::MAJOR_SEVENTH => Accidental::Flat,
+                _ => unimplemented!(),
+            }
+        } else {
+            match natural_pitch - pitch {
+                Interval::MINOR_SECOND => Accidental::Flat,
+                Interval::MAJOR_SECOND => Accidental::DoubleFlat,
+                Interval::MAJOR_SEVENTH => Accidental::Sharp,
+                _ => unimplemented!(),
+            }
+        };
+
+        Self::new(natural, accidental)
     }
 }
 
@@ -50,5 +66,24 @@ impl Degree for MidiNote {
 
     fn degree(self, _state: &mut Self::State, interval: Interval) -> Self {
         self + interval
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Scale;
+
+    use super::*;
+
+    #[test]
+    fn c() {
+        let s = Scale::major(Note::from(Natural::C));
+        dbg!(s.collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn f() {
+        let s = Scale::major(Note::flat(Natural::G));
+        dbg!(s.collect::<Vec<_>>());
     }
 }
