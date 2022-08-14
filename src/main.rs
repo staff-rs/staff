@@ -1,9 +1,6 @@
 use anyhow::bail;
 use clap::{ArgEnum, Parser, Subcommand};
-use staff::{
-    note::{Accidental, Flat},
-    Chord, Key, Natural, Note, Scale,
-};
+use staff::{note::Accidental, Chord, Key, Natural, Note, Scale};
 use std::{
     fmt::Display,
     io::{self, Write},
@@ -71,15 +68,6 @@ where
     Ok(())
 }
 
-fn print_scale<A: Accidental>(root_note: Note, mode: Mode) -> Result {
-    let scale = match mode {
-        Mode::Major | Mode::Ionian => Scale::major(root_note),
-        Mode::Minor | Mode::Aeolian => Scale::natural_minor(root_note),
-        Mode::Dorian => Scale::dorian(root_note),
-    };
-    print_notes(scale)
-}
-
 fn main() -> Result {
     let cli = App::parse();
     match &cli.command {
@@ -88,63 +76,20 @@ fn main() -> Result {
             print_notes(chord)
         }
         Command::Key { root } => {
-            let mut chars = root.chars();
-            let natural: Natural = if let Some(c) = chars.next() {
-                c.try_into().unwrap()
-            } else {
-                bail!("Missing root note")
-            };
+            let note: Note = root.parse().unwrap();
 
-            let pitch = match chars.next() {
-                Some('b') => match chars.next() {
-                    Some('b') => Note::double_flat(natural).into(),
-                    Some(c) => bail!("Invalid character `{}`", c),
-                    _ => Note::flat(natural).into(),
-                },
-                Some('#') => match chars.next() {
-                    Some('#') => Note::double_sharp(natural).into(),
-                    Some(c) => bail!("Invalid character `{}`", c),
-                    None => Note::sharp(natural).into(),
-                },
-                Some(c) => bail!("Invalid character `{}`", c),
-                None => natural.into(),
-            };
-
-            let key = Key::major(pitch);
+            let key = Key::major(note.into());
             println!("{}", key);
             Ok(())
         }
         Command::Scale { root, mode } => {
-            let mut chars = root.chars();
-            let natural: Natural = if let Some(c) = chars.next() {
-                c.try_into().unwrap()
-            } else {
-                bail!("Missing root note")
+            let note: Note = root.parse().unwrap();
+            let scale = match mode {
+                Mode::Major | Mode::Ionian => Scale::major(note),
+                Mode::Minor | Mode::Aeolian => Scale::natural_minor(note),
+                Mode::Dorian => Scale::dorian(note),
             };
-
-            match chars.next() {
-                Some('b') => {
-                    let root_note = match chars.next() {
-                        Some('b') => Note::double_flat(natural),
-                        Some(c) => bail!("Invalid character `{}`", c),
-                        _ => Note::flat(natural),
-                    };
-                    print_scale(root_note, *mode)
-                }
-                Some('#') => {
-                    let root_note = match chars.next() {
-                        Some('#') => Note::double_sharp(natural),
-                        Some(c) => bail!("Invalid character `{}`", c),
-                        None => Note::sharp(natural),
-                    };
-                    print_scale(root_note, *mode)
-                }
-                Some(c) => bail!("Invalid character `{}`", c),
-                None => {
-                    let root_note: Note<Flat> = natural.into();
-                    print_scale(root_note, *mode)
-                }
-            }
+            print_notes(scale)
         }
     }
 }

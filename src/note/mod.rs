@@ -1,5 +1,8 @@
 use crate::{Interval, Natural, Pitch};
-use core::fmt;
+use core::{
+    fmt::{self, Write},
+    str::FromStr,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Accidental {
@@ -63,6 +66,42 @@ impl From<Natural> for Note {
 impl fmt::Display for Note {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.natural.fmt(f)?;
-        todo!()
+        match self.accidental {
+            Accidental::Natural => Ok(()),
+            Accidental::Flat => f.write_char('b'),
+            Accidental::DoubleFlat => f.write_str("bb"),
+            Accidental::Sharp => f.write_char('#'),
+            Accidental::DoubleSharp => f.write_str("##"),
+        }
+    }
+}
+
+impl FromStr for Note {
+    type Err = Option<char>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut chars = s.chars();
+        let natural: Natural = if let Some(c) = chars.next() {
+            c.try_into().unwrap()
+        } else {
+            return Err(None);
+        };
+
+        let note = match chars.next() {
+            Some('b') => match chars.next() {
+                Some('b') => Self::double_flat(natural),
+                Some(c) => return Err(Some(c)),
+                _ => Note::flat(natural),
+            },
+            Some('#') => match chars.next() {
+                Some('#') => Note::double_sharp(natural),
+                Some(c) => return Err(Some(c)),
+                None => Note::sharp(natural),
+            },
+            Some(c) => return Err(Some(c)),
+            None => natural.into(),
+        };
+
+        Ok(note)
     }
 }
