@@ -1,6 +1,7 @@
 use crate::{set::IntervalSet, Chord, Interval, Pitch};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Builder {
     pub bass: Option<Pitch>,
     pub is_inversion: bool,

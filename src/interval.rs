@@ -2,6 +2,7 @@ use core::ops::Add;
 
 /// Music interval in semitones.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Interval {
     semitones: u8,
 }

@@ -6,6 +6,7 @@ use core::{fmt, mem};
 /// Pitch class that can be found on the chromatic scale.
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Pitch {
     C,
     CSharp,

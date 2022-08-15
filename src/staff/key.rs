@@ -3,6 +3,7 @@ use core::fmt::{self, Write};
 
 /// A key signature represented as the total number of sharps or flats.
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Key {
     sharps: u8,
 }
