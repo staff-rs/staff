@@ -7,7 +7,7 @@ description = "Music theory library with midi, notes, chords, scales, and more"
 repository = "https://github.com/matthunz/staff"
 
 [features]
-cli = ["anyhow", "clap", "serde"]
+cli = ["anyhow", "clap"]
 serde = ["dep:serde"]
 
 [lib]
