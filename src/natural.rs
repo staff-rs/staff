@@ -3,6 +3,7 @@ use core::{fmt, ops::Add, str::FromStr};
 /// A natural pitch
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Natural {
     A,
     B,

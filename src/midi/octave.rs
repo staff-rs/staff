@@ -4,6 +4,7 @@ use core::fmt;
 
 /// A note's octave in MIDI.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Octave(i8);
 
 impl Octave {

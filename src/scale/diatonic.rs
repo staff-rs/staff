@@ -92,6 +92,7 @@ where
 }
 
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Diatonic<T: Degree, U> {
     pub state: T::State,
     pub intervals: U,

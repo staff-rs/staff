@@ -5,6 +5,7 @@ use core::{
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Accidental {
     Natural,
     Flat,
@@ -26,6 +27,7 @@ impl fmt::Display for Accidental {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Note {
     pub natural: Natural,
     pub accidental: Accidental,
