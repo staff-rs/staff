@@ -1,4 +1,8 @@
-use crate::{midi::MidiNote, set::IntervalSet, Interval, Natural, Note, Pitch};
+use crate::{
+    midi::{MidiNote, Octave},
+    set::IntervalSet,
+    Interval, Natural, Note, Pitch,
+};
 use core::{
     fmt::{self, Write},
     str::FromStr,
@@ -145,6 +149,30 @@ impl Chord {
         };
 
         Intervals { low, high }
+    }
+
+    pub fn midi_notes(self, octave: Octave) -> MidiNotes {
+        MidiNotes {
+            root: MidiNote::new(self.root, octave),
+            intervals: self.intervals(),
+        }
+    }
+}
+
+pub struct MidiNotes {
+    root: MidiNote,
+    intervals: Intervals,
+}
+
+impl Iterator for MidiNotes {
+    type Item = MidiNote;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.intervals.next().map(|interval| {
+            let note = self.root;
+            self.root = note + interval;
+            note
+        })
     }
 }
 

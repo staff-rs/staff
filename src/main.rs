@@ -84,6 +84,8 @@ fn main() -> Result {
         Command::Chord { name, guitar } => {
             let chord: Chord = name.parse().unwrap();
             if *guitar {
+                let midi_notes: Vec<_> = chord.into_iter().collect();
+
                 for i in 0..16 {
                     for note in [
                         MidiNote::new(Pitch::E, Octave::FOUR),
@@ -91,10 +93,17 @@ fn main() -> Result {
                         MidiNote::new(Pitch::D, Octave::FOUR),
                         MidiNote::new(Pitch::G, Octave::FOUR),
                         MidiNote::new(Pitch::B, Octave::FOUR),
-                        MidiNote::new(Pitch::E, Octave::FOUR),
+                        MidiNote::new(Pitch::E, Octave::FIVE),
                     ] {
+                        let mut s = String::new();
                         let n = note + Interval::new(i);
-                        let mut s = n.to_string();
+                        if midi_notes
+                            .iter()
+                            .find(|pitch| **pitch == n.pitch())
+                            .is_some()
+                        {
+                            s.push_str(&n.to_string());
+                        }
 
                         for _ in 0..5 - s.len() {
                             s.push(' ');
