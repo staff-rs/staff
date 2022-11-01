@@ -1,5 +1,9 @@
-use clap::{ArgEnum, Parser, Subcommand};
-use staff::{Chord, Key, Note, Scale};
+use clap::{arg, ArgEnum, Parser, Subcommand, ValueEnum};
+use staff::{
+    midi::{MidiNote, Octave},
+    note::Accidental,
+    Chord, Interval, Key, Note, Pitch, Scale,
+};
 use std::{
     fmt::Display,
     io::{self, Write},
@@ -12,12 +16,19 @@ struct App {
     command: Command,
 }
 
+#[derive(Clone, Copy, ValueEnum)]
+enum Instrument {
+    Guitar,
+}
+
 #[derive(Subcommand)]
 enum Command {
     /// Display a chord's notes
     Chord {
         /// Name (symbol) of the chord
         name: String,
+        /// Show guitar chord
+        guitar: bool,
     },
 
     /// Display a scale's notes
@@ -70,9 +81,33 @@ where
 fn main() -> Result {
     let cli = App::parse();
     match &cli.command {
-        Command::Chord { name } => {
+        Command::Chord { name, guitar } => {
             let chord: Chord = name.parse().unwrap();
-            print_notes(chord)
+            if *guitar {
+                for i in 0..16 {
+                    for note in [
+                        MidiNote::new(Pitch::E, Octave::FOUR),
+                        MidiNote::new(Pitch::A, Octave::FOUR),
+                        MidiNote::new(Pitch::D, Octave::FOUR),
+                        MidiNote::new(Pitch::G, Octave::FOUR),
+                        MidiNote::new(Pitch::B, Octave::FOUR),
+                        MidiNote::new(Pitch::E, Octave::FOUR),
+                    ] {
+                        let n = note + Interval::new(i);
+                        let mut s = n.to_string();
+
+                        for _ in 0..5 - s.len() {
+                            s.push(' ');
+                        }
+
+                        print!("{}", s);
+                    }
+                    println!();
+                }
+                Ok(())
+            } else {
+                print_notes(chord)
+            }
         }
         Command::Key { root } => {
             let note: Note = root.parse().unwrap();

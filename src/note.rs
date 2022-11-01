@@ -13,6 +13,15 @@ pub enum Accidental {
     DoubleSharp,
 }
 
+impl Accidental {
+    pub fn is_natural(self) -> bool {
+        match self {
+            Self::Natural => true,
+            _ => false,
+        }
+    }
+}
+
 impl fmt::Display for Accidental {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
