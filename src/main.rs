@@ -87,6 +87,13 @@ fn main() -> Result {
                 let midi_notes: Vec<_> = chord.into_iter().collect();
 
                 for i in 0..16 {
+                    let s = i.to_string();
+                    // TODO handle other cases
+                    print!("{}", i);
+                    if s.len() < 2 {
+                        print!(" ");
+                    }
+                    print!("| ");
                     for note in [
                         MidiNote::new(Pitch::E, Octave::FOUR),
                         MidiNote::new(Pitch::A, Octave::FOUR),
@@ -97,13 +104,10 @@ fn main() -> Result {
                     ] {
                         let mut s = String::new();
                         let n = note + Interval::new(i);
-                        if midi_notes
-                            .iter()
-                            .find(|pitch| **pitch == n.pitch())
-                            .is_some()
-                        {
+                        if midi_notes.iter().find(|pitch| **pitch == n.pitch()).is_some() {
                             s.push_str(&n.to_string());
                         }
+                       
 
                         for _ in 0..5 - s.len() {
                             s.push(' ');
