@@ -29,6 +29,7 @@ enum Command {
         name: String,
         /// Show guitar chord
         guitar: bool,
+        functions: bool,
     },
 
     /// Display a scale's notes
@@ -81,11 +82,14 @@ where
 fn main() -> Result {
     let cli = App::parse();
     match &cli.command {
-        Command::Chord { name, guitar } => {
+        Command::Chord {
+            name,
+            guitar,
+            functions,
+        } => {
             let chord: Chord = name.parse().unwrap();
             if *guitar {
-                let midi_notes: Vec<_> = chord.into_iter().collect();
-
+                let midi_notes: Vec<_> = chord.clone().midi_notes(Octave::FOUR).collect();
                 for i in 0..16 {
                     let s = i.to_string();
                     // TODO handle other cases
@@ -94,6 +98,7 @@ fn main() -> Result {
                         print!(" ");
                     }
                     print!("| ");
+
                     for note in [
                         MidiNote::new(Pitch::E, Octave::FOUR),
                         MidiNote::new(Pitch::A, Octave::FOUR),
@@ -104,10 +109,19 @@ fn main() -> Result {
                     ] {
                         let mut s = String::new();
                         let n = note + Interval::new(i);
-                        if midi_notes.iter().find(|pitch| **pitch == n.pitch()).is_some() {
-                            s.push_str(&n.to_string());
+
+                        if let Some(note) = midi_notes.iter().find(|note| note.pitch() == n.pitch())
+                        {
+                            if *functions {
+                                s.push_str(
+                                    &(*note - MidiNote::new(chord.root(), Octave::FOUR))
+                                        .semitones()
+                                        .to_string(),
+                                );
+                            } else {
+                                s.push_str(&n.to_string());
+                            }
                         }
-                       
 
                         for _ in 0..5 - s.len() {
                             s.push(' ');

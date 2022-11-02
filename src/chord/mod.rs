@@ -127,7 +127,7 @@ impl Chord {
         }
     }
 
-    pub fn root(self) -> Pitch {
+    pub fn root(&self) -> Pitch {
         self.root
     }
 
@@ -168,11 +168,7 @@ impl Iterator for MidiNotes {
     type Item = MidiNote;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.intervals.next().map(|interval| {
-            let note = self.root;
-            self.root = note + interval;
-            note
-        })
+        self.intervals.next().map(|interval| self.root + interval)
     }
 }
 
