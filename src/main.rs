@@ -115,7 +115,6 @@ fn main() -> Result {
                             if *functions {
                                 s.push_str(
                                     &(*note - MidiNote::new(chord.root(), Octave::FOUR))
-                                        .semitones()
                                         .to_string(),
                                 );
                             } else {

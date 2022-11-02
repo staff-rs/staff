@@ -1,3 +1,4 @@
+use core::fmt::{self, Write};
 use core::ops::Add;
 
 /// Music interval in semitones.
@@ -57,5 +58,17 @@ impl Add for Interval {
 
     fn add(self, rhs: Self) -> Self {
         Self::new(self.semitones() + rhs.semitones())
+    }
+}
+
+impl fmt::Display for Interval {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Interval::UNISON => f.write_char('1'),
+            Interval::MAJOR_THIRD => f.write_char('3'),
+            Interval::PERFECT_FIFTH => f.write_char('5'),
+            Interval::MINOR_SEVENTH => f.write_str("m7"),
+            _ => todo!(),
+        }
     }
 }
