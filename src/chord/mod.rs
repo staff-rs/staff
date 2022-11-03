@@ -15,6 +15,7 @@ mod iter;
 pub use iter::{Intervals, Iter};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Chord {
     root: Pitch,
     builder: Builder,

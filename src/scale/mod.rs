@@ -10,6 +10,7 @@ pub use intervals::ScaleIntervals;
 mod diatonic;
 pub use diatonic::{Diatonic, DiatonicScale};
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Scale<T, U> {
     root: T,
     intervals: U,

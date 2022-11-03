@@ -12,6 +12,7 @@ pub use midi_set::MidiSet;
 
 /// MIDI note represented as a byte.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MidiNote(u8);
 
 impl MidiNote {

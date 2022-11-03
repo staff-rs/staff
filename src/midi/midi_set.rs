@@ -2,6 +2,7 @@ use super::MidiNote;
 use crate::set::Set;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MidiSet {
     low: Set<MidiNote, u64>,
     high: Set<MidiNote, u64>,
