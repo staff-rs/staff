@@ -101,12 +101,10 @@ fn main() -> Result {
                     let chord = Chord::from_midi(midi_notes[i], midi_notes.iter().copied());
                     println!("{}", chord);
                 }
-                
-              
 
                 return Ok(());
             }
-            
+
             for name in names {
                 let chord: Chord = name.parse().unwrap();
                 if *guitar {
@@ -120,14 +118,7 @@ fn main() -> Result {
                         }
                         print!("| ");
 
-                        for note in [
-                            MidiNote::new(Pitch::E, Octave::FOUR),
-                            MidiNote::new(Pitch::A, Octave::FOUR),
-                            MidiNote::new(Pitch::D, Octave::FOUR),
-                            MidiNote::new(Pitch::G, Octave::FOUR),
-                            MidiNote::new(Pitch::B, Octave::FOUR),
-                            MidiNote::new(Pitch::E, Octave::FIVE),
-                        ] {
+                        for note in STANDARD {
                             let mut s = String::new();
                             let n = note + Interval::new(i);
 

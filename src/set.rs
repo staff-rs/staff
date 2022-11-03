@@ -17,8 +17,10 @@ impl IntervalSet {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(transparent))]
 pub struct Set<T, U> {
     pub bits: U,
+    #[cfg_attr(feature = "serde", serde(skip))]
     _marker: PhantomData<T>,
 }
 

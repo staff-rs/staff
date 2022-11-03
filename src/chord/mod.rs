@@ -18,6 +18,7 @@ pub use iter::{Intervals, Iter};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Chord {
     root: Pitch,
+    #[cfg_attr(feature = "serde", serde(flatten))]
     builder: Builder,
 }
 
