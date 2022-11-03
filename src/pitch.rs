@@ -70,6 +70,10 @@ impl Pitch {
         let f = self - key;
         to + f
     }
+
+    pub fn abs_diff(self, rhs: Self) -> Interval {
+        Interval::new((self as u8).abs_diff(rhs as u8))
+    }
 }
 
 impl From<u8> for Pitch {

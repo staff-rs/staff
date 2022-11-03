@@ -97,12 +97,16 @@ fn main() -> Result {
                 let frets = names.iter().map(|s| s.parse::<u8>().ok());
                 let midi_notes: Vec<_> = MidiNotes::new(STANDARD, frets).collect();
 
-                let chord = Chord::from_midi(midi_notes[0], midi_notes);
-                println!("{}", chord);
+                for i in 0..midi_notes.len() {
+                    let chord = Chord::from_midi(midi_notes[i], midi_notes.iter().copied());
+                    println!("{}", chord);
+                }
+                
+              
 
                 return Ok(());
             }
-
+            
             for name in names {
                 let chord: Chord = name.parse().unwrap();
                 if *guitar {

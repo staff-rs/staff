@@ -100,7 +100,7 @@ impl Chord {
         let root_pitch = root.pitch();
         let bass = if bass_note != root {
             let bass_pitch = bass_note.pitch();
-            intervals.push(bass_pitch - root_pitch);
+            intervals.push(bass_pitch.abs_diff(root_pitch));
             Some(bass_note.pitch())
         } else {
             intervals.push(Interval::UNISON);
@@ -110,7 +110,7 @@ impl Chord {
         let is_inversion = if let Some(note) = iter.next() {
             let ret = if note == root { false } else { true };
 
-            intervals.push(note.pitch() - root_pitch);
+            intervals.push(note.pitch().abs_diff(root_pitch));
             intervals.extend(iter.map(|midi| midi - root));
             ret
         } else {
