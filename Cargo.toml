@@ -22,6 +22,6 @@ anyhow = { version = "1.0.61", optional = true }
 thiserror = "1.0"
 
 [dependencies.clap]
-version = "3.2.16"
+version = "4.0.18"
 features = ["derive"]
 optional = true

@@ -41,6 +41,8 @@
 pub mod chord;
 pub use chord::Chord;
 
+pub mod guitar;
+
 mod interval;
 pub use interval::Interval;
 

@@ -1,5 +1,6 @@
-use clap::{arg, ArgEnum, Parser, Subcommand, ValueEnum};
+use clap::{arg, Parser, Subcommand, ValueEnum};
 use staff::{
+    guitar::{MidiNotes, STANDARD},
     midi::{MidiNote, Octave},
     note::Accidental,
     Chord, Interval, Key, Note, Pitch, Scale,
@@ -26,10 +27,14 @@ enum Command {
     /// Display a chord's notes
     Chord {
         /// Name (symbol) of the chord
-        name: String,
+        names: Vec<String>,
         /// Show guitar chord
+        #[arg(short, long)]
         guitar: bool,
+        #[arg(short, long)]
         functions: bool,
+        #[arg(long)]
+        frets: bool,
     },
 
     /// Display a scale's notes
@@ -38,7 +43,7 @@ enum Command {
         root: String,
 
         /// Mode of the scale
-        #[clap(arg_enum, value_parser)]
+        #[arg(value_enum)]
         mode: Mode,
     },
 
@@ -49,7 +54,7 @@ enum Command {
     },
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum Mode {
     Major,
     Minor,
@@ -83,57 +88,71 @@ fn main() -> Result {
     let cli = App::parse();
     match &cli.command {
         Command::Chord {
-            name,
+            names,
             guitar,
             functions,
+            frets,
         } => {
-            let chord: Chord = name.parse().unwrap();
-            if *guitar {
-                let midi_notes: Vec<_> = chord.clone().midi_notes(Octave::FOUR).collect();
-                for i in 0..16 {
-                    let s = i.to_string();
-                    // TODO handle other cases
-                    print!("{}", i);
-                    if s.len() < 2 {
-                        print!(" ");
-                    }
-                    print!("| ");
+            if *frets {
+                let frets = names.iter().map(|s| s.parse::<u8>().ok());
+                let midi_notes: Vec<_> = MidiNotes::new(STANDARD, frets).collect();
 
-                    for note in [
-                        MidiNote::new(Pitch::E, Octave::FOUR),
-                        MidiNote::new(Pitch::A, Octave::FOUR),
-                        MidiNote::new(Pitch::D, Octave::FOUR),
-                        MidiNote::new(Pitch::G, Octave::FOUR),
-                        MidiNote::new(Pitch::B, Octave::FOUR),
-                        MidiNote::new(Pitch::E, Octave::FIVE),
-                    ] {
-                        let mut s = String::new();
-                        let n = note + Interval::new(i);
+                let chord = Chord::from_midi(midi_notes[0], midi_notes);
+                println!("{}", chord);
 
-                        if let Some(note) = midi_notes.iter().find(|note| note.pitch() == n.pitch())
-                        {
-                            if *functions {
-                                s.push_str(
-                                    &(*note - MidiNote::new(chord.root(), Octave::FOUR))
-                                        .to_string(),
-                                );
-                            } else {
-                                s.push_str(&n.to_string());
-                            }
-                        }
-
-                        for _ in 0..5 - s.len() {
-                            s.push(' ');
-                        }
-
-                        print!("{}", s);
-                    }
-                    println!();
-                }
-                Ok(())
-            } else {
-                print_notes(chord)
+                return Ok(());
             }
+
+            for name in names {
+                let chord: Chord = name.parse().unwrap();
+                if *guitar {
+                    let midi_notes: Vec<_> = chord.clone().midi_notes(Octave::FOUR).collect();
+                    for i in 0..16 {
+                        let s = i.to_string();
+                        // TODO handle other cases
+                        print!("{}", i);
+                        if s.len() < 2 {
+                            print!(" ");
+                        }
+                        print!("| ");
+
+                        for note in [
+                            MidiNote::new(Pitch::E, Octave::FOUR),
+                            MidiNote::new(Pitch::A, Octave::FOUR),
+                            MidiNote::new(Pitch::D, Octave::FOUR),
+                            MidiNote::new(Pitch::G, Octave::FOUR),
+                            MidiNote::new(Pitch::B, Octave::FOUR),
+                            MidiNote::new(Pitch::E, Octave::FIVE),
+                        ] {
+                            let mut s = String::new();
+                            let n = note + Interval::new(i);
+
+                            if let Some(note) =
+                                midi_notes.iter().find(|note| note.pitch() == n.pitch())
+                            {
+                                if *functions {
+                                    s.push_str(
+                                        &(*note - MidiNote::new(chord.root(), Octave::FOUR))
+                                            .to_string(),
+                                    );
+                                } else {
+                                    s.push_str(&n.to_string());
+                                }
+                            }
+
+                            for _ in 0..5 - s.len() {
+                                s.push(' ');
+                            }
+
+                            print!("{}", s);
+                        }
+                        println!();
+                    }
+                } else {
+                    print_notes(chord)?;
+                }
+            }
+            Ok(())
         }
         Command::Key { root } => {
             let note: Note = root.parse().unwrap();
