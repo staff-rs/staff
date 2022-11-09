@@ -1,6 +1,6 @@
 use clap::{arg, Parser, Subcommand, ValueEnum};
 use staff::{
-    guitar::{MidiNotes, STANDARD},
+    guitar::{Fretboard, STANDARD},
     midi::{MidiNote, Octave},
     note::Accidental,
     Chord, Interval, Key, Note, Pitch, Scale,
@@ -95,7 +95,7 @@ fn main() -> Result {
         } => {
             if *frets {
                 let frets = names.iter().map(|s| s.parse::<u8>().ok());
-                let midi_notes: Vec<_> = MidiNotes::new(STANDARD, frets).collect();
+                let midi_notes: Vec<_> = Fretboard::new(STANDARD, frets).collect();
 
                 for i in 0..midi_notes.len() {
                     let chord = Chord::from_midi(midi_notes[i], midi_notes.iter().copied());

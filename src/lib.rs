@@ -36,7 +36,8 @@
 //! ]));
 //! ```
 
-#![cfg_attr(not(test), no_std)]
+// TODO alloc
+//#![cfg_attr(not(test), no_std)]
 
 pub mod chord;
 pub use chord::Chord;

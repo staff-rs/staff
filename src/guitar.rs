@@ -1,6 +1,7 @@
 use core::iter::Zip;
 
 use crate::{
+    chord::{self, Chords},
     midi::{MidiNote, Octave},
     Interval, Pitch,
 };
@@ -14,7 +15,7 @@ pub const STANDARD: [MidiNote; 6] = [
     MidiNote::new(Pitch::E, Octave::SIX),
 ];
 
-pub struct MidiNotes<T, F>
+pub struct Fretboard<T, F>
 where
     T: IntoIterator<Item = MidiNote>,
     F: IntoIterator<Item = Option<u8>>,
@@ -22,7 +23,7 @@ where
     iter: Zip<T::IntoIter, F::IntoIter>,
 }
 
-impl<T, F> MidiNotes<T, F>
+impl<T, F> Fretboard<T, F>
 where
     T: IntoIterator<Item = MidiNote>,
     F: IntoIterator<Item = Option<u8>>,
@@ -31,9 +32,14 @@ where
         let iter = tuning.into_iter().zip(frets);
         Self { iter }
     }
+
+    pub fn chords(self) -> Chords<Box<[MidiNote]>> {
+        let midi_notes: Vec<_> = self.collect();
+        chord::chords(midi_notes.into_boxed_slice())
+    }
 }
 
-impl<T, F> Iterator for MidiNotes<T, F>
+impl<T, F> Iterator for Fretboard<T, F>
 where
     T: IntoIterator<Item = MidiNote>,
     F: IntoIterator<Item = Option<u8>>,
