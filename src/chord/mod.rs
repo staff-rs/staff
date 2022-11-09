@@ -12,7 +12,23 @@ mod builder;
 pub use builder::Builder;
 
 mod iter;
-pub use iter::{Intervals, Iter};
+pub use self::iter::{Chords, Intervals, Iter};
+
+/// ```
+/// use staff::{chord, midi, Pitch, Chord};
+///
+/// let notes = [midi!(C, 4),midi!(E, 4), midi!(G, 4)];
+/// let chords = chord::chords(&notes);
+///
+/// let names = chords.map(|chord| chord.to_string());
+/// assert!(names.eq(["C", "Em/C(no5)", "Gm/C"]));
+/// ```
+pub fn chords<T>(midi_notes: T) -> Chords<T>
+where
+    T: AsRef<[MidiNote]>,
+{
+    Chords::new(midi_notes)
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -97,27 +113,26 @@ impl Chord {
     {
         let mut iter = iter.into_iter();
         let mut intervals = IntervalSet::default();
+        let mut is_inversion = false;
 
         let bass_note = iter.next().unwrap();
         let root_pitch = root.pitch();
         let bass = if bass_note != root {
+            is_inversion = true;
+
             let bass_pitch = bass_note.pitch();
             intervals.push(bass_pitch.abs_diff(root_pitch));
+
             Some(bass_note.pitch())
         } else {
             intervals.push(Interval::UNISON);
             None
         };
 
-        let is_inversion = if let Some(note) = iter.next() {
-            let ret = if note == root { false } else { true };
-
+        if let Some(note) = iter.next() {
             intervals.push(note.pitch().abs_diff(root_pitch));
             intervals.extend(iter.map(|midi| midi - root));
-            ret
-        } else {
-            false
-        };
+        }
 
         Self {
             root: root.pitch(),
