@@ -98,7 +98,8 @@ fn main() -> Result {
                 let midi_notes: Vec<_> = Fretboard::new(STANDARD, frets).collect();
 
                 for i in 0..midi_notes.len() {
-                    let chord = Chord::from_midi(midi_notes[i], midi_notes.iter().copied()).unwrap();
+                    let chord =
+                        Chord::from_midi(midi_notes[i], midi_notes.iter().copied()).unwrap();
                     println!("{}", chord);
                 }
 

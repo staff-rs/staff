@@ -77,6 +77,10 @@ impl MidiNote {
     pub const fn into_byte(self) -> u8 {
         self.0
     }
+
+    pub fn abs_diff(self, rhs: Self) -> Interval {
+        Interval::new((self.into_byte() as u8).abs_diff(rhs.into_byte()))
+    }
 }
 
 impl Add<Interval> for MidiNote {

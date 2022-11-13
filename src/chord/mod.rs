@@ -8,12 +8,10 @@ use core::{
     str::FromStr,
 };
 
-mod builder;
-pub use builder::Builder;
-
 mod iter;
 pub use self::iter::{Chords, Intervals, Iter};
 
+/*
 /// ```
 /// use staff::{chord, midi, Pitch, Chord};
 ///
@@ -23,6 +21,7 @@ pub use self::iter::{Chords, Intervals, Iter};
 /// let names = chords.map(|chord| chord.to_string());
 /// assert!(names.eq(["C", "Em/C(no5)", "Gm/C"]));
 /// ```
+*/
 pub fn chords<T>(midi_notes: T) -> Chords<T>
 where
     T: AsRef<[MidiNote]>,
@@ -33,65 +32,77 @@ where
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Chord {
-    pub root: Pitch,
-    #[cfg_attr(feature = "serde", serde(flatten))]
-    pub builder: Builder,
+    pub root: MidiNote,
+    pub bass: Option<MidiNote>,
+    pub is_inversion: bool,
+    pub intervals: IntervalSet,
 }
 
 impl Chord {
-    pub fn major() -> Builder {
-        Self::builder()
+    pub fn new(root: MidiNote) -> Self {
+        Self {
+            root,
+            bass: None,
+            is_inversion: false,
+            intervals: IntervalSet::default(),
+        }
+    }
+
+    pub fn bass(mut self, bass_note: MidiNote) -> Self {
+        self.bass = Some(bass_note);
+        self
+    }
+
+    pub fn inversion(mut self, bass_note: MidiNote) -> Self {
+        self.is_inversion = true;
+        self.bass(bass_note)
+    }
+
+    pub fn interval(mut self, interval: Interval) -> Self {
+        self.intervals.push(interval);
+        self
+    }
+
+    pub fn root(self) -> Self {
+        self.interval(Interval::UNISON)
+    }
+
+    pub fn major(root: MidiNote) -> Self {
+        Self::new(root)
             .root()
             .interval(Interval::MAJOR_THIRD)
             .interval(Interval::PERFECT_FIFTH)
     }
 
-    pub fn minor() -> Builder {
-        Self::builder()
+    pub fn minor(root: MidiNote) -> Self {
+        Self::new(root)
             .root()
             .interval(Interval::MINOR_THIRD)
             .interval(Interval::PERFECT_FIFTH)
     }
 
-    /// ```
-    /// use staff::{Chord, Pitch};
-    ///
-    /// // D7
-    /// let chord = Chord::seventh().build(Pitch::D);
-    ///
-    /// let notes = [Pitch::D, Pitch::FSharp, Pitch::A, Pitch::C];
-    /// assert!(chord.into_iter().eq(notes));
-    /// ```
-    pub fn seventh() -> Builder {
-        Self::major().interval(Interval::MINOR_SEVENTH)
+    pub fn seventh(root: MidiNote) -> Self {
+        Self::major(root).interval(Interval::MINOR_SEVENTH)
     }
 
-    pub fn major_seventh() -> Builder {
-        Self::major().interval(Interval::MAJOR_SEVENTH)
+    pub fn major_seventh(root: MidiNote) -> Self {
+        Self::major(root).interval(Interval::MAJOR_SEVENTH)
     }
 
-    pub fn minor_seventh() -> Builder {
-        Self::minor().interval(Interval::MINOR_SEVENTH)
+    pub fn minor_seventh(root: MidiNote) -> Self {
+        Self::minor(root).interval(Interval::MINOR_SEVENTH)
     }
 
-    pub fn minor_major_seventh() -> Builder {
-        Self::minor().interval(Interval::MAJOR_SEVENTH)
+    pub fn minor_major_seventh(root: MidiNote) -> Self {
+        Self::minor(root).interval(Interval::MAJOR_SEVENTH)
     }
 
-    pub fn half_diminished() -> Builder {
-        Self::builder()
+    pub fn half_diminished(root: MidiNote) -> Self {
+        Self::new(root)
             .root()
             .interval(Interval::MINOR_THIRD)
             .interval(Interval::TRITONE)
             .interval(Interval::MINOR_SEVENTH)
-    }
-
-    pub fn builder() -> Builder {
-        Builder {
-            bass: None,
-            is_inversion: false,
-            intervals: IntervalSet::default(),
-        }
     }
 
     /// ```
@@ -100,7 +111,7 @@ impl Chord {
     /// let chord = Chord::from_midi(
     ///     midi!(C, 4),
     ///     [midi!(E, 3), midi!(G, 3), midi!(C, 4)]
-    /// );
+    /// ).unwrap();
     ///
     /// assert_eq!(chord.to_string(), "C/E");
     ///
@@ -116,62 +127,50 @@ impl Chord {
         let mut is_inversion = false;
 
         let bass_note = iter.next()?;
-        let root_pitch = root.pitch();
+
         let bass = if bass_note != root {
             is_inversion = true;
 
-            let bass_pitch = bass_note.pitch();
-            intervals.push(bass_pitch.abs_diff(root_pitch));
-
-            Some(bass_note.pitch())
+            intervals.push(bass_note.abs_diff(root));
+            Some(bass_note)
         } else {
             intervals.push(Interval::UNISON);
             None
         };
 
         if let Some(note) = iter.next() {
-            intervals.push(note.pitch().abs_diff(root_pitch));
+            intervals.push(note.abs_diff(root));
             intervals.extend(iter.map(|midi| midi - root));
         }
 
-        let builder = Builder {
+        Some(Self {
+            root,
             bass,
             is_inversion,
             intervals,
-        };
-        Some(Self {
-            root: root.pitch(),
-            builder,
         })
-    }
-
-    pub fn root(&self) -> Pitch {
-        self.root
     }
 
     pub fn intervals(self) -> Intervals {
         // TODO maybe use rotate_right?
-        let (high, low) = if let Some(bass) = self.builder.bass {
+        let (high, low) = if let Some(bass) = self.bass {
             let bass_interval =
                 Interval::new((self.root.into_byte() as i8 - bass.into_byte() as i8).abs() as u8);
-            if self.builder.is_inversion {
-                self.builder.intervals.split(bass_interval)
+            if self.is_inversion {
+                self.intervals.split(bass_interval)
             } else {
-                (
-                    self.builder.intervals,
-                    [bass_interval].into_iter().collect(),
-                )
+                (self.intervals, [bass_interval].into_iter().collect())
             }
         } else {
-            (IntervalSet::default(), self.builder.intervals)
+            (IntervalSet::default(), self.intervals)
         };
 
         Intervals { low, high }
     }
 
-    pub fn midi_notes(self, octave: Octave) -> MidiNotes {
+    pub fn midi_notes(self) -> MidiNotes {
         MidiNotes {
-            root: MidiNote::new(self.root, octave),
+            root: self.root,
             intervals: self.intervals(),
         }
     }
@@ -200,7 +199,7 @@ impl FromIterator<MidiNote> for Chord {
 }
 
 impl IntoIterator for Chord {
-    type Item = Pitch;
+    type Item = MidiNote;
 
     type IntoIter = Iter;
 
@@ -216,32 +215,32 @@ impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.root.fmt(f)?;
 
-        if self.builder.intervals.contains(Interval::MINOR_THIRD) {
+        if self.intervals.contains(Interval::MINOR_THIRD) {
             f.write_char('m')?
-        } else if self.builder.intervals.contains(Interval::MAJOR_SECOND) {
+        } else if self.intervals.contains(Interval::MAJOR_SECOND) {
             f.write_str("sus2")?
-        } else if self.builder.intervals.contains(Interval::PERFECT_FOURTH) {
+        } else if self.intervals.contains(Interval::PERFECT_FOURTH) {
             f.write_str("sus4")?
         }
 
         let mut has_fifth = true;
-        if self.builder.intervals.contains(Interval::TRITONE) {
+        if self.intervals.contains(Interval::TRITONE) {
             f.write_str("b5")?
-        } else if !self.builder.intervals.contains(Interval::PERFECT_FIFTH) {
+        } else if !self.intervals.contains(Interval::PERFECT_FIFTH) {
             has_fifth = false;
         }
 
-        if self.builder.intervals.contains(Interval::MINOR_SEVENTH) {
+        if self.intervals.contains(Interval::MINOR_SEVENTH) {
             f.write_char('7')?
-        } else if self.builder.intervals.contains(Interval::MAJOR_SEVENTH) {
+        } else if self.intervals.contains(Interval::MAJOR_SEVENTH) {
             f.write_str("maj7")?
         }
 
-        if let Some(bass) = self.builder.bass {
+        if let Some(bass) = self.bass {
             write!(f, "/{}", bass)?;
         }
 
-        if !self.builder.intervals.contains(Interval::UNISON) {
+        if !self.intervals.contains(Interval::UNISON) {
             f.write_str("(no root)")?
         }
 
@@ -283,29 +282,25 @@ impl FromStr for Chord {
             _ => natural.into(),
         };
 
-        let mut builder = match next {
+        let mut chord = match next {
             Some('m') => {
                 next = chars.next();
-                Chord::minor()
+                Chord::minor(MidiNote::new(root, Octave::FOUR))
             }
-            _ => Chord::major(),
+            _ => Chord::major(MidiNote::new(root, Octave::FOUR)),
         };
 
         loop {
             if let Some(c) = next {
                 match c {
-                    'b' => {
-                        match  chars.next() {
-                            Some(c) => {
-                                match c {
-                                    '5' =>  builder.intervals.push(Interval::TRITONE),
-                                    _ => todo!()
-                                }
-                            }
-                            None => break
-                        }
-                    }
-                    '7' => builder.intervals.push(Interval::MINOR_SEVENTH),
+                    'b' => match chars.next() {
+                        Some(c) => match c {
+                            '5' => chord.intervals.push(Interval::TRITONE),
+                            _ => todo!(),
+                        },
+                        None => break,
+                    },
+                    '7' => chord.intervals.push(Interval::MINOR_SEVENTH),
                     _ => todo!(),
                 }
                 next = chars.next();
@@ -314,23 +309,46 @@ impl FromStr for Chord {
             }
         }
 
-        Ok(builder.build(root))
+        Ok(chord)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{Chord, Pitch};
+    use crate::{
+        midi::{self, MidiNote, Octave},
+        Chord, Pitch,
+    };
 
     #[test]
     fn it_parses_d_double_sharp_major() {
         let chord: Chord = "D##".parse().unwrap();
-        assert_eq!(chord, Chord::major().build(Pitch::E));
+        assert_eq!(chord, Chord::major(MidiNote::new(Pitch::E, Octave::FOUR)));
     }
 
     #[test]
     fn it_parses_c_minor_seven() {
         let chord: Chord = "Cm7".parse().unwrap();
-        assert_eq!(chord, Chord::minor_seventh().build(Pitch::C));
+        assert_eq!(
+            chord,
+            Chord::minor_seventh(MidiNote::new(Pitch::C, Octave::FOUR))
+        );
+    }
+
+    #[test]
+    fn f() {
+        let chord = Chord::from_midi(
+            MidiNote::new(Pitch::C, Octave::FOUR),
+            [
+                MidiNote::new(Pitch::C, Octave::FOUR),
+                MidiNote::new(Pitch::E, Octave::FOUR),
+                MidiNote::new(Pitch::G, Octave::FOUR),
+                MidiNote::new(Pitch::B, Octave::FOUR),
+                MidiNote::new(Pitch::D, Octave::FIVE),
+            ],
+        )
+        .unwrap();
+
+        dbg!(chord.to_string());
     }
 }

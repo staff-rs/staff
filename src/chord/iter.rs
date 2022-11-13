@@ -14,12 +14,12 @@ impl Iterator for Intervals {
 }
 
 pub struct Iter {
-    pub(super) root: Pitch,
+    pub(super) root: MidiNote,
     pub(super) intervals: Intervals,
 }
 
 impl Iterator for Iter {
-    type Item = Pitch;
+    type Item = MidiNote;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.intervals.next().map(|interval| self.root + interval)
