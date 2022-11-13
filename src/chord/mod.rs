@@ -35,7 +35,7 @@ where
 pub struct Chord {
     root: Pitch,
     #[cfg_attr(feature = "serde", serde(flatten))]
-    builder: Builder,
+    pub builder: Builder,
 }
 
 impl Chord {
@@ -107,7 +107,7 @@ impl Chord {
     /// let pitches = [Pitch::E, Pitch::G, Pitch::C];
     /// assert!(chord.into_iter().eq(pitches));
     /// ```
-    pub fn from_midi<I>(root: MidiNote, iter: I) -> Self
+    pub fn from_midi<I>(root: MidiNote, iter: I) -> Option<Self>
     where
         I: IntoIterator<Item = MidiNote>,
     {
@@ -115,7 +115,7 @@ impl Chord {
         let mut intervals = IntervalSet::default();
         let mut is_inversion = false;
 
-        let bass_note = iter.next().unwrap();
+        let bass_note = iter.next()?;
         let root_pitch = root.pitch();
         let bass = if bass_note != root {
             is_inversion = true;
@@ -134,14 +134,15 @@ impl Chord {
             intervals.extend(iter.map(|midi| midi - root));
         }
 
-        Self {
+        let builder = Builder {
+            bass,
+            is_inversion,
+            intervals,
+        };
+        Some(Self {
             root: root.pitch(),
-            builder: Builder {
-                bass,
-                is_inversion,
-                intervals,
-            },
-        }
+            builder,
+        })
     }
 
     pub fn root(&self) -> Pitch {
@@ -194,7 +195,7 @@ impl FromIterator<MidiNote> for Chord {
         let mut notes = iter.into_iter();
         let root = notes.next().unwrap_or(MidiNote::from_byte(0));
 
-        Self::from_midi(root, core::iter::once(root).chain(notes))
+        Self::from_midi(root, core::iter::once(root).chain(notes)).unwrap()
     }
 }
 

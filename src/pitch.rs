@@ -75,6 +75,13 @@ impl Pitch {
     pub fn abs_diff(self, rhs: Self) -> Interval {
         Interval::new((self as u8).abs_diff(rhs as u8))
     }
+
+    pub fn is_natural(self) -> bool {
+        match self {
+            Self::C | Self::D | Self::E | Self::F | Self::G | Self::A | Self::B => true,
+            _ => false,
+        }
+    }
 }
 
 impl From<u8> for Pitch {

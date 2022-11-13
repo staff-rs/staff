@@ -47,7 +47,7 @@ where
     type Item = Chord;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.midi_notes.as_ref().get(self.pos).map(|root| {
+        self.midi_notes.as_ref().get(self.pos).and_then(|root| {
             self.pos += 1;
             Chord::from_midi(*root, self.midi_notes.as_ref().iter().copied())
         })
