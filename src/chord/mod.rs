@@ -33,7 +33,7 @@ where
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Chord {
-    root: Pitch,
+    pub root: Pitch,
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub builder: Builder,
 }
@@ -294,6 +294,17 @@ impl FromStr for Chord {
         loop {
             if let Some(c) = next {
                 match c {
+                    'b' => {
+                        match  chars.next() {
+                            Some(c) => {
+                                match c {
+                                    '5' =>  builder.intervals.push(Interval::TRITONE),
+                                    _ => todo!()
+                                }
+                            }
+                            None => break
+                        }
+                    }
                     '7' => builder.intervals.push(Interval::MINOR_SEVENTH),
                     _ => todo!(),
                 }
