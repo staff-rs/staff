@@ -9,7 +9,7 @@ use core::{
 };
 
 mod iter;
-pub use self::iter::{Chords, Intervals, Iter};
+pub use self::iter::{Chords, Iter};
 
 /*
 /// ```

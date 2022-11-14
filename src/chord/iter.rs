@@ -1,18 +1,5 @@
 use crate::{midi::MidiNote, set::IntervalSet, Chord, Interval};
 
-pub struct Intervals {
-    pub(super) low: IntervalSet,
-    pub(super) high: IntervalSet,
-}
-
-impl Iterator for Intervals {
-    type Item = Interval;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.low.next().or_else(|| self.high.next())
-    }
-}
-
 pub struct Iter {
     pub(super) root: MidiNote,
     pub(super) intervals: IntervalSet,
