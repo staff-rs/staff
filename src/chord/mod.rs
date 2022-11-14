@@ -48,23 +48,23 @@ impl Chord {
         }
     }
 
-    pub fn bass(mut self, bass_note: MidiNote) -> Self {
+    pub fn with_bass(mut self, bass_note: MidiNote) -> Self {
         self.bass = Some(bass_note);
         self
     }
 
-    pub fn inversion(mut self, bass_note: MidiNote) -> Self {
+    pub fn with_inversion(mut self, bass_note: MidiNote) -> Self {
         self.is_inversion = true;
-        self.bass(bass_note)
+        self.with_bass(bass_note)
     }
 
-    pub fn interval(mut self, interval: Interval) -> Self {
+    pub fn with_interval(mut self, interval: Interval) -> Self {
         self.intervals.push(interval);
         self
     }
 
     pub fn root(self) -> Self {
-        self.interval(Interval::UNISON)
+        self.with_interval(Interval::UNISON)
     }
 
     /// ```
@@ -87,39 +87,39 @@ impl Chord {
     pub fn major(root: MidiNote) -> Self {
         Self::new(root)
             .root()
-            .interval(Interval::MAJOR_THIRD)
-            .interval(Interval::PERFECT_FIFTH)
+            .with_interval(Interval::MAJOR_THIRD)
+            .with_interval(Interval::PERFECT_FIFTH)
     }
 
     pub fn minor(root: MidiNote) -> Self {
         Self::new(root)
             .root()
-            .interval(Interval::MINOR_THIRD)
-            .interval(Interval::PERFECT_FIFTH)
+            .with_interval(Interval::MINOR_THIRD)
+            .with_interval(Interval::PERFECT_FIFTH)
     }
 
     pub fn seventh(root: MidiNote) -> Self {
-        Self::major(root).interval(Interval::MINOR_SEVENTH)
+        Self::major(root).with_interval(Interval::MINOR_SEVENTH)
     }
 
     pub fn major_seventh(self) -> Self {
-        self.interval(Interval::MAJOR_SEVENTH)
+        self.with_interval(Interval::MAJOR_SEVENTH)
     }
 
     pub fn minor_seventh(root: MidiNote) -> Self {
-        Self::minor(root).interval(Interval::MINOR_SEVENTH)
+        Self::minor(root).with_interval(Interval::MINOR_SEVENTH)
     }
 
     pub fn major_ninth(self) -> Self {
-        self.interval(Interval::MAJOR_NINTH)
+        self.with_interval(Interval::MAJOR_NINTH)
     }
 
     pub fn half_diminished(root: MidiNote) -> Self {
         Self::new(root)
             .root()
-            .interval(Interval::MINOR_THIRD)
-            .interval(Interval::TRITONE)
-            .interval(Interval::MINOR_SEVENTH)
+            .with_interval(Interval::MINOR_THIRD)
+            .with_interval(Interval::TRITONE)
+            .with_interval(Interval::MINOR_SEVENTH)
     }
 
     /// ```
@@ -180,6 +180,10 @@ impl Chord {
             root: self.bass.unwrap_or(self.root),
             intervals: self.intervals,
         }
+    }
+
+    pub fn bass(&self) -> MidiNote {
+        self.bass.unwrap_or(self.root)
     }
 }
 
