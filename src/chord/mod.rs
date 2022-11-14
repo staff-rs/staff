@@ -162,6 +162,26 @@ impl Chord {
         })
     }
 
+    /// Returns the bass, or lowest, note of the chord.
+    /// ```
+    /// use staff::{midi, Chord};
+    ///
+    /// let chord = Chord::major(midi!(C, 3))
+    ///     .with_bass(midi!(E, 4));
+    ///
+    /// assert_eq!(chord.bass(), midi!(E, 4))
+    /// ```
+    /// Returns the root note if no other bass note is present.
+    /// ```
+    /// use staff::{midi, Chord};
+    ///
+    /// let chord = Chord::major(midi!(G, 4));
+    /// assert_eq!(chord.bass(), midi!(G, 4))
+    /// ```
+    pub fn bass(&self) -> MidiNote {
+        self.bass.unwrap_or(self.root)
+    }
+
     /// ```
     /// use staff::{midi, Chord, Interval};
     ///
@@ -176,13 +196,9 @@ impl Chord {
 
     pub fn midi_notes(self) -> MidiNotes {
         MidiNotes {
-            root: self.bass.unwrap_or(self.root),
+            root: self.bass(),
             intervals: self.intervals,
         }
-    }
-
-    pub fn bass(&self) -> MidiNote {
-        self.bass.unwrap_or(self.root)
     }
 }
 
@@ -215,7 +231,7 @@ impl IntoIterator for Chord {
 
     fn into_iter(self) -> Self::IntoIter {
         Iter {
-            root: self.bass.unwrap_or(self.root),
+            root: self.bass(),
             intervals: self.intervals,
         }
     }
