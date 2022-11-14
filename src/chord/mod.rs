@@ -153,10 +153,6 @@ impl Chord {
         let lowest_note = bass.unwrap_or(root);
         intervals.extend(iter.map(|midi| midi - lowest_note));
 
-        for i in intervals.clone().into_iter() {
-            dbg!(i);
-        }
-
         Some(Self {
             root,
             bass,
@@ -174,7 +170,6 @@ impl Chord {
         self.intervals
             .map(|interval| {
                 let midi_note = self.bass.unwrap_or(self.root) + interval;
-                dbg!(midi_note);
                 midi_note.abs_diff(self.root)
             })
             .collect()
@@ -217,7 +212,7 @@ impl IntoIterator for Chord {
 
     fn into_iter(self) -> Self::IntoIter {
         Iter {
-            root: dbg!(self.bass.unwrap_or(self.root)),
+            root: self.bass.unwrap_or(self.root),
             intervals: self.intervals,
         }
     }

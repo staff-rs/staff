@@ -77,12 +77,10 @@ mod tests {
     #[test]
     fn c_major() {
         let s = Scale::major(Note::from(Natural::C));
-        dbg!(s.collect::<Vec<_>>());
     }
 
     #[test]
     fn g_flat_major() {
         let s = Scale::major(Note::flat(Natural::G));
-        dbg!(s.collect::<Vec<_>>());
     }
 }
