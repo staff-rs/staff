@@ -15,7 +15,7 @@ impl Iterator for Intervals {
 
 pub struct Iter {
     pub(super) root: MidiNote,
-    pub(super) intervals: Intervals,
+    pub(super) intervals: IntervalSet,
 }
 
 impl Iterator for Iter {

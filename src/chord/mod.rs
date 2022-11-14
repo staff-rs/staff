@@ -67,6 +67,23 @@ impl Chord {
         self.interval(Interval::UNISON)
     }
 
+    /// ```
+    /// use staff::{Chord, midi};
+    ///
+    /// let chord = Chord::major(midi!(C, 4))
+    ///     .major_seventh()
+    ///     .major_ninth();
+    ///
+    /// let midi_notes = [
+    ///     midi!(C, 4),
+    ///     midi!(E, 4),
+    ///     midi!(G, 4),
+    ///     midi!(B, 4),
+    ///     midi!(D, 5),
+    /// ];
+    ///
+    /// assert!(chord.into_iter().eq(midi_notes));
+    /// ```
     pub fn major(root: MidiNote) -> Self {
         Self::new(root)
             .root()
@@ -85,16 +102,16 @@ impl Chord {
         Self::major(root).interval(Interval::MINOR_SEVENTH)
     }
 
-    pub fn major_seventh(root: MidiNote) -> Self {
-        Self::major(root).interval(Interval::MAJOR_SEVENTH)
+    pub fn major_seventh(self) -> Self {
+        self.interval(Interval::MAJOR_SEVENTH)
     }
 
     pub fn minor_seventh(root: MidiNote) -> Self {
         Self::minor(root).interval(Interval::MINOR_SEVENTH)
     }
 
-    pub fn minor_major_seventh(root: MidiNote) -> Self {
-        Self::minor(root).interval(Interval::MAJOR_SEVENTH)
+    pub fn major_ninth(self) -> Self {
+        self.interval(Interval::MAJOR_NINTH)
     }
 
     pub fn half_diminished(root: MidiNote) -> Self {
@@ -108,15 +125,12 @@ impl Chord {
     /// ```
     /// use staff::{midi, Chord, Pitch};
     ///
-    /// let chord = Chord::from_midi(
-    ///     midi!(C, 4),
-    ///     [midi!(E, 3), midi!(G, 3), midi!(C, 4)]
-    /// ).unwrap();
+    /// let notes = [midi!(E, 3), midi!(G, 3), midi!(C, 4)];
+    /// let chord = Chord::from_midi(midi!(C, 4), notes).unwrap();
     ///
-    /// assert_eq!(chord.to_string(), "C/E");
+    /// assert_eq!(chord.to_string(), "C4/E3");
     ///
-    /// let pitches = [Pitch::E, Pitch::G, Pitch::C];
-    /// assert!(chord.into_iter().eq(pitches));
+    /// assert!(chord.into_iter().eq(notes));
     /// ```
     pub fn from_midi<I>(root: MidiNote, iter: I) -> Option<Self>
     where
@@ -130,17 +144,17 @@ impl Chord {
 
         let bass = if bass_note != root {
             is_inversion = true;
-
-            intervals.push(bass_note.abs_diff(root));
             Some(bass_note)
         } else {
-            intervals.push(Interval::UNISON);
             None
         };
+        intervals.push(Interval::UNISON);
 
-        if let Some(note) = iter.next() {
-            intervals.push(note.abs_diff(root));
-            intervals.extend(iter.map(|midi| midi - root));
+        let lowest_note = bass.unwrap_or(root);
+        intervals.extend(iter.map(|midi| midi - lowest_note));
+
+        for i in intervals.clone().into_iter() {
+            dbg!(i);
         }
 
         Some(Self {
@@ -151,34 +165,32 @@ impl Chord {
         })
     }
 
-    pub fn intervals(self) -> Intervals {
-        // TODO maybe use rotate_right?
-        let (high, low) = if let Some(bass) = self.bass {
-            let bass_interval =
-                Interval::new((self.root.into_byte() as i8 - bass.into_byte() as i8).abs() as u8);
-            if self.is_inversion {
-                self.intervals.split(bass_interval)
-            } else {
-                (self.intervals, [bass_interval].into_iter().collect())
-            }
-        } else {
-            (IntervalSet::default(), self.intervals)
-        };
-
-        Intervals { low, high }
+    /// ```
+    /// use staff::{midi, Chord};
+    ///
+    /// let chord = Chord::major(midi!(C, 4));
+    /// ```
+    pub fn intervals(self) -> IntervalSet {
+        self.intervals
+            .map(|interval| {
+                let midi_note = self.bass.unwrap_or(self.root) + interval;
+                dbg!(midi_note);
+                midi_note.abs_diff(self.root)
+            })
+            .collect()
     }
 
     pub fn midi_notes(self) -> MidiNotes {
         MidiNotes {
-            root: self.root,
-            intervals: self.intervals(),
+            root: self.bass.unwrap_or(self.root),
+            intervals: self.intervals,
         }
     }
 }
 
 pub struct MidiNotes {
     root: MidiNote,
-    intervals: Intervals,
+    intervals: IntervalSet,
 }
 
 impl Iterator for MidiNotes {
@@ -205,8 +217,8 @@ impl IntoIterator for Chord {
 
     fn into_iter(self) -> Self::IntoIter {
         Iter {
-            root: self.root,
-            intervals: self.intervals(),
+            root: dbg!(self.bass.unwrap_or(self.root)),
+            intervals: self.intervals,
         }
     }
 }
@@ -215,24 +227,30 @@ impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.root.fmt(f)?;
 
-        if self.intervals.contains(Interval::MINOR_THIRD) {
+        dbg!("{:?}", self.clone().intervals().collect::<Vec<_>>());
+        dbg!(
+            "{:?}",
+            self.clone().intervals().contains(Interval::PERFECT_FOURTH)
+        );
+
+        if self.clone().intervals().contains(Interval::MINOR_THIRD) {
             f.write_char('m')?
-        } else if self.intervals.contains(Interval::MAJOR_SECOND) {
+        } else if self.clone().intervals().contains(Interval::MAJOR_SECOND) {
             f.write_str("sus2")?
-        } else if self.intervals.contains(Interval::PERFECT_FOURTH) {
+        } else if self.clone().intervals().contains(Interval::PERFECT_FOURTH) {
             f.write_str("sus4")?
         }
 
         let mut has_fifth = true;
-        if self.intervals.contains(Interval::TRITONE) {
+        if self.clone().intervals().contains(Interval::TRITONE) {
             f.write_str("b5")?
-        } else if !self.intervals.contains(Interval::PERFECT_FIFTH) {
+        } else if !self.clone().intervals().contains(Interval::PERFECT_FIFTH) {
             has_fifth = false;
         }
 
-        if self.intervals.contains(Interval::MINOR_SEVENTH) {
+        if self.clone().intervals().contains(Interval::MINOR_SEVENTH) {
             f.write_char('7')?
-        } else if self.intervals.contains(Interval::MAJOR_SEVENTH) {
+        } else if self.clone().intervals().contains(Interval::MAJOR_SEVENTH) {
             f.write_str("maj7")?
         }
 
@@ -240,7 +258,7 @@ impl fmt::Display for Chord {
             write!(f, "/{}", bass)?;
         }
 
-        if !self.intervals.contains(Interval::UNISON) {
+        if !self.clone().intervals().contains(Interval::UNISON) {
             f.write_str("(no root)")?
         }
 

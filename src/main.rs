@@ -109,7 +109,7 @@ fn main() -> Result {
             for name in names {
                 let chord: Chord = name.parse().unwrap();
                 if *guitar {
-                    let midi_notes: Vec<_> = chord.clone().midi_notes(Octave::FOUR).collect();
+                    let midi_notes: Vec<_> = chord.clone().midi_notes().collect();
                     for i in 0..16 {
                         let s = i.to_string();
                         // TODO handle other cases

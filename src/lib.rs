@@ -7,15 +7,12 @@
 //! use staff::{midi, Chord, Pitch};
 //!
 //! // C/E
-//! let chord = Chord::from_midi(
-//!     midi!(C, 4),
-//!     [midi!(E, 3), midi!(G, 3), midi!(C, 4)]
-//! );
+//! let notes = [midi!(E, 3), midi!(G, 3), midi!(C, 4)];
+//! let chord = Chord::from_midi(midi!(C, 4), notes).unwrap();
 //!
-//! assert_eq!(chord.to_string(), "C/E");
+//! assert_eq!(chord.to_string(), "C4/E3");
 //!
-//! let pitches = [Pitch::E, Pitch::G, Pitch::C];
-//! assert!(chord.into_iter().eq(pitches));
+//! assert!(chord.into_iter().eq(notes));
 //! ```
 //!
 //! Create a C Major scale and iterate over its notes.

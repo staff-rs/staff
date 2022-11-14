@@ -79,7 +79,12 @@ impl MidiNote {
     }
 
     pub fn abs_diff(self, rhs: Self) -> Interval {
-        Interval::new((self.into_byte() as u8).abs_diff(rhs.into_byte()))
+        let interval = Interval::new((self.into_byte() as u8).abs_diff(rhs.into_byte()));
+        if self < rhs {
+            Interval::OCTAVE - interval
+        } else {
+            interval
+        }
     }
 }
 

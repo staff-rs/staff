@@ -1,5 +1,6 @@
 use core::fmt::{self, Write};
 use core::ops::Add;
+use std::ops::Sub;
 
 /// Music interval in semitones.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -31,6 +32,11 @@ impl Interval {
     pub const MINOR_SEVENTH: Self = Self::new(10);
     pub const MAJOR_SEVENTH: Self = Self::new(11);
 
+    pub const OCTAVE: Self = Self::new(12);
+
+    pub const MINOR_NINTH: Self = Self::new(13);
+    pub const MAJOR_NINTH: Self = Self::new(14);
+
     pub const THIRTEENTH: Self = Self::new(21);
 
     pub const fn new(semitones: u8) -> Self {
@@ -59,6 +65,14 @@ impl Add for Interval {
 
     fn add(self, rhs: Self) -> Self {
         Self::new(self.semitones() + rhs.semitones())
+    }
+}
+
+impl Sub for Interval {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self {
+        Self::new(self.semitones().abs_diff(rhs.semitones()))
     }
 }
 
