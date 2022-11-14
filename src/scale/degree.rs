@@ -68,19 +68,3 @@ impl Degree for MidiNote {
         self + interval
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::Scale;
-
-    #[test]
-    fn c_major() {
-        let s = Scale::major(Note::from(Natural::C));
-    }
-
-    #[test]
-    fn g_flat_major() {
-        let s = Scale::major(Note::flat(Natural::G));
-    }
-}

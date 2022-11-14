@@ -13,6 +13,27 @@ impl Iterator for Iter {
     }
 }
 
+pub struct Intervals {
+    chord: Chord,
+}
+
+impl From<Chord> for Intervals {
+    fn from(chord: Chord) -> Self {
+        Self { chord }
+    }
+}
+
+impl Iterator for Intervals {
+    type Item = Interval;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.chord.intervals.next().map(|interval| {
+            let midi_note = self.chord.bass.unwrap_or(self.chord.root) + interval;
+            midi_note.abs_diff(self.chord.root)
+        })
+    }
+}
+
 pub struct Chords<T> {
     midi_notes: T,
     pos: usize,

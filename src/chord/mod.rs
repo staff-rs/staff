@@ -9,6 +9,7 @@ use core::{
 };
 
 mod iter;
+use self::iter::Intervals;
 pub use self::iter::{Chords, Iter};
 
 /*
@@ -162,17 +163,15 @@ impl Chord {
     }
 
     /// ```
-    /// use staff::{midi, Chord};
+    /// use staff::{midi, Chord, Interval};
     ///
     /// let chord = Chord::major(midi!(C, 4));
+    ///
+    /// let intervals = [Interval::UNISON, Interval::MAJOR_THIRD, Interval::PERFECT_FIFTH];
+    /// assert!(chord.intervals().eq(intervals));
     /// ```
-    pub fn intervals(self) -> IntervalSet {
-        self.intervals
-            .map(|interval| {
-                let midi_note = self.bass.unwrap_or(self.root) + interval;
-                midi_note.abs_diff(self.root)
-            })
-            .collect()
+    pub fn intervals(self) -> Intervals {
+        self.into()
     }
 
     pub fn midi_notes(self) -> MidiNotes {
@@ -226,7 +225,7 @@ impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.root.fmt(f)?;
 
-        let intervals = self.clone().intervals();
+        let intervals: IntervalSet = self.clone().intervals().collect();
 
         if intervals.contains(Interval::MINOR_THIRD) {
             f.write_char('m')?
