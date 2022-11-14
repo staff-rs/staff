@@ -227,38 +227,46 @@ impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.root.fmt(f)?;
 
-        dbg!("{:?}", self.clone().intervals().collect::<Vec<_>>());
-        dbg!(
-            "{:?}",
-            self.clone().intervals().contains(Interval::PERFECT_FOURTH)
-        );
+        let intervals = self.clone().intervals();
 
-        if self.clone().intervals().contains(Interval::MINOR_THIRD) {
+        if intervals.contains(Interval::MINOR_THIRD) {
             f.write_char('m')?
-        } else if self.clone().intervals().contains(Interval::MAJOR_SECOND) {
+        } else if intervals.contains(Interval::MAJOR_SECOND) {
             f.write_str("sus2")?
-        } else if self.clone().intervals().contains(Interval::PERFECT_FOURTH) {
+        } else if intervals.contains(Interval::PERFECT_FOURTH) {
             f.write_str("sus4")?
         }
 
         let mut has_fifth = true;
-        if self.clone().intervals().contains(Interval::TRITONE) {
+        if intervals.contains(Interval::TRITONE) {
             f.write_str("b5")?
-        } else if !self.clone().intervals().contains(Interval::PERFECT_FIFTH) {
+        } else if !intervals.contains(Interval::PERFECT_FIFTH) {
             has_fifth = false;
         }
 
-        if self.clone().intervals().contains(Interval::MINOR_SEVENTH) {
+        if intervals.contains(Interval::MINOR_SEVENTH) {
             f.write_char('7')?
-        } else if self.clone().intervals().contains(Interval::MAJOR_SEVENTH) {
-            f.write_str("maj7")?
+        } else if intervals.contains(Interval::MAJOR_SEVENTH) {
+            if intervals.contains(Interval::MAJOR_NINTH) {
+                if intervals.contains(Interval::MAJOR_ELEVENTH) {
+                    if intervals.contains(Interval::MAJOR_THIRTEENTH) {
+                        f.write_str("maj13")?
+                    } else {
+                        f.write_str("maj11")?
+                    }
+                } else {
+                    f.write_str("maj9")?
+                }
+            } else {
+                f.write_str("maj7")?
+            }
         }
 
         if let Some(bass) = self.bass {
             write!(f, "/{}", bass)?;
         }
 
-        if !self.clone().intervals().contains(Interval::UNISON) {
+        if !intervals.contains(Interval::UNISON) {
             f.write_str("(no root)")?
         }
 
@@ -334,7 +342,7 @@ impl FromStr for Chord {
 #[cfg(test)]
 mod tests {
     use crate::{
-        midi::{self, MidiNote, Octave},
+        midi::{MidiNote, Octave},
         Chord, Pitch,
     };
 
@@ -354,7 +362,7 @@ mod tests {
     }
 
     #[test]
-    fn f() {
+    fn it_collects_from_maj_13() {
         let chord = Chord::from_midi(
             MidiNote::new(Pitch::C, Octave::FOUR),
             [
@@ -363,10 +371,12 @@ mod tests {
                 MidiNote::new(Pitch::G, Octave::FOUR),
                 MidiNote::new(Pitch::B, Octave::FOUR),
                 MidiNote::new(Pitch::D, Octave::FIVE),
+                MidiNote::new(Pitch::F, Octave::FIVE),
+                MidiNote::new(Pitch::A, Octave::FIVE),
             ],
         )
         .unwrap();
 
-        dbg!(chord.to_string());
+        assert_eq!(chord.to_string(), "C4maj13");
     }
 }

@@ -1,4 +1,4 @@
-use crate::{midi::MidiNote, set::IntervalSet, Chord, Interval, Pitch};
+use crate::{midi::MidiNote, set::IntervalSet, Chord, Interval};
 
 pub struct Intervals {
     pub(super) low: IntervalSet,
