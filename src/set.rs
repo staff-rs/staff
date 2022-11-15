@@ -75,6 +75,18 @@ where
         self.bits = self.bits & !(U::one() << item.into() as usize);
     }
 
+    pub fn maybe_remove(&mut self, item: T) -> Option<T>
+    where
+        T: Clone,
+    {
+        if self.contains(item.clone()) {
+            self.remove(item.clone());
+            Some(item)
+        } else {
+            None
+        }
+    }
+
     pub fn contains(&self, item: T) -> bool {
         (self.bits >> item.into() as usize & U::one()).is_one()
     }

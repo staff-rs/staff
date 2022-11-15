@@ -238,29 +238,31 @@ impl IntoIterator for Chord {
 
 impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.root.fmt(f)?;
+        self.root.pitch().fmt(f)?;
 
-        let intervals: IntervalSet = self.clone().intervals().collect();
+        let mut intervals: IntervalSet = self.clone().intervals().collect();
 
-        if intervals.contains(Interval::MINOR_THIRD) {
-            f.write_char('m')?
-        } else if intervals.contains(Interval::MAJOR_SECOND) {
-            f.write_str("sus2")?
-        } else if intervals.contains(Interval::PERFECT_FOURTH) {
-            f.write_str("sus4")?
+        if intervals.maybe_remove(Interval::MAJOR_THIRD).is_none() {
+            if intervals.maybe_remove(Interval::MINOR_THIRD).is_some() {
+                f.write_char('m')?
+            } else if intervals.maybe_remove(Interval::MAJOR_SECOND).is_some() {
+                f.write_str("sus2")?
+            } else if intervals.maybe_remove(Interval::PERFECT_FOURTH).is_some() {
+                f.write_str("sus4")?
+            }
         }
 
         let mut has_fifth = true;
-        if intervals.contains(Interval::TRITONE) {
+        if intervals.maybe_remove(Interval::TRITONE).is_some() {
             f.write_str("b5")?
-        } else if !intervals.contains(Interval::PERFECT_FIFTH) {
+        } else if intervals.maybe_remove(Interval::PERFECT_FIFTH).is_none() {
             has_fifth = false;
         }
 
-        if intervals.contains(Interval::MINOR_SEVENTH) {
-            if intervals.contains(Interval::MINOR_NINTH) {
-                if intervals.contains(Interval::MINOR_ELEVENTH) {
-                    if intervals.contains(Interval::MAJOR_THIRTEENTH) {
+        if intervals.maybe_remove(Interval::MINOR_SEVENTH).is_some() {
+            if intervals.maybe_remove(Interval::MAJOR_NINTH).is_some() {
+                if intervals.maybe_remove(Interval::MINOR_ELEVENTH).is_some() {
+                    if intervals.maybe_remove(Interval::MINOR_THIRTEENTH).is_some() {
                         f.write_str("13")?
                     } else {
                         f.write_str("11")?
@@ -271,10 +273,10 @@ impl fmt::Display for Chord {
             } else {
                 f.write_str("7")?
             }
-        } else if intervals.contains(Interval::MAJOR_SEVENTH) {
-            if intervals.contains(Interval::MAJOR_NINTH) {
-                if intervals.contains(Interval::MAJOR_ELEVENTH) {
-                    if intervals.contains(Interval::MAJOR_THIRTEENTH) {
+        } else if intervals.maybe_remove(Interval::MAJOR_SEVENTH).is_some() {
+            if intervals.maybe_remove(Interval::MAJOR_NINTH).is_some() {
+                if intervals.maybe_remove(Interval::MAJOR_ELEVENTH).is_some() {
+                    if intervals.maybe_remove(Interval::MAJOR_THIRTEENTH).is_some() {
                         f.write_str("maj13")?
                     } else {
                         f.write_str("maj11")?
@@ -288,15 +290,19 @@ impl fmt::Display for Chord {
         }
 
         if let Some(bass) = self.bass {
-            write!(f, "/{}", bass)?;
+            write!(f, "/{}", bass.pitch())?;
         }
 
-        if !intervals.contains(Interval::UNISON) {
+        if !intervals.maybe_remove(Interval::UNISON).is_some() {
             f.write_str("(no root)")?
         }
 
         if !has_fifth {
             f.write_str("(no5)")?
+        }
+
+        for alteration in intervals {
+            write!(f, "(add{})", alteration)?;
         }
 
         Ok(())
@@ -367,6 +373,7 @@ impl FromStr for Chord {
 #[cfg(test)]
 mod tests {
     use crate::{
+        midi,
         midi::{MidiNote, Octave},
         Chord, Pitch,
     };
@@ -387,7 +394,7 @@ mod tests {
     }
 
     #[test]
-    fn it_collects_from_maj_13() {
+    fn it_collects_from_maj_13th() {
         let chord = Chord::from_midi(
             MidiNote::new(Pitch::C, Octave::FOUR),
             [
@@ -403,5 +410,38 @@ mod tests {
         .unwrap();
 
         assert_eq!(chord.to_string(), "C4maj13");
+    }
+
+    #[test]
+    fn it_collects_from_9th() {
+        let chord = Chord::from_midi(
+            MidiNote::new(Pitch::C, Octave::FIVE),
+            [
+                MidiNote::new(Pitch::C, Octave::FIVE),
+                MidiNote::new(Pitch::E, Octave::FIVE),
+                MidiNote::new(Pitch::G, Octave::FIVE),
+                MidiNote::new(Pitch::ASharp, Octave::FIVE),
+                MidiNote::new(Pitch::D, Octave::SIX),
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(chord.to_string(), "C59");
+    }
+
+    #[test]
+    fn f() {
+        let chord = Chord::from_midi(
+            MidiNote::new(Pitch::C, Octave::FIVE),
+            [
+                MidiNote::new(Pitch::C, Octave::FIVE),
+                MidiNote::new(Pitch::E, Octave::FIVE),
+                MidiNote::new(Pitch::G, Octave::FIVE),
+                MidiNote::new(Pitch::D, Octave::SIX),
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(chord.to_string(), "C(add9)");
     }
 }

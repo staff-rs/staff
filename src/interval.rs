@@ -34,12 +34,12 @@ impl Interval {
 
     pub const OCTAVE: Self = Self::new(12);
 
-    pub const MINOR_NINTH: Self = Self::new(13);
     pub const MAJOR_NINTH: Self = Self::new(14);
 
     pub const MINOR_ELEVENTH: Self = Self::new(16);
     pub const MAJOR_ELEVENTH: Self = Self::new(17);
 
+    pub const MINOR_THIRTEENTH: Self = Self::new(20);
     pub const MAJOR_THIRTEENTH: Self = Self::new(21);
 
     pub const fn new(semitones: u8) -> Self {
@@ -86,6 +86,12 @@ impl fmt::Display for Interval {
             Interval::MAJOR_THIRD => f.write_char('3'),
             Interval::PERFECT_FIFTH => f.write_char('5'),
             Interval::MINOR_SEVENTH => f.write_str("m7"),
+            Interval::MAJOR_SEVENTH => f.write_str("maj7"),
+            Interval::MAJOR_NINTH => f.write_char('9'),
+            Interval::MINOR_ELEVENTH => f.write_str("11"),
+            Interval::MAJOR_ELEVENTH => f.write_str("maj11"),
+            Interval::MINOR_THIRTEENTH => f.write_str("11"),
+            Interval::MAJOR_THIRTEENTH => f.write_str("maj13"),
             _ => todo!(),
         }
     }
