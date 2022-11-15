@@ -1,10 +1,10 @@
 [package]
 name = "staff"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 license = "MIT"
 description = "Music theory library with midi, notes, chords, scales, and more"
-repository = "https://github.com/matthunz/staff"
+repository = "https://github.com/staff-rs/staff"
 
 [features]
 cli = ["anyhow", "clap", "serde"]
