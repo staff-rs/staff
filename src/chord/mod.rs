@@ -9,7 +9,7 @@ use core::{
 };
 
 mod iter;
-pub use self::iter::{Chords, Iter, Intervals};
+pub use self::iter::{Chords, Intervals, Iter};
 
 /*
 /// ```
@@ -258,7 +258,19 @@ impl fmt::Display for Chord {
         }
 
         if intervals.contains(Interval::MINOR_SEVENTH) {
-            f.write_char('7')?
+            if intervals.contains(Interval::MINOR_NINTH) {
+                if intervals.contains(Interval::MINOR_ELEVENTH) {
+                    if intervals.contains(Interval::MAJOR_THIRTEENTH) {
+                        f.write_str("13")?
+                    } else {
+                        f.write_str("11")?
+                    }
+                } else {
+                    f.write_str("9")?
+                }
+            } else {
+                f.write_str("7")?
+            }
         } else if intervals.contains(Interval::MAJOR_SEVENTH) {
             if intervals.contains(Interval::MAJOR_NINTH) {
                 if intervals.contains(Interval::MAJOR_ELEVENTH) {
