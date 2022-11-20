@@ -9,7 +9,7 @@ use core::{
 };
 
 mod iter;
-pub use self::iter::{Chords, Intervals, Iter};
+pub use self::iter::{Chords, Intervals, MidiNotes};
 
 /*
 /// ```
@@ -192,26 +192,6 @@ impl Chord {
     pub fn intervals(self) -> Intervals {
         self.into()
     }
-
-    pub fn midi_notes(self) -> MidiNotes {
-        MidiNotes {
-            root: self.bass(),
-            intervals: self.intervals,
-        }
-    }
-}
-
-pub struct MidiNotes {
-    root: MidiNote,
-    intervals: IntervalSet,
-}
-
-impl Iterator for MidiNotes {
-    type Item = MidiNote;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.intervals.next().map(|interval| self.root + interval)
-    }
 }
 
 impl FromIterator<MidiNote> for Chord {
@@ -226,13 +206,10 @@ impl FromIterator<MidiNote> for Chord {
 impl IntoIterator for Chord {
     type Item = MidiNote;
 
-    type IntoIter = Iter;
+    type IntoIter = MidiNotes;
 
     fn into_iter(self) -> Self::IntoIter {
-        Iter {
-            root: self.bass(),
-            intervals: self.intervals,
-        }
+        self.into()
     }
 }
 
@@ -373,7 +350,6 @@ impl FromStr for Chord {
 #[cfg(test)]
 mod tests {
     use crate::{
-        midi,
         midi::{MidiNote, Octave},
         Chord, Pitch,
     };

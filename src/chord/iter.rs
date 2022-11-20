@@ -1,11 +1,20 @@
 use crate::{midi::MidiNote, set::IntervalSet, Chord, Interval};
 
-pub struct Iter {
-    pub(super) root: MidiNote,
-    pub(super) intervals: IntervalSet,
+pub struct MidiNotes {
+    root: MidiNote,
+    intervals: IntervalSet,
 }
 
-impl Iterator for Iter {
+impl From<Chord> for MidiNotes {
+    fn from(chord: Chord) -> Self {
+        Self {
+            root: chord.bass(),
+            intervals: chord.intervals,
+        }
+    }
+}
+
+impl Iterator for MidiNotes {
     type Item = MidiNote;
 
     fn next(&mut self) -> Option<Self::Item> {
