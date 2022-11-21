@@ -343,7 +343,7 @@ mod tests {
     }
 
     #[test]
-    fn f() {
+    fn it_collects_from_add_9() {
         let chord = Chord::from_midi(
             MidiNote::new(Pitch::C, Octave::FIVE),
             [

@@ -47,8 +47,8 @@ pub mod guitar;
 mod interval;
 pub use interval::Interval;
 
-pub mod staff;
-pub use crate::staff::{Key, Staff};
+mod key;
+pub use crate::key::Key;
 
 mod natural;
 pub use natural::Natural;
