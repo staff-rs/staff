@@ -1,12 +1,10 @@
 use crate::{
+    fmt::Format,
     midi::{MidiNote, Octave},
     set::IntervalSet,
     Interval, Natural, Note, Pitch,
 };
-use core::{
-    fmt::{self, Write},
-    str::FromStr,
-};
+use core::{fmt, str::FromStr};
 
 mod iter;
 pub use self::iter::{Chords, Intervals, MidiNotes};
@@ -39,6 +37,12 @@ pub struct Chord {
 }
 
 impl Chord {
+    /// Create a new Chord from a root [`MidiNote`].
+    /// ```
+    /// use staff::{midi, Chord};
+    ///
+    /// let chord = Chord::new(midi!(DSharp, 4));
+    /// ```
     pub fn new(root: MidiNote) -> Self {
         Self {
             root,
@@ -128,7 +132,7 @@ impl Chord {
     /// let notes = [midi!(E, 3), midi!(G, 3), midi!(C, 4)];
     /// let chord = Chord::from_midi(midi!(C, 4), notes).unwrap();
     ///
-    /// assert_eq!(chord.to_string(), "C4/E3");
+    /// assert_eq!(chord.to_string(), "C/E");
     ///
     /// assert!(chord.into_iter().eq(notes));
     /// ```
@@ -215,74 +219,7 @@ impl IntoIterator for Chord {
 
 impl fmt::Display for Chord {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.root.pitch().fmt(f)?;
-
-        let mut intervals: IntervalSet = self.clone().intervals().collect();
-
-        if intervals.maybe_remove(Interval::MAJOR_THIRD).is_none() {
-            if intervals.maybe_remove(Interval::MINOR_THIRD).is_some() {
-                f.write_char('m')?
-            } else if intervals.maybe_remove(Interval::MAJOR_SECOND).is_some() {
-                f.write_str("sus2")?
-            } else if intervals.maybe_remove(Interval::PERFECT_FOURTH).is_some() {
-                f.write_str("sus4")?
-            }
-        }
-
-        let mut has_fifth = true;
-        if intervals.maybe_remove(Interval::TRITONE).is_some() {
-            f.write_str("b5")?
-        } else if intervals.maybe_remove(Interval::PERFECT_FIFTH).is_none() {
-            has_fifth = false;
-        }
-
-        if intervals.maybe_remove(Interval::MINOR_SEVENTH).is_some() {
-            if intervals.maybe_remove(Interval::MAJOR_NINTH).is_some() {
-                if intervals.maybe_remove(Interval::MINOR_ELEVENTH).is_some() {
-                    if intervals.maybe_remove(Interval::MINOR_THIRTEENTH).is_some() {
-                        f.write_str("13")?
-                    } else {
-                        f.write_str("11")?
-                    }
-                } else {
-                    f.write_str("9")?
-                }
-            } else {
-                f.write_str("7")?
-            }
-        } else if intervals.maybe_remove(Interval::MAJOR_SEVENTH).is_some() {
-            if intervals.maybe_remove(Interval::MAJOR_NINTH).is_some() {
-                if intervals.maybe_remove(Interval::MAJOR_ELEVENTH).is_some() {
-                    if intervals.maybe_remove(Interval::MAJOR_THIRTEENTH).is_some() {
-                        f.write_str("maj13")?
-                    } else {
-                        f.write_str("maj11")?
-                    }
-                } else {
-                    f.write_str("maj9")?
-                }
-            } else {
-                f.write_str("maj7")?
-            }
-        }
-
-        if let Some(bass) = self.bass {
-            write!(f, "/{}", bass.pitch())?;
-        }
-
-        if !intervals.maybe_remove(Interval::UNISON).is_some() {
-            f.write_str("(no root)")?
-        }
-
-        if !has_fifth {
-            f.write_str("(no5)")?
-        }
-
-        for alteration in intervals {
-            write!(f, "(add{})", alteration)?;
-        }
-
-        Ok(())
+        self.into_fmt().fmt(f)
     }
 }
 
@@ -385,7 +322,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(chord.to_string(), "C4maj13");
+        assert_eq!(chord.to_string(), "Cmaj13");
     }
 
     #[test]
@@ -402,7 +339,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(chord.to_string(), "C59");
+        assert_eq!(chord.to_string(), "C9");
     }
 
     #[test]

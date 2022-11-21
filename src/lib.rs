@@ -10,7 +10,7 @@
 //! let notes = [midi!(E, 3), midi!(G, 3), midi!(C, 4)];
 //! let chord = Chord::from_midi(midi!(C, 4), notes).unwrap();
 //!
-//! assert_eq!(chord.to_string(), "C4/E3");
+//! assert_eq!(chord.to_string(), "C/E");
 //!
 //! assert!(chord.into_iter().eq(notes));
 //! ```
@@ -38,6 +38,9 @@
 
 pub mod chord;
 pub use chord::Chord;
+
+pub mod fmt;
+pub use fmt::Format;
 
 pub mod guitar;
 
