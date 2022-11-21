@@ -42,7 +42,7 @@ pub use chord::Chord;
 pub mod fmt;
 pub use fmt::Format;
 
-pub mod guitar;
+pub mod fretboard;
 
 mod interval;
 pub use interval::Interval;

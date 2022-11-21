@@ -1,3 +1,5 @@
+//! Natural pitches
+
 use core::{fmt, ops::Add, str::FromStr};
 
 /// A natural pitch

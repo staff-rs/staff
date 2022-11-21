@@ -1,3 +1,5 @@
+//! Fretboard iterator for guitar and other instruments
+
 use core::iter::Zip;
 
 use crate::{

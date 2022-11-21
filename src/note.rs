@@ -1,3 +1,5 @@
+//! Formatted notes
+
 use crate::Natural;
 use core::{
     fmt::{self, Write},

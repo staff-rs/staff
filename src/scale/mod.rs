@@ -1,3 +1,5 @@
+//! Scales with iterators
+
 use crate::Interval;
 use core::ops::Add;
 

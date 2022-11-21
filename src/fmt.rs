@@ -1,3 +1,5 @@
+//! Format trait to adjust `fmt::Display` output
+
 use core::fmt;
 use std::fmt::{Display, Write};
 

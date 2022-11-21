@@ -1,3 +1,5 @@
+//!Pitch classes
+
 use crate::note::{Accidental, Note};
 use crate::{midi::MidiNote, Interval, Natural};
 use core::ops::{Add, Sub};

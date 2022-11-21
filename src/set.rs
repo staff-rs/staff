@@ -1,3 +1,5 @@
+//! Collections of intervals and pitches
+
 use crate::{Interval, Pitch};
 use core::marker::PhantomData;
 use num_traits::{PrimInt, Zero};
@@ -15,6 +17,7 @@ impl IntervalSet {
     }
 }
 
+/// An ordered set of intervals or pitches stored in a single integer.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]

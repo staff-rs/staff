@@ -1,3 +1,5 @@
+//! Midi notes, octaves, and sets
+
 use crate::{Interval, Pitch};
 use core::fmt;
 use core::ops::{Add, Sub};

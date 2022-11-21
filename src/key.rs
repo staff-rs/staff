@@ -1,3 +1,5 @@
+//! Key signatures
+
 use crate::{Interval, Pitch};
 use core::fmt::{self, Write};
 

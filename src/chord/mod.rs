@@ -1,3 +1,5 @@
+//! Chord struct and iterators
+
 use crate::{
     fmt::Format,
     midi::{MidiNote, Octave},
@@ -27,6 +29,9 @@ where
     Chords::new(midi_notes)
 }
 
+/// Chord made of the intervals from its bass note.
+///
+/// A chord can be rootless, an inversion, or start from any bass note.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Chord {
