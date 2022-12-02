@@ -22,7 +22,7 @@ pub struct Measure {
 
 impl Measure {
     pub fn f(&self, doc: &mut Document, x: i64) {
-        let mut chord_x = x + 10;
+        let mut chord_x = x + 28;
 
         let mut pos = 0;
         while let Some(chord) = self.chords.get(pos) {
@@ -48,6 +48,8 @@ impl Measure {
                     let high = *chord.notes.iter().max().unwrap();
                     let diff = low.max(10 - high);
 
+                    const OFFSET: i64 = 25;
+
                     if let Some(next) = self.chords.get(pos + 1) {
                         if next.duration == Duration::Eigth {
                             let low_next = *next.notes.iter().min().unwrap();
@@ -56,10 +58,17 @@ impl Measure {
 
                             let (x, y1, y2, y1_next, y2_next, y) = if diff > diff_next {
                                 if low > 10 - high {
-                                    (chord_x, y(low) + 40, y(high), y(low) + 40, y(high_next),y(low) + 40)
+                                    (
+                                        chord_x,
+                                        y(low) + 40,
+                                        y(high),
+                                        y(low) + 40,
+                                        y(high_next),
+                                        y(low) + 40,
+                                    )
                                 } else {
                                     (
-                                        chord_x + 20,
+                                        chord_x + 8,
                                         y(low),
                                         y(high_next) - 40,
                                         y(low_next),
@@ -79,7 +88,7 @@ impl Measure {
                                     )
                                 } else {
                                     (
-                                        chord_x,
+                                        chord_x - 8,
                                         y(high),
                                         y(low_next) + 40,
                                         y(high_next),
@@ -98,13 +107,16 @@ impl Measure {
                                     .set("x2", x)
                                     .set("y2", y2),
                             );
+
+                            const OFFSET: i64 = 30;
+                            let next_x = x + OFFSET;
                             doc.append(
                                 Line::new()
                                     .set("fill", "none")
                                     .set("stroke", "black")
-                                    .set("x1", x + 30)
+                                    .set("x1", next_x)
                                     .set("y1", y1_next)
-                                    .set("x2", x + 30)
+                                    .set("x2", next_x)
                                     .set("y2", y2_next),
                             );
 
@@ -115,11 +127,11 @@ impl Measure {
                                     .set("stroke-width", 8)
                                     .set("x1", x)
                                     .set("y1", y)
-                                    .set("x2", x + 30)
+                                    .set("x2", next_x)
                                     .set("y2", y),
                             );
 
-                            next.write_svg(doc, chord_x + 30);
+                            next.write_svg(doc, chord_x + OFFSET);
 
                             pos += 1;
                             80
@@ -173,6 +185,18 @@ fn y(note: i64) -> i64 {
     (13 - note) * 10
 }
 
+fn note_head(x: i64, note: i64) -> Ellipse {
+    let cx = x;
+    let cy = y(note);
+
+    Ellipse::new()
+        .set("transform", format!("rotate(340, {cx} {cy})"))
+        .set("cx", cx)
+        .set("cy", cy)
+        .set("rx", 8)
+        .set("ry", 5)
+}
+
 impl Chord {
     pub fn write_svg(&self, doc: &mut Document, x: i64) {
         match self.duration {
@@ -192,37 +216,25 @@ impl Chord {
             Duration::Half => {
                 for note in &self.notes {
                     doc.append(
-                        Ellipse::new()
+                        note_head(x, *note)
                             .set("fill", "none")
-                            .set("stroke", "black")
-                            .set("cx", x + 10)
-                            .set("cy", y(*note))
-                            .set("rx", 10)
-                            .set("ry", 5),
+                            .set("stroke", "black"),
                     );
                 }
             }
             Duration::Quarter => {
                 for note in &self.notes {
                     doc.append(
-                        Ellipse::new()
+                        note_head(x, *note)
                             .set("fill", "black")
-                            .set("cx", x + 10)
-                            .set("cy", y(*note))
-                            .set("rx", 10)
-                            .set("ry", 5),
                     );
                 }
             }
             Duration::Eigth => {
                 for note in &self.notes {
                     doc.append(
-                        Ellipse::new()
+                        note_head(x, *note)
                             .set("fill", "black")
-                            .set("cx", x + 10)
-                            .set("cy", y(*note))
-                            .set("rx", 10)
-                            .set("ry", 5),
                     );
                 }
             }
@@ -249,9 +261,9 @@ impl Chord {
                 Line::new()
                     .set("fill", "none")
                     .set("stroke", "black")
-                    .set("x1", x + 20)
+                    .set("x1", x + 8)
                     .set("y1", y(low))
-                    .set("x2", x + 20)
+                    .set("x2", x + 8)
                     .set("y2", y(high) - extra),
             );
             y(high) - 40

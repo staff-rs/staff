@@ -1,27 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<ellipse cx="30" cy="80" fill="black" rx="10" ry="5"/>
-<ellipse cx="30" cy="60" fill="black" rx="10" ry="5"/>
-<ellipse cx="30" cy="40" fill="black" rx="10" ry="5"/>
-<line fill="none" stroke="black" x1="20" x2="20" y1="40" y2="120"/>
-<line fill="none" stroke="black" x1="50" x2="50" y1="80" y2="120"/>
-<line fill="none" stroke="black" stroke-width="8" x1="20" x2="50" y1="116" y2="116"/>
-<ellipse cx="60" cy="80" fill="black" rx="10" ry="5"/>
-<ellipse cx="110" cy="150" fill="black" rx="10" ry="5"/>
-<line fill="none" stroke="black" x1="120" x2="120" y1="150" y2="70"/>
-<line fill="none" stroke="black" x1="150" x2="150" y1="150" y2="70"/>
-<line fill="none" stroke="black" stroke-width="8" x1="120" x2="150" y1="74" y2="74"/>
-<ellipse cx="140" cy="150" fill="black" rx="10" ry="5"/>
-<ellipse cx="140" cy="130" fill="black" rx="10" ry="5"/>
-<ellipse cx="140" cy="110" fill="black" rx="10" ry="5"/>
-<ellipse cx="190" cy="150" fill="none" rx="10" ry="5" stroke="black"/>
-<ellipse cx="190" cy="130" fill="none" rx="10" ry="5" stroke="black"/>
-<ellipse cx="190" cy="110" fill="none" rx="10" ry="5" stroke="black"/>
-<line fill="none" stroke="black" x1="200" x2="200" y1="150" y2="70"/>
-<line stroke="#000" x1="10" x2="290" y1="50" y2="50"/>
-<line stroke="#000" x1="10" x2="290" y1="70" y2="70"/>
-<line stroke="#000" x1="10" x2="290" y1="90" y2="90"/>
-<line stroke="#000" x1="10" x2="290" y1="110" y2="110"/>
-<line stroke="#000" x1="10" x2="290" y1="130" y2="130"/>
+<ellipse cx="38" cy="80" fill="black" rx="8" ry="5" transform="rotate(340, 38 80)"/>
+<ellipse cx="38" cy="60" fill="black" rx="8" ry="5" transform="rotate(340, 38 60)"/>
+<ellipse cx="38" cy="40" fill="black" rx="8" ry="5" transform="rotate(340, 38 40)"/>
+<line fill="none" stroke="black" x1="30" x2="30" y1="40" y2="120"/>
+<line fill="none" stroke="black" x1="60" x2="60" y1="80" y2="120"/>
+<line fill="none" stroke="black" stroke-width="8" x1="30" x2="60" y1="116" y2="116"/>
+<ellipse cx="68" cy="80" fill="black" rx="8" ry="5" transform="rotate(340, 68 80)"/>
+<ellipse cx="118" cy="150" fill="black" rx="8" ry="5" transform="rotate(340, 118 150)"/>
+<line fill="none" stroke="black" x1="126" x2="126" y1="150" y2="70"/>
+<line fill="none" stroke="black" x1="156" x2="156" y1="150" y2="70"/>
+<line fill="none" stroke="black" stroke-width="8" x1="126" x2="156" y1="74" y2="74"/>
+<ellipse cx="148" cy="150" fill="black" rx="8" ry="5" transform="rotate(340, 148 150)"/>
+<ellipse cx="148" cy="130" fill="black" rx="8" ry="5" transform="rotate(340, 148 130)"/>
+<ellipse cx="148" cy="110" fill="black" rx="8" ry="5" transform="rotate(340, 148 110)"/>
+<ellipse cx="198" cy="150" fill="none" rx="8" ry="5" stroke="black" transform="rotate(340, 198 150)"/>
+<ellipse cx="198" cy="130" fill="none" rx="8" ry="5" stroke="black" transform="rotate(340, 198 130)"/>
+<ellipse cx="198" cy="110" fill="none" rx="8" ry="5" stroke="black" transform="rotate(340, 198 110)"/>
+<line fill="none" stroke="black" x1="206" x2="206" y1="150" y2="70"/>
+<line stroke="#000" x1="10" x2="308" y1="50" y2="50"/>
+<line stroke="#000" x1="10" x2="308" y1="70" y2="70"/>
+<line stroke="#000" x1="10" x2="308" y1="90" y2="90"/>
+<line stroke="#000" x1="10" x2="308" y1="110" y2="110"/>
+<line stroke="#000" x1="10" x2="308" y1="130" y2="130"/>
 <line stroke="#000" x1="10" x2="10" y1="50" y2="130"/>
-<line stroke="#000" x1="290" x2="290" y1="50" y2="130"/>
+<line stroke="#000" x1="308" x2="308" y1="50" y2="130"/>
 </svg>
