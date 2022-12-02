@@ -22,6 +22,7 @@ impl Measure {
     pub fn f(&self, doc: &mut Document) {
         for line in 0..5 {
             let y = line * 20 + 50;
+
             doc.append(
                 Line::new()
                     .set("x1", 0)
@@ -32,8 +33,14 @@ impl Measure {
             )
         }
 
+        let mut x = 10;
         for chord in &self.chords {
-            chord.f(doc);
+            chord.f(doc, x);
+            x += match chord.duration {
+                Duration::Whole => 200,
+                Duration::Half => 200 / 2,
+                Duration::Quarter => 200 / 4,
+            };
         }
     }
 }
@@ -49,19 +56,54 @@ fn y(note: i64) -> i64 {
 }
 
 impl Chord {
-    pub fn f(&self, doc: &mut Document) {
-        for note in &self.notes {
-            doc.append(
-                Ellipse::new()
-                    .set("fill", "none")
-                    .set("stroke", "black")
-                    .set("cx", 50)
-                    .set("cy", y(*note))
-                    .set("rx", 10)
-                    .set("ry", 5),
-            );
-        }
+    pub fn f(&self, doc: &mut Document, x: i64) {
+        match self.duration {
+            Duration::Whole => {
+                for note in &self.notes {
+                    doc.append(
+                        Ellipse::new()
+                            .set("fill", "none")
+                            .set("stroke", "black")
+                            .set("cx", x + 10)
+                            .set("cy", y(*note))
+                            .set("rx", 10)
+                            .set("ry", 5),
+                    );
+                }
+            }
+            Duration::Half => {
+                for note in &self.notes {
+                    doc.append(
+                        Ellipse::new()
+                            .set("fill", "none")
+                            .set("stroke", "black")
+                            .set("cx", x + 10)
+                            .set("cy", y(*note))
+                            .set("rx", 10)
+                            .set("ry", 5),
+                    );
+                }
 
+                self.draw_note_line(doc, x);
+            }
+            Duration::Quarter => {
+                for note in &self.notes {
+                    doc.append(
+                        Ellipse::new()
+                            .set("fill", "black")
+                            .set("cx", x + 10)
+                            .set("cy", y(*note))
+                            .set("rx", 10)
+                            .set("ry", 5),
+                    );
+                }
+
+                self.draw_note_line(doc, x);
+            }
+        }
+    }
+
+    fn draw_note_line(&self, doc: &mut Document, x: i64) {
         let low = *self.notes.iter().min().unwrap();
         let high = *self.notes.iter().max().unwrap();
 
@@ -70,9 +112,9 @@ impl Chord {
                 Line::new()
                     .set("fill", "none")
                     .set("stroke", "black")
-                    .set("x1", 40)
+                    .set("x1", x)
                     .set("y1", y(low) + 40)
-                    .set("x2", 40)
+                    .set("x2", x)
                     .set("y2", y(high)),
             );
         } else {
@@ -80,9 +122,9 @@ impl Chord {
                 Line::new()
                     .set("fill", "none")
                     .set("stroke", "black")
-                    .set("x1", 60)
+                    .set("x1", x + 20)
                     .set("y1", y(low))
-                    .set("x2", 60)
+                    .set("x2", x + 20)
                     .set("y2", y(high) - 40),
             );
         }
@@ -91,21 +133,10 @@ impl Chord {
 
 #[cfg(test)]
 mod tests {
-    use svg::node::element::path::Data;
-    use svg::node::element::{Ellipse, Path};
-
-    use crate::midi::{MidiNote, Octave};
-    use crate::Pitch;
-
     use super::{Chord, Duration, Measure};
 
     #[test]
     fn f() {
-        let chord = Chord {
-            notes: vec![5, 7, 9],
-            duration: Duration::Half,
-        };
-
         let measure = Measure {
             chords: vec![
                 Chord {
@@ -114,7 +145,11 @@ mod tests {
                 },
                 Chord {
                     notes: vec![-2, 0, 2],
-                    duration: Duration::Half,
+                    duration: Duration::Quarter,
+                },
+                Chord {
+                    notes: vec![-2, 0, 2],
+                    duration: Duration::Quarter,
                 },
             ],
         };
