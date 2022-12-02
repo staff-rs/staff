@@ -13,7 +13,7 @@ mod midi_set;
 pub use midi_set::MidiSet;
 
 /// MIDI note represented as a byte.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MidiNote(u8);
 

@@ -10,6 +10,7 @@ homepage = "https://staff-rs.github.io"
 [features]
 cli = ["anyhow", "clap", "serde"]
 serde = ["dep:serde"]
+default = ["serde"]
 
 [lib]
 name = "staff"
@@ -22,6 +23,7 @@ required-features = ["cli"]
 num-traits = "0.2.14"
 anyhow = { version = "1.0.61", optional = true }
 thiserror = "1.0"
+svg = "0.12.1"
 
 [dependencies.clap]
 version = "4.0.18"

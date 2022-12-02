@@ -66,6 +66,8 @@ pub use scale::Scale;
 
 pub mod set;
 
+pub mod staff;
+
 /// ```
 /// use staff::{midi, Pitch};
 /// use staff::midi::Octave;

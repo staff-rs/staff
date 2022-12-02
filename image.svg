@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<line stroke="#000" x1="0" x2="500" y1="50" y2="50"/>
+<line stroke="#000" x1="0" x2="500" y1="70" y2="70"/>
+<line stroke="#000" x1="0" x2="500" y1="90" y2="90"/>
+<line stroke="#000" x1="0" x2="500" y1="110" y2="110"/>
+<line stroke="#000" x1="0" x2="500" y1="130" y2="130"/>
+<ellipse cx="50" cy="80" fill="none" rx="10" ry="5" stroke="black"/>
+<ellipse cx="50" cy="60" fill="none" rx="10" ry="5" stroke="black"/>
+<ellipse cx="50" cy="40" fill="none" rx="10" ry="5" stroke="black"/>
+</svg>
