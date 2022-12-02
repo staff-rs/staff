@@ -7,4 +7,9 @@
 <ellipse cx="50" cy="80" fill="none" rx="10" ry="5" stroke="black"/>
 <ellipse cx="50" cy="60" fill="none" rx="10" ry="5" stroke="black"/>
 <ellipse cx="50" cy="40" fill="none" rx="10" ry="5" stroke="black"/>
+<line fill="none" stroke="black" x1="40" x2="40" y1="120" y2="40"/>
+<ellipse cx="50" cy="150" fill="none" rx="10" ry="5" stroke="black"/>
+<ellipse cx="50" cy="130" fill="none" rx="10" ry="5" stroke="black"/>
+<ellipse cx="50" cy="110" fill="none" rx="10" ry="5" stroke="black"/>
+<line fill="none" stroke="black" x1="60" x2="60" y1="150" y2="70"/>
 </svg>

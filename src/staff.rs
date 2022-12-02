@@ -44,17 +44,46 @@ pub struct Chord {
     duration: Duration,
 }
 
+fn y(note: i64) -> i64 {
+    (13 - note) * 10
+}
+
 impl Chord {
     pub fn f(&self, doc: &mut Document) {
-        for note in self.notes.clone() {
+        for note in &self.notes {
             doc.append(
                 Ellipse::new()
                     .set("fill", "none")
                     .set("stroke", "black")
                     .set("cx", 50)
-                    .set("cy", (13 - note) * 10)
+                    .set("cy", y(*note))
                     .set("rx", 10)
                     .set("ry", 5),
+            );
+        }
+
+        let low = *self.notes.iter().min().unwrap();
+        let high = *self.notes.iter().max().unwrap();
+
+        if low > 10 - high {
+            doc.append(
+                Line::new()
+                    .set("fill", "none")
+                    .set("stroke", "black")
+                    .set("x1", 40)
+                    .set("y1", y(low) + 40)
+                    .set("x2", 40)
+                    .set("y2", y(high)),
+            );
+        } else {
+            doc.append(
+                Line::new()
+                    .set("fill", "none")
+                    .set("stroke", "black")
+                    .set("x1", 60)
+                    .set("y1", y(low))
+                    .set("x2", 60)
+                    .set("y2", y(high) - 40),
             );
         }
     }
@@ -78,7 +107,16 @@ mod tests {
         };
 
         let measure = Measure {
-            chords: vec![chord],
+            chords: vec![
+                Chord {
+                    notes: vec![5, 7, 9],
+                    duration: Duration::Half,
+                },
+                Chord {
+                    notes: vec![-2, 0, 2],
+                    duration: Duration::Half,
+                },
+            ],
         };
 
         let mut document = svg::Document::new();
