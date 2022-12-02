@@ -1,27 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<ellipse cx="38" cy="80" fill="black" rx="8" ry="5" transform="rotate(340, 38 80)"/>
-<ellipse cx="38" cy="60" fill="black" rx="8" ry="5" transform="rotate(340, 38 60)"/>
-<ellipse cx="38" cy="40" fill="black" rx="8" ry="5" transform="rotate(340, 38 40)"/>
-<line fill="none" stroke="black" x1="30" x2="30" y1="40" y2="120"/>
-<line fill="none" stroke="black" x1="60" x2="60" y1="80" y2="120"/>
-<line fill="none" stroke="black" stroke-width="8" x1="30" x2="60" y1="116" y2="116"/>
-<ellipse cx="68" cy="80" fill="black" rx="8" ry="5" transform="rotate(340, 68 80)"/>
-<ellipse cx="118" cy="150" fill="black" rx="8" ry="5" transform="rotate(340, 118 150)"/>
-<line fill="none" stroke="black" x1="126" x2="126" y1="150" y2="70"/>
-<line fill="none" stroke="black" x1="156" x2="156" y1="150" y2="70"/>
-<line fill="none" stroke="black" stroke-width="8" x1="126" x2="156" y1="74" y2="74"/>
-<ellipse cx="148" cy="150" fill="black" rx="8" ry="5" transform="rotate(340, 148 150)"/>
-<ellipse cx="148" cy="130" fill="black" rx="8" ry="5" transform="rotate(340, 148 130)"/>
-<ellipse cx="148" cy="110" fill="black" rx="8" ry="5" transform="rotate(340, 148 110)"/>
-<ellipse cx="198" cy="150" fill="none" rx="8" ry="5" stroke="black" transform="rotate(340, 198 150)"/>
-<ellipse cx="198" cy="130" fill="none" rx="8" ry="5" stroke="black" transform="rotate(340, 198 130)"/>
-<ellipse cx="198" cy="110" fill="none" rx="8" ry="5" stroke="black" transform="rotate(340, 198 110)"/>
-<line fill="none" stroke="black" x1="206" x2="206" y1="150" y2="70"/>
-<line stroke="#000" x1="10" x2="308" y1="50" y2="50"/>
-<line stroke="#000" x1="10" x2="308" y1="70" y2="70"/>
-<line stroke="#000" x1="10" x2="308" y1="90" y2="90"/>
-<line stroke="#000" x1="10" x2="308" y1="110" y2="110"/>
-<line stroke="#000" x1="10" x2="308" y1="130" y2="130"/>
-<line stroke="#000" x1="10" x2="10" y1="50" y2="130"/>
-<line stroke="#000" x1="308" x2="308" y1="50" y2="130"/>
+<ellipse cx="38" cy="68" fill="black" rx="8" ry="6" wat="5"/>
+<ellipse cx="38" cy="56" fill="black" rx="8" ry="6" wat="7"/>
+<ellipse cx="38" cy="44" fill="black" rx="8" ry="6" wat="9"/>
+<line fill="none" stroke="black" stroke-width="2" x1="30" x2="30" y1="44" y2="108"/>
+<line fill="none" stroke="black" stroke-width="2" x1="60" x2="60" y1="68" y2="108"/>
+<line fill="none" stroke="black" stroke-width="8" x1="30" x2="60" y1="104" y2="104"/>
+<ellipse cx="68" cy="68" fill="black" rx="8" ry="6" wat="5"/>
+<ellipse cx="108" cy="110" fill="black" rx="8" ry="6" wat="-2"/>
+<line fill="none" stroke="black" stroke-width="2" x1="116" x2="116" y1="110" y2="46"/>
+<line fill="none" stroke="black" stroke-width="2" x1="146" x2="146" y1="110" y2="46"/>
+<line fill="none" stroke="black" stroke-width="8" x1="116" x2="146" y1="50" y2="50"/>
+<ellipse cx="138" cy="110" fill="black" rx="8" ry="6" wat="-2"/>
+<ellipse cx="138" cy="98" fill="black" rx="8" ry="6" wat="0"/>
+<ellipse cx="138" cy="86" fill="black" rx="8" ry="6" wat="2"/>
+<ellipse cx="178" cy="116" fill="black" rx="8" ry="6" wat="-3"/>
+<line fill="none" stroke="black" stroke-width="2" x1="186" x2="186" y1="116" y2="64"/>
+<line fill="none" stroke="black" stroke-width="2" x1="216" x2="216" y1="116" y2="64"/>
+<line fill="none" stroke="black" stroke-width="8" x1="186" x2="216" y1="68" y2="68"/>
+<ellipse cx="208" cy="116" fill="black" rx="8" ry="6" wat="-3"/>
+<ellipse cx="224" cy="110" fill="black" rx="8" ry="6" wat="-2"/>
+<ellipse cx="208" cy="104" fill="black" rx="8" ry="6" wat="-1"/>
+<ellipse cx="248" cy="74" fill="black" rx="8" ry="6" wat="4"/>
+<line fill="none" stroke="black" stroke-width="2" x1="256" x2="256" y1="74" y2="28"/>
+<line fill="none" stroke="black" stroke-width="2" x1="286" x2="286" y1="80" y2="28"/>
+<line fill="none" stroke="black" stroke-width="8" x1="256" x2="286" y1="32" y2="32"/>
+<ellipse cx="278" cy="68" fill="black" rx="8" ry="6" wat="5"/>
+<ellipse cx="294" cy="74" fill="black" rx="8" ry="6" wat="4"/>
+<ellipse cx="278" cy="80" fill="black" rx="8" ry="6" wat="3"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="328" y1="50" y2="50"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="328" y1="62" y2="62"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="328" y1="74" y2="74"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="328" y1="86" y2="86"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="328" y1="98" y2="98"/>
+<line stroke="#000" x1="10" x2="10" y1="50" y2="98"/>
+<line stroke="#000" x1="328" x2="328" y1="50" y2="98"/>
 </svg>

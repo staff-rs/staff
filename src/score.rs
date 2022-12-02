@@ -20,6 +20,9 @@ pub struct Measure {
     chords: Vec<Chord>,
 }
 
+const NOTE_RX: i64 = 8;
+const NOTE_RY: i64 = 6;
+
 impl Measure {
     pub fn f(&self, doc: &mut Document, x: i64) {
         let mut chord_x = x + 28;
@@ -47,8 +50,6 @@ impl Measure {
                     let low = *chord.notes.iter().min().unwrap();
                     let high = *chord.notes.iter().max().unwrap();
                     let diff = low.max(10 - high);
-
-                    const OFFSET: i64 = 25;
 
                     if let Some(next) = self.chords.get(pos + 1) {
                         if next.duration == Duration::Eigth {
@@ -102,6 +103,7 @@ impl Measure {
                                 Line::new()
                                     .set("fill", "none")
                                     .set("stroke", "black")
+                                    .set("stroke-width", 2)
                                     .set("x1", x)
                                     .set("y1", y1)
                                     .set("x2", x)
@@ -114,6 +116,7 @@ impl Measure {
                                 Line::new()
                                     .set("fill", "none")
                                     .set("stroke", "black")
+                                    .set("stroke-width", 2)
                                     .set("x1", next_x)
                                     .set("y1", y1_next)
                                     .set("x2", next_x)
@@ -134,12 +137,12 @@ impl Measure {
                             next.write_svg(doc, chord_x + OFFSET);
 
                             pos += 1;
-                            80
+                            70
                         } else {
-                            100
+                            20
                         }
                     } else {
-                        100
+                        20
                     }
                 }
             };
@@ -148,7 +151,7 @@ impl Measure {
         }
 
         for line in 0..5 {
-            let y = line * 20 + 50;
+            let y = line * NOTE_RY * 2 + 50;
 
             doc.append(
                 Line::new()
@@ -156,7 +159,8 @@ impl Measure {
                     .set("y1", y)
                     .set("x2", x + chord_x)
                     .set("y2", y)
-                    .set("stroke", "#000"),
+                    .set("stroke", "#000")
+                    .set("stroke-width", 2),
             )
         }
 
@@ -168,7 +172,7 @@ impl Measure {
                     .set("x1", line_x)
                     .set("y1", 50)
                     .set("x2", line_x)
-                    .set("y2", 130)
+                    .set("y2", 98)
                     .set("stroke", "#000"),
             )
         }
@@ -182,7 +186,7 @@ pub struct Chord {
 }
 
 fn y(note: i64) -> i64 {
-    (13 - note) * 10
+    (17 - note) * NOTE_RY - 4
 }
 
 fn note_head(x: i64, note: i64) -> Ellipse {
@@ -190,11 +194,10 @@ fn note_head(x: i64, note: i64) -> Ellipse {
     let cy = y(note);
 
     Ellipse::new()
-        .set("transform", format!("rotate(340, {cx} {cy})"))
         .set("cx", cx)
         .set("cy", cy)
-        .set("rx", 8)
-        .set("ry", 5)
+        .set("rx", NOTE_RX)
+        .set("ry", NOTE_RY)
 }
 
 impl Chord {
@@ -224,18 +227,20 @@ impl Chord {
             }
             Duration::Quarter => {
                 for note in &self.notes {
-                    doc.append(
-                        note_head(x, *note)
-                            .set("fill", "black")
-                    );
+                    doc.append(note_head(x, *note).set("fill", "black"));
                 }
             }
             Duration::Eigth => {
                 for note in &self.notes {
-                    doc.append(
-                        note_head(x, *note)
-                            .set("fill", "black")
-                    );
+                    if note & 1 == 0 && self.notes.contains(&(note + 1)) {
+                        doc.append(
+                            note_head(x + (NOTE_RX * 2), *note)
+                                .set("fill", "black")
+                                .set("wat", *note),
+                        );
+                    } else {
+                        doc.append(note_head(x, *note).set("fill", "black").set("wat", *note));
+                    }
                 }
             }
         }
@@ -261,9 +266,9 @@ impl Chord {
                 Line::new()
                     .set("fill", "none")
                     .set("stroke", "black")
-                    .set("x1", x + 8)
+                    .set("x1", x + NOTE_RX)
                     .set("y1", y(low))
-                    .set("x2", x + 8)
+                    .set("x2", x + NOTE_RX)
                     .set("y2", y(high) - extra),
             );
             y(high) - 40
@@ -296,8 +301,20 @@ mod tests {
                     duration: Duration::Eigth,
                 },
                 Chord {
-                    notes: vec![-2, 0, 2],
-                    duration: Duration::Half,
+                    notes: vec![-3],
+                    duration: Duration::Eigth,
+                },
+                Chord {
+                    notes: vec![-3, -2, -1],
+                    duration: Duration::Eigth,
+                },
+                Chord {
+                    notes: vec![4],
+                    duration: Duration::Eigth,
+                },
+                Chord {
+                    notes: vec![5, 4, 3],
+                    duration: Duration::Eigth,
                 },
             ],
         };
