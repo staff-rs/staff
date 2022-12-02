@@ -66,7 +66,7 @@ pub use scale::Scale;
 
 pub mod set;
 
-pub mod staff;
+pub mod score;
 
 /// ```
 /// use staff::{midi, Pitch};
