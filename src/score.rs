@@ -1,5 +1,5 @@
 use svg::{
-    node::element::{Ellipse, Line},
+    node::element::{Ellipse, Line, Path},
     Document, Node,
 };
 
@@ -24,8 +24,10 @@ const NOTE_RX: i64 = 8;
 const NOTE_RY: i64 = 6;
 
 impl Measure {
-    pub fn f(&self, doc: &mut Document, x: i64) {
-        let mut chord_x = x + 28;
+    pub fn write_svg(&self, doc: &mut Document, x: i64) {
+        doc.append(Path::new().set("transform", "translate(0, -11)").set("d", include_str!("../svg/treble_clef_d")));
+
+        let mut chord_x = x + 68;
 
         let mut pos = 0;
         while let Some(chord) = self.chords.get(pos) {
@@ -61,40 +63,40 @@ impl Measure {
                                 if low > 10 - high {
                                     (
                                         chord_x,
-                                        y(low) + 40,
-                                        y(high),
-                                        y(low) + 40,
-                                        y(high_next),
-                                        y(low) + 40,
+                                        note_y(low) + 40,
+                                        note_y(high),
+                                        note_y(low) + 40,
+                                        note_y(high_next),
+                                        note_y(low) + 40,
                                     )
                                 } else {
                                     (
                                         chord_x + 8,
-                                        y(low),
-                                        y(high_next) - 40,
-                                        y(low_next),
-                                        y(high_next) - 40,
-                                        y(high_next) - 40 + 4,
+                                        note_y(low),
+                                        note_y(high_next) - 40,
+                                        note_y(low_next),
+                                        note_y(high_next) - 40,
+                                        note_y(high_next) - 40 + 4,
                                     )
                                 }
                             } else {
                                 if low_next > 10 - high_next {
                                     (
                                         chord_x,
-                                        y(low) + 40,
-                                        y(high_next),
-                                        y(low_next) + 40,
-                                        y(high_next),
-                                        y(high_next),
+                                        note_y(low) + 40,
+                                        note_y(high_next),
+                                        note_y(low_next) + 40,
+                                        note_y(high_next),
+                                        note_y(high_next),
                                     )
                                 } else {
                                     (
                                         chord_x - 8,
-                                        y(high),
-                                        y(low_next) + 40,
-                                        y(high_next),
-                                        y(low_next) + 40,
-                                        y(low_next) + 40 - 4,
+                                        note_y(high),
+                                        note_y(low_next) + 40,
+                                        note_y(high_next),
+                                        note_y(low_next) + 40,
+                                        note_y(low_next) + 40 - 4,
                                     )
                                 }
                             };
@@ -185,13 +187,13 @@ pub struct Chord {
     duration: Duration,
 }
 
-fn y(note: i64) -> i64 {
+fn note_y(note: i64) -> i64 {
     (17 - note) * NOTE_RY - 4
 }
 
 fn note_head(x: i64, note: i64) -> Ellipse {
     let cx = x;
-    let cy = y(note);
+    let cy = note_y(note);
 
     Ellipse::new()
         .set("cx", cx)
@@ -210,7 +212,7 @@ impl Chord {
                             .set("fill", "none")
                             .set("stroke", "black")
                             .set("cx", x + 10)
-                            .set("cy", y(*note))
+                            .set("cy", note_y(*note))
                             .set("rx", 10)
                             .set("ry", 5),
                     );
@@ -256,22 +258,22 @@ impl Chord {
                     .set("fill", "none")
                     .set("stroke", "black")
                     .set("x1", x)
-                    .set("y1", y(low) + extra)
+                    .set("y1", note_y(low) + extra)
                     .set("x2", x)
-                    .set("y2", y(high)),
+                    .set("y2", note_y(high)),
             );
-            y(low) + 40
+            note_y(low) + 40
         } else {
             doc.append(
                 Line::new()
                     .set("fill", "none")
                     .set("stroke", "black")
                     .set("x1", x + NOTE_RX)
-                    .set("y1", y(low))
+                    .set("y1", note_y(low))
                     .set("x2", x + NOTE_RX)
-                    .set("y2", y(high) - extra),
+                    .set("y2", note_y(high) - extra),
             );
-            y(high) - 40
+            note_y(high) - 40
         }
     }
 }
@@ -320,7 +322,7 @@ mod tests {
         };
 
         let mut document = svg::Document::new();
-        measure.f(&mut document, 10);
+        measure.write_svg(&mut document, 10);
 
         svg::save("image.svg", &document).unwrap();
     }
