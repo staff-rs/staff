@@ -8,7 +8,7 @@ repository = "https://github.com/staff-rs/staff"
 homepage = "https://staff-rs.github.io"
 
 [features]
-cli = ["anyhow", "clap", "serde"]
+cli = ["anyhow", "clap"]
 serde = ["dep:serde"]
 default = ["serde"]
 
