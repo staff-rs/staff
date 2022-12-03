@@ -3,11 +3,6 @@ use svg::{
     Document, Node,
 };
 
-use crate::{
-    midi::{MidiNote, MidiSet, Octave},
-    Pitch,
-};
-
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
     Eigth,
@@ -16,8 +11,35 @@ pub enum Duration {
     Whole,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum Clef {
+    Treble,
+}
+
+impl Clef {
+    pub fn write_svg(self, doc: &mut Document) {
+        doc.append(
+            Path::new()
+                .set("transform", "translate(0, -11)")
+                .set("d", include_str!("../svg/treble_clef_d")),
+        );
+    }
+}
+
 pub struct Measure {
-    chords: Vec<Chord>,
+    pub clef: Option<Clef>,
+    pub chords: Vec<Chord>,
+}
+
+impl Measure {
+    pub fn new(chords: Vec<Chord>) -> Self {
+        Self { clef: None, chords }
+    }
+
+    pub fn with_clef(mut self, clef: Clef) -> Self {
+        self.clef = Some(clef);
+        self
+    }
 }
 
 const NOTE_RX: i64 = 8;
@@ -25,11 +47,9 @@ const NOTE_RY: i64 = 6;
 
 impl Measure {
     pub fn write_svg(&self, doc: &mut Document, x: i64) {
-        doc.append(
-            Path::new()
-                .set("transform", "translate(0, -11)")
-                .set("d", include_str!("../svg/treble_clef_d")),
-        );
+        if let Some(clef) = self.clef {
+            clef.write_svg(doc);
+        }
 
         let mut chord_x = x + 68;
         let mut pos = 0;
@@ -189,6 +209,8 @@ impl Measure {
             pos += 1;
         }
 
+        chord_x -= 40;
+
         for line in 0..5 {
             let y = line * NOTE_RY * 2 + 50;
 
@@ -245,6 +267,42 @@ fn note_head(x: i64, note: i64) -> Ellipse {
         .set("ry", NOTE_RY)
 }
 
+fn write_note<T: Node>(doc: &mut Document, x: i64, note: i64, node: T) {
+    const WIDTH: i64 = 6;
+
+    if note >= 10 {
+        let mut n = 0;
+        while n <= note {
+            doc.append(
+                Line::new()
+                    .set("stroke", "black")
+                    .set("stroke-width", 2)
+                    .set("x1", x - NOTE_RX - WIDTH)
+                    .set("y1", note_y(n))
+                    .set("x2", x + NOTE_RX + WIDTH)
+                    .set("y2", note_y(n)),
+            );
+            n += 2;
+        }
+    } else if note < 0 {
+        let mut n = 0;
+        while n >= note {
+            doc.append(
+                Line::new()
+                    .set("stroke", "black")
+                    .set("stroke-width", 2)
+                    .set("x1", x - NOTE_RX - WIDTH)
+                    .set("y1", note_y(n))
+                    .set("x2", x + NOTE_RX + WIDTH)
+                    .set("y2", note_y(n)),
+            );
+            n -= 2;
+        }
+    }
+
+    doc.append(node);
+}
+
 impl Chord {
     pub fn write_svg(&self, doc: &mut Document, x: i64) {
         match self.duration {
@@ -272,19 +330,20 @@ impl Chord {
             }
             Duration::Quarter => {
                 for note in &self.notes {
-                    doc.append(note_head(x, *note).set("fill", "black"));
+                    write_note(doc, x, *note, note_head(x, *note).set("fill", "black"));
                 }
             }
             Duration::Eigth => {
                 for note in &self.notes {
                     if note & 1 == 0 && self.notes.contains(&(note + 1)) {
-                        doc.append(
-                            note_head(x + (NOTE_RX * 2), *note)
-                                .set("fill", "black")
-                                .set("wat", *note),
+                        write_note(
+                            doc,
+                            x,
+                            *note,
+                            note_head(x + (NOTE_RX * 2), *note).set("fill", "black"),
                         );
                     } else {
-                        doc.append(note_head(x, *note).set("fill", "black").set("wat", *note));
+                        write_note(doc, x, *note, note_head(x, *note).set("fill", "black"));
                     }
                 }
             }
@@ -296,14 +355,14 @@ impl Chord {
         let high = *self.notes.iter().max().unwrap();
 
         if low > 10 - high {
+            let left = x - NOTE_RX * 2 + 1;
             doc.append(
                 Line::new()
-                    .set("fill", "none")
                     .set("stroke", "black")
                     .set("stroke-width", 2)
-                    .set("x1", x - 1)
+                    .set("x1", left)
                     .set("y1", note_y(low) + extra)
-                    .set("x2", x - 1)
+                    .set("x2", left)
                     .set("y2", note_y(high)),
             );
             note_y(low) + 40
@@ -325,27 +384,17 @@ impl Chord {
 
 #[cfg(test)]
 mod tests {
-    use super::{Chord, Duration, Measure};
+    use super::{Chord, Clef, Duration, Measure};
 
     #[test]
     fn f() {
-        let measure = Measure {
-            chords: vec![
-                Chord::new(vec![], Duration::Half),
-                Chord {
-                    notes: vec![-3],
-                    duration: Duration::Eigth,
-                },
-                Chord {
-                    notes: vec![-3, -2, -1],
-                    duration: Duration::Eigth,
-                },
-                Chord {
-                    notes: vec![7],
-                    duration: Duration::Quarter,
-                },
-            ],
-        };
+        let measure = Measure::new(vec![
+            Chord::new(vec![-4], Duration::Eigth),
+            Chord::new(vec![-3, -2, -1], Duration::Eigth),
+            Chord::new(vec![], Duration::Half),
+            Chord::new(vec![10], Duration::Quarter),
+        ])
+        .with_clef(Clef::Treble);
 
         let mut document = svg::Document::new();
         measure.write_svg(&mut document, 10);
