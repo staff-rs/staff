@@ -1,5 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<ellipse cx="16" cy="98" fill="none" rx="8" ry="6" stroke="black"/>
-<ellipse cx="32" cy="92" fill="none" rx="8" ry="6" stroke="black"/>
-<ellipse cx="16" cy="86" fill="none" rx="8" ry="6" stroke="black"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="80" y1="50" y2="50"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="80" y1="62" y2="62"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="80" y1="74" y2="74"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="80" y1="86" y2="86"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="80" y1="98" y2="98"/>
+<line stroke="#000" x1="10" x2="10" y1="50" y2="98"/>
+<line stroke="#000" x1="80" x2="80" y1="50" y2="98"/>
+<ellipse cx="10" cy="122" fill="none" rx="8" ry="6" stroke="black" stroke-width="2"/>
+<line fill="none" stroke="black" stroke-width="2" x1="17" x2="17" y1="122" y2="82"/>
+<ellipse cx="44" cy="116" fill="none" rx="8" ry="6" stroke="black" stroke-width="2"/>
+<ellipse cx="28" cy="110" fill="none" rx="8" ry="6" stroke="black" stroke-width="2"/>
+<ellipse cx="28" cy="104" fill="none" rx="8" ry="6" stroke="black" stroke-width="2"/>
+<line fill="none" stroke="black" stroke-width="2" x1="35" x2="35" y1="116" y2="64"/>
+<ellipse cx="62" cy="38" fill="black" rx="8" ry="6" stroke-width="2"/>
+<line fill="none" stroke="black" stroke-width="2" x1="54" x2="54" y1="78" y2="38"/>
 </svg>

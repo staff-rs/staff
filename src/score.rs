@@ -8,10 +8,17 @@ pub struct RenderNote {
     index: i64,
 }
 
+pub struct Bar {
+    x: i64,
+    y1: i64,
+    y2: i64,
+}
+
 pub struct RenderChord {
     pub notes: Vec<RenderNote>,
     pub duration: Duration,
     pub width: u64,
+    pub bar: Option<Bar>,
 }
 
 impl RenderChord {
@@ -21,28 +28,56 @@ impl RenderChord {
 
         for note in notes.iter().copied() {
             let x = if note & 1 != 0 && notes.contains(&(note + 1)) {
-                NOTE_RX * 2
+                let x = NOTE_RX * 2;
+                if width == 0 {
+                    width = x as _;
+                }
+                x
             } else {
                 0
             };
 
             render_notes.push(RenderNote { x, index: note });
-            width += (x + NOTE_RX * 2) as u64;
         }
 
+        width += (NOTE_RX * 2) as u64;
+
         // Add width for note line
-        if duration != Duration::Whole {
+        let bar = if duration != Duration::Whole {
             width += 2;
-        }
+
+            let low = *notes.iter().min().unwrap();
+            let high = *notes.iter().max().unwrap();
+
+            let extra = 40;
+            let bar = if low > 10 - high {
+              
+                Bar {
+                    x: -NOTE_RX,
+                    y1: note_y(low) + extra,
+                    y2: note_y(high),
+                }
+            } else {
+                Bar {
+                    x: NOTE_RX - 1,
+                    y1: note_y(low),
+                    y2: note_y(high) - extra,
+                }
+            };
+            Some(bar)
+        } else {
+            None
+        };
 
         Self {
             notes: render_notes,
             duration,
             width,
+            bar,
         }
     }
 
-    pub fn svg<T: Node>(&self, node: &mut T) {
+    pub fn svg<T: Node>(&self, node: &mut T, x: i64) {
         match self.duration {
             Duration::Whole => {
                 for note in &self.notes {
@@ -50,7 +85,8 @@ impl RenderChord {
                         Ellipse::new()
                             .set("fill", "none")
                             .set("stroke", "black")
-                            .set("cx", note.x + NOTE_RX * 2)
+                            .set("stroke-width", 2)
+                            .set("cx", x + note.x + NOTE_RX * 2)
                             .set("cy", note_y(note.index))
                             .set("rx", NOTE_RX)
                             .set("ry", NOTE_RY),
@@ -60,13 +96,99 @@ impl RenderChord {
             Duration::Half => {
                 for note in &self.notes {
                     node.append(
-                        note_head(note.x, note.index)
+                        note_head(x + note.x, note.index)
                             .set("fill", "none")
-                            .set("stroke", "black"),
+                            .set("stroke", "black")
+                            .set("stroke-width", 2),
+                    );
+                }
+            }
+            Duration::Quarter => {
+                for note in &self.notes {
+                    node.append(
+                        note_head(x + note.x, note.index)
+                            .set("fill", "black")
+                            .set("stroke-width", 2),
                     );
                 }
             }
             _ => todo!(),
+        }
+
+        if let Some(bar) = &self.bar {
+            node.append(
+                Line::new()
+                    .set("fill", "none")
+                    .set("stroke", "black")
+                    .set("stroke-width", 2)
+                    .set("x1", x + bar.x)
+                    .set("y1", bar.y1)
+                    .set("x2", x + bar.x)
+                    .set("y2", bar.y2),
+            );
+        }
+    }
+}
+
+pub struct ChordIn<'a> {
+    notes: &'a [i64],
+    duration: Duration,
+}
+
+pub struct RenderMeasure {
+    chords: Vec<RenderChord>,
+    width: u64,
+}
+
+impl RenderMeasure {
+    pub fn new(chords: &[ChordIn]) -> Self {
+        let mut render_chords: Vec<RenderChord> = Vec::new();
+        let mut width = 0;
+
+        for chord in chords {
+            let render_chord = RenderChord::new(chord.notes, chord.duration);
+            width += render_chord.width;
+            render_chords.push(render_chord);
+        }
+
+        Self {
+            chords: render_chords,
+            width,
+        }
+    }
+
+    pub fn svg<T: Node>(&self, node: &mut T, x: i64) {
+        for line in 0..5 {
+            let y = line * NOTE_RY * 2 + 50;
+
+            node.append(
+                Line::new()
+                    .set("x1", x)
+                    .set("y1", y)
+                    .set("x2", x + self.width as i64)
+                    .set("y2", y)
+                    .set("stroke", "#000")
+                    .set("stroke-width", 2),
+            )
+        }
+
+        for line in 0..2 {
+            let line_x = x + line * self.width as i64;
+
+            node.append(
+                Line::new()
+                    .set("x1", line_x)
+                    .set("y1", 50)
+                    .set("x2", line_x)
+                    .set("y2", 98)
+                    .set("stroke", "#000"),
+            )
+        }
+
+        let mut chord_x = x;
+        for chord in &self.chords {
+            chord.svg(node, chord_x);
+            chord_x += chord.width as i64;
         }
     }
 }
@@ -452,7 +574,7 @@ impl Chord {
 
 #[cfg(test)]
 mod tests {
-    use super::{Chord, Clef, Duration, Measure, RenderChord};
+    use super::{Chord, ChordIn, Clef, Duration, Measure, RenderChord, RenderMeasure};
 
     #[test]
     fn f() {
@@ -472,10 +594,23 @@ mod tests {
 
     #[test]
     fn g() {
-        let chord = RenderChord::new(&[0, 1, 2], Duration::Whole);
+        let measure = RenderMeasure::new(&[
+            ChordIn {
+                notes: &[-4],
+                duration: Duration::Half,
+            },
+            ChordIn {
+                notes: &[-3, -2, -1],
+                duration: Duration::Half,
+            },
+            ChordIn {
+                notes: &[10],
+                duration: Duration::Quarter,
+            },
+        ]);
 
         let mut document = svg::Document::new();
-        chord.svg(&mut document);
+        measure.svg(&mut document, 10);
 
         svg::save("image2.svg", &document).unwrap();
     }
