@@ -4,9 +4,9 @@
 <line stroke="black" stroke-width="2" x1="64" x2="92" y1="110" y2="110"/>
 <line stroke="black" stroke-width="2" x1="64" x2="92" y1="122" y2="122"/>
 <ellipse cx="78" cy="122" fill="black" rx="8" ry="6" stroke-width="2"/>
-<line fill="none" stroke="black" stroke-width="8" x1="86" x2="113" y1="68" y2="68"/>
+<line fill="none" stroke="black" stroke-width="8" x1="86" x2="121" y1="68" y2="68"/>
 <line fill="none" stroke="black" stroke-width="2" x1="85" x2="85" y1="122" y2="64"/>
-<line fill="none" stroke="black" stroke-width="2" x1="113" x2="113" y1="116" y2="64"/>
+<line fill="none" stroke="black" stroke-width="2" x1="121" x2="121" y1="116" y2="64"/>
 <line stroke="black" stroke-width="2" x1="98" x2="126" y1="98" y2="98"/>
 <line stroke="black" stroke-width="2" x1="98" x2="126" y1="110" y2="110"/>
 <ellipse cx="128" cy="116" fill="black" rx="8" ry="6" stroke-width="2"/>
