@@ -41,132 +41,138 @@ impl RenderChord {
         let notes = chords[*index].notes;
         let mut render_notes = Vec::new();
         let mut width = 0;
+        let mut bar = None;
+        let mut beam = None;
 
-        let mut start_left = true;
-        // Add width for note line
-        let bar = if *has_bar && duration != Duration::Whole {
-            let low = *notes.iter().min().unwrap();
-            let high = *notes.iter().max().unwrap();
-
-            let extra = 40;
-            let bar = if low > 10 - high {
-                Bar {
-                    x: 1,
-                    y1: note_y(low) + extra,
-                    y2: note_y(high),
-                }
-            } else {
-                start_left = false;
-                Bar {
-                    x: NOTE_RX * 2 - 1,
-                    y1: note_y(low),
-                    y2: note_y(high) - extra,
-                }
-            };
-            Some(bar)
+        if notes.is_empty() {
+            width += 20;
         } else {
-            None
-        };
+            let mut start_left = true;
+            // Add width for note line
+            bar = if *has_bar && duration != Duration::Whole {
+                let low = *notes.iter().min().unwrap();
+                let high = *notes.iter().max().unwrap();
 
-        let mut is_staggered = false;
-        for note in notes.iter().copied() {
-            let x = if ((start_left && note & 1 != 0) || (!start_left && note & 1 == 0))
-                && (notes.contains(&(note + 1)) || notes.contains(&(note - 1)))
-            {
-                let x = NOTE_RX * 2;
-                if !is_staggered {
-                    is_staggered = true;
-                    width += x as u64;
-                }
-                x
+                let extra = 40;
+                let bar = if low > 10 - high {
+                    Bar {
+                        x: 1,
+                        y1: note_y(low) + extra,
+                        y2: note_y(high),
+                    }
+                } else {
+                    start_left = false;
+                    Bar {
+                        x: NOTE_RX * 2 - 1,
+                        y1: note_y(low),
+                        y2: note_y(high) - extra,
+                    }
+                };
+                Some(bar)
             } else {
-                0
+                None
             };
 
-            if note >= 10  || note < 0{
-                // TODO this is for a line
-                width += 8;
+            let mut is_staggered = false;
+            for note in notes.iter().copied() {
+                let x = if ((start_left && note & 1 != 0) || (!start_left && note & 1 == 0))
+                    && (notes.contains(&(note + 1)) || notes.contains(&(note - 1)))
+                {
+                    let x = NOTE_RX * 2;
+                    if !is_staggered {
+                        is_staggered = true;
+                        width += x as u64;
+                    }
+                    x
+                } else {
+                    0
+                };
+
+                if note >= 10 || note < 0 {
+                    // TODO this is for a line
+                    width += 8;
+                }
+
+                render_notes.push(RenderNote { x, index: note });
             }
 
-            render_notes.push(RenderNote { x, index: note });
-        }
+            width += (NOTE_RX * 2) as u64;
 
-        width += (NOTE_RX * 2) as u64;
+            // TODO
+            *has_bar = true;
+            beam = if duration == Duration::Eigth {
+                let low = *notes.iter().min().unwrap();
+                let high = *notes.iter().max().unwrap();
+                let diff = low.max(10 - high);
 
-        // TODO
-        *has_bar = true;
-        let beam = if duration == Duration::Eigth {
-            let low = *notes.iter().min().unwrap();
-            let high = *notes.iter().max().unwrap();
-            let diff = low.max(10 - high);
+                if let Some(next) = chords.get(*index + 1) {
+                    if next.duration == Duration::Eigth {
+                        *has_bar = false;
 
-            if let Some(next) = chords.get(*index + 1) {
-                if next.duration == Duration::Eigth {
-                    *has_bar = false;
+                        let low_next = *next.notes.iter().min().unwrap();
+                        let high_next = *next.notes.iter().max().unwrap();
+                        let diff_next = low_next.max(10 - high_next);
 
-                    let low_next = *next.notes.iter().min().unwrap();
-                    let high_next = *next.notes.iter().max().unwrap();
-                    let diff_next = low_next.max(10 - high_next);
-
-                    let (x, y1, y2, y1_next, y2_next, y) = if diff > diff_next {
-                        if low > 10 - high {
-                            (
-                                0,
-                                note_y(low) + 40,
-                                note_y(high),
-                                note_y(low) + 40,
-                                note_y(high_next),
-                                note_y(low) + 40,
-                            )
+                        let (x, y1, y2, y1_next, y2_next, y) = if diff > diff_next {
+                            if low > 10 - high {
+                                (
+                                    0,
+                                    note_y(low) + 40,
+                                    note_y(high),
+                                    note_y(low) + 40,
+                                    note_y(high_next),
+                                    note_y(low) + 40,
+                                )
+                            } else {
+                                (
+                                    -NOTE_RX + 1,
+                                    note_y(low),
+                                    note_y(high_next) - 40,
+                                    note_y(low_next),
+                                    note_y(high_next) - 40,
+                                    note_y(high_next) - 40 + 4,
+                                )
+                            }
                         } else {
-                            (
-                                -NOTE_RX + 1,
-                                note_y(low),
-                                note_y(high_next) - 40,
-                                note_y(low_next),
-                                note_y(high_next) - 40,
-                                note_y(high_next) - 40 + 4,
-                            )
-                        }
+                            if low_next > 10 - high_next {
+                                (
+                                    0,
+                                    note_y(low) + 40,
+                                    note_y(high_next),
+                                    note_y(low_next) + 40,
+                                    note_y(high_next),
+                                    note_y(high_next),
+                                )
+                            } else {
+                                (
+                                    -NOTE_RX,
+                                    note_y(high),
+                                    note_y(low_next) + 40,
+                                    note_y(high_next),
+                                    note_y(low_next) + 40,
+                                    note_y(low_next) + 40 - 4,
+                                )
+                            }
+                        };
+
+                        Some(Beam {
+                            x,
+                            y1,
+                            y2,
+                            y1_next,
+                            y2_next,
+                            y,
+                        })
                     } else {
-                        if low_next > 10 - high_next {
-                            (
-                                0,
-                                note_y(low) + 40,
-                                note_y(high_next),
-                                note_y(low_next) + 40,
-                                note_y(high_next),
-                                note_y(high_next),
-                            )
-                        } else {
-                            (
-                                -NOTE_RX,
-                                note_y(high),
-                                note_y(low_next) + 40,
-                                note_y(high_next),
-                                note_y(low_next) + 40,
-                                note_y(low_next) + 40 - 4,
-                            )
-                        }
-                    };
-
-                    Some(Beam {
-                        x,
-                        y1,
-                        y2,
-                        y1_next,
-                        y2_next,
-                        y,
-                    })
+                        None
+                    }
                 } else {
                     None
                 }
             } else {
                 None
-            }
-        } else {
-            None
-        };
+            };
+        }
 
         Self {
             notes: render_notes,
@@ -178,6 +184,41 @@ impl RenderChord {
     }
 
     pub fn svg<T: Node>(&self, node: &mut T, x: i64, spacing: i64) {
+        if self.notes.is_empty() {
+            match self.duration {
+                Duration::Whole => node.append(
+                    Rectangle::new()
+                        .set("width", 20)
+                        .set("height", 6)
+                        .set("x", x)
+                        .set("y", 62),
+                ),
+                Duration::Half => node.append(
+                    Rectangle::new()
+                        .set("width", 20)
+                        .set("height", 6)
+                        .set("x", x)
+                        .set("y", 68),
+                ),
+                Duration::Quarter => {
+                    node.append(
+                        Path::new()
+                            .set("transform", format!("translate({x}, 64)"))
+                            .set("d", include_str!("../svg/quarter_rest.txt")),
+                    );
+                }
+                Duration::Eigth => {
+                    node.append(
+                        Path::new()
+                            .set("transform", format!("translate({x}, 64)"))
+                            .set("d", include_str!("../svg/eigth_rest.txt")),
+                    );
+                }
+            }
+
+            return;
+        }
+
         match self.duration {
             Duration::Whole => {
                 for note in &self.notes {
@@ -289,14 +330,15 @@ pub struct ChordIn<'a> {
 }
 
 pub struct RenderMeasure {
-    chords: Vec<RenderChord>,
-    width: u64,
+    pub chords: Vec<RenderChord>,
+    pub width: u64,
+    pub clef: Option<Clef>,
 }
 
 impl RenderMeasure {
-    pub fn new(chords: &[ChordIn]) -> Self {
+    pub fn new(chords: &[ChordIn], clef: Option<Clef>) -> Self {
         let mut render_chords: Vec<RenderChord> = Vec::new();
-        let mut width = 0;
+        let mut width = if clef.is_some() { 50 } else { 0 };
 
         let mut index = 0;
         let mut bar = true;
@@ -310,16 +352,25 @@ impl RenderMeasure {
         Self {
             chords: render_chords,
             width,
+            clef,
         }
     }
 
     pub fn svg<T: Node>(&self, node: &mut T, x: i64) {
         let spacing = 10;
         let mut chord_x = x + spacing;
+
+
+        if let Some(clef) = self.clef {
+            clef.write_svg(node);
+            chord_x += 50;
+        }
+
         for chord in &self.chords {
             chord.svg(node, chord_x, spacing);
             chord_x += chord.width as i64 + spacing;
         }
+
 
         for line in 0..5 {
             let y = line * NOTE_RY * 2 + 50;
@@ -364,7 +415,7 @@ pub enum Clef {
 }
 
 impl Clef {
-    pub fn write_svg(self, doc: &mut Document) {
+    pub fn write_svg<T: Node>(self, doc: &mut T) {
         doc.append(
             Path::new()
                 .set("transform", "translate(0, -11)")
@@ -620,7 +671,6 @@ fn note_head(x: i64, note: i64) -> Ellipse {
 fn write_note<T: Node, U: Node>(doc: &mut T, x: i64, note: i64, node: U) {
     const WIDTH: i64 = 6;
 
-   
     if note >= 10 {
         let mut n = 0;
         while n <= note {
@@ -630,7 +680,7 @@ fn write_note<T: Node, U: Node>(doc: &mut T, x: i64, note: i64, node: U) {
                     .set("stroke-width", 2)
                     .set("x1", x - WIDTH)
                     .set("y1", note_y(n))
-                    .set("x2", x + NOTE_RX * 2+ WIDTH)
+                    .set("x2", x + NOTE_RX * 2 + WIDTH)
                     .set("y2", note_y(n)),
             );
             n += 2;
@@ -642,7 +692,7 @@ fn write_note<T: Node, U: Node>(doc: &mut T, x: i64, note: i64, node: U) {
                 Line::new()
                     .set("stroke", "black")
                     .set("stroke-width", 2)
-                    .set("x1", x  - WIDTH)
+                    .set("x1", x - WIDTH)
                     .set("y1", note_y(n))
                     .set("x2", x + NOTE_RX * 2 + WIDTH)
                     .set("y2", note_y(n)),
@@ -755,20 +805,27 @@ mod tests {
 
     #[test]
     fn g() {
-        let measure = RenderMeasure::new(&[
-            ChordIn {
-                notes: &[-4],
-                duration: Duration::Eigth,
-            },
-            ChordIn {
-                notes: &[-3, -2, -1],
-                duration: Duration::Eigth,
-            },
-            ChordIn {
-                notes: &[10],
-                duration: Duration::Quarter,
-            },
-        ]);
+        let measure = RenderMeasure::new(
+            &[
+                ChordIn {
+                    notes: &[-4],
+                    duration: Duration::Eigth,
+                },
+                ChordIn {
+                    notes: &[-3, -2, -1],
+                    duration: Duration::Eigth,
+                },
+                ChordIn {
+                    notes: &[],
+                    duration: Duration::Half,
+                },
+                ChordIn {
+                    notes: &[10],
+                    duration: Duration::Quarter,
+                },
+            ],
+            Some(Clef::Treble),
+        );
 
         let mut document = svg::Document::new();
         measure.svg(&mut document, 10);
