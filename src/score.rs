@@ -83,6 +83,11 @@ impl RenderChord {
                 0
             };
 
+            if note >= 10  || note < 0{
+                // TODO this is for a line
+                width += 8;
+            }
+
             render_notes.push(RenderNote { x, index: note });
         }
 
@@ -176,7 +181,10 @@ impl RenderChord {
         match self.duration {
             Duration::Whole => {
                 for note in &self.notes {
-                    node.append(
+                    write_note(
+                        node,
+                        x,
+                        note.index,
                         Ellipse::new()
                             .set("fill", "none")
                             .set("stroke", "black")
@@ -190,7 +198,10 @@ impl RenderChord {
             }
             Duration::Half => {
                 for note in &self.notes {
-                    node.append(
+                    write_note(
+                        node,
+                        x,
+                        note.index,
                         note_head(x + note.x, note.index)
                             .set("fill", "none")
                             .set("stroke", "black")
@@ -200,7 +211,10 @@ impl RenderChord {
             }
             Duration::Quarter => {
                 for note in &self.notes {
-                    node.append(
+                    write_note(
+                        node,
+                        x,
+                        note.index,
                         note_head(x + note.x, note.index)
                             .set("fill", "black")
                             .set("stroke-width", 2),
@@ -209,7 +223,10 @@ impl RenderChord {
             }
             Duration::Eigth => {
                 for note in &self.notes {
-                    node.append(
+                    write_note(
+                        node,
+                        x,
+                        note.index,
                         note_head(x + note.x, note.index)
                             .set("fill", "black")
                             .set("stroke-width", 2),
@@ -248,7 +265,7 @@ impl RenderChord {
                     .set("stroke-width", 2)
                     .set("x1", next_x + NOTE_RX)
                     .set("y1", beam.y1_next)
-                    .set("x2", next_x  + NOTE_RX)
+                    .set("x2", next_x + NOTE_RX)
                     .set("y2", beam.y2_next),
             );
         } else if let Some(bar) = &self.bar {
@@ -297,8 +314,6 @@ impl RenderMeasure {
     }
 
     pub fn svg<T: Node>(&self, node: &mut T, x: i64) {
-      
-
         let spacing = 10;
         let mut chord_x = x + spacing;
         for chord in &self.chords {
@@ -540,9 +555,8 @@ impl Measure {
                 }
             };
 
-             chord_x += spacing;
+            chord_x += spacing;
             pos += 1;
-           
         }
 
         chord_x -= 40;
@@ -603,9 +617,10 @@ fn note_head(x: i64, note: i64) -> Ellipse {
         .set("ry", NOTE_RY)
 }
 
-fn write_note<T: Node>(doc: &mut Document, x: i64, note: i64, node: T) {
+fn write_note<T: Node, U: Node>(doc: &mut T, x: i64, note: i64, node: U) {
     const WIDTH: i64 = 6;
 
+   
     if note >= 10 {
         let mut n = 0;
         while n <= note {
@@ -613,9 +628,9 @@ fn write_note<T: Node>(doc: &mut Document, x: i64, note: i64, node: T) {
                 Line::new()
                     .set("stroke", "black")
                     .set("stroke-width", 2)
-                    .set("x1", x - NOTE_RX - WIDTH)
+                    .set("x1", x - WIDTH)
                     .set("y1", note_y(n))
-                    .set("x2", x + NOTE_RX + WIDTH)
+                    .set("x2", x + NOTE_RX * 2+ WIDTH)
                     .set("y2", note_y(n)),
             );
             n += 2;
@@ -627,9 +642,9 @@ fn write_note<T: Node>(doc: &mut Document, x: i64, note: i64, node: T) {
                 Line::new()
                     .set("stroke", "black")
                     .set("stroke-width", 2)
-                    .set("x1", x - NOTE_RX - WIDTH)
+                    .set("x1", x  - WIDTH)
                     .set("y1", note_y(n))
-                    .set("x2", x + NOTE_RX + WIDTH)
+                    .set("x2", x + NOTE_RX * 2 + WIDTH)
                     .set("y2", note_y(n)),
             );
             n -= 2;
