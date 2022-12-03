@@ -14,23 +14,37 @@ pub struct Bar {
     y2: i64,
 }
 
+pub struct Beam {
+    x: i64,
+    y1: i64,
+    y2: i64,
+    y1_next: i64,
+    y2_next: i64,
+    y: i64,
+}
+
 pub struct RenderChord {
     pub notes: Vec<RenderNote>,
     pub duration: Duration,
     pub width: u64,
     pub bar: Option<Bar>,
+    pub beam: Option<Beam>,
 }
 
 impl RenderChord {
-    pub fn new(notes: &[i64], duration: Duration) -> Self {
+    pub fn new(
+        chords: &[ChordIn],
+        index: &mut usize,
+        duration: Duration,
+        has_bar: &mut bool,
+    ) -> Self {
+        let notes = chords[*index].notes;
         let mut render_notes = Vec::new();
         let mut width = 0;
 
         let mut start_left = true;
         // Add width for note line
-        let bar = if duration != Duration::Whole {
-            width += 2;
-
+        let bar = if *has_bar && duration != Duration::Whole {
             let low = *notes.iter().min().unwrap();
             let high = *notes.iter().max().unwrap();
 
@@ -57,7 +71,7 @@ impl RenderChord {
         let mut is_staggered = false;
         for note in notes.iter().copied() {
             let x = if ((start_left && note & 1 != 0) || (!start_left && note & 1 == 0))
-                && notes.contains(&(note + 1))
+                && (notes.contains(&(note + 1)) || notes.contains(&(note - 1)))
             {
                 let x = NOTE_RX * 2;
                 if !is_staggered {
@@ -74,15 +88,91 @@ impl RenderChord {
 
         width += (NOTE_RX * 2) as u64;
 
+        // TODO
+        *has_bar = true;
+        let beam = if duration == Duration::Eigth {
+            let low = *notes.iter().min().unwrap();
+            let high = *notes.iter().max().unwrap();
+            let diff = low.max(10 - high);
+
+            if let Some(next) = chords.get(*index + 1) {
+                if next.duration == Duration::Eigth {
+                    *has_bar = false;
+
+                    let low_next = *next.notes.iter().min().unwrap();
+                    let high_next = *next.notes.iter().max().unwrap();
+                    let diff_next = low_next.max(10 - high_next);
+
+                    let (x, y1, y2, y1_next, y2_next, y) = if diff > diff_next {
+                        if low > 10 - high {
+                            (
+                                0,
+                                note_y(low) + 40,
+                                note_y(high),
+                                note_y(low) + 40,
+                                note_y(high_next),
+                                note_y(low) + 40,
+                            )
+                        } else {
+                            (
+                                -NOTE_RX + 1,
+                                note_y(low),
+                                note_y(high_next) - 40,
+                                note_y(low_next),
+                                note_y(high_next) - 40,
+                                note_y(high_next) - 40 + 4,
+                            )
+                        }
+                    } else {
+                        if low_next > 10 - high_next {
+                            (
+                                0,
+                                note_y(low) + 40,
+                                note_y(high_next),
+                                note_y(low_next) + 40,
+                                note_y(high_next),
+                                note_y(high_next),
+                            )
+                        } else {
+                            (
+                                -NOTE_RX,
+                                note_y(high),
+                                note_y(low_next) + 40,
+                                note_y(high_next),
+                                note_y(low_next) + 40,
+                                note_y(low_next) + 40 - 4,
+                            )
+                        }
+                    };
+
+                    Some(Beam {
+                        x,
+                        y1,
+                        y2,
+                        y1_next,
+                        y2_next,
+                        y,
+                    })
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         Self {
             notes: render_notes,
             duration,
             width,
             bar,
+            beam,
         }
     }
 
-    pub fn svg<T: Node>(&self, node: &mut T, x: i64) {
+    pub fn svg<T: Node>(&self, node: &mut T, x: i64, spacing: i64) {
         match self.duration {
             Duration::Whole => {
                 for note in &self.notes {
@@ -117,10 +207,51 @@ impl RenderChord {
                     );
                 }
             }
-            _ => todo!(),
+            Duration::Eigth => {
+                for note in &self.notes {
+                    node.append(
+                        note_head(x + note.x, note.index)
+                            .set("fill", "black")
+                            .set("stroke-width", 2),
+                    );
+                }
+            }
         }
 
-        if let Some(bar) = &self.bar {
+        if let Some(beam) = &self.beam {
+            let next_x = x + spacing + beam.x + NOTE_RX * 4;
+            node.append(
+                Line::new()
+                    .set("fill", "none")
+                    .set("stroke", "black")
+                    .set("stroke-width", 8)
+                    .set("x1", x + beam.x + NOTE_RX * 3 - 1)
+                    .set("y1", beam.y)
+                    .set("x2", next_x + NOTE_RX)
+                    .set("y2", beam.y),
+            );
+
+            node.append(
+                Line::new()
+                    .set("fill", "none")
+                    .set("stroke", "black")
+                    .set("stroke-width", 2)
+                    .set("x1", x + NOTE_RX * 2 - 1)
+                    .set("y1", beam.y1)
+                    .set("x2", x + NOTE_RX * 2 - 1)
+                    .set("y2", beam.y2),
+            );
+            node.append(
+                Line::new()
+                    .set("fill", "none")
+                    .set("stroke", "black")
+                    .set("stroke-width", 2)
+                    .set("x1", next_x + NOTE_RX)
+                    .set("y1", beam.y1_next)
+                    .set("x2", next_x  + NOTE_RX)
+                    .set("y2", beam.y2_next),
+            );
+        } else if let Some(bar) = &self.bar {
             node.append(
                 Line::new()
                     .set("fill", "none")
@@ -150,10 +281,13 @@ impl RenderMeasure {
         let mut render_chords: Vec<RenderChord> = Vec::new();
         let mut width = 0;
 
-        for chord in chords {
-            let render_chord = RenderChord::new(chord.notes, chord.duration);
+        let mut index = 0;
+        let mut bar = true;
+        while let Some(chord) = chords.get(index) {
+            let render_chord = RenderChord::new(&chords, &mut index, chord.duration, &mut bar);
             width += render_chord.width;
             render_chords.push(render_chord);
+            index += 1;
         }
 
         Self {
@@ -163,6 +297,15 @@ impl RenderMeasure {
     }
 
     pub fn svg<T: Node>(&self, node: &mut T, x: i64) {
+      
+
+        let spacing = 10;
+        let mut chord_x = x + spacing;
+        for chord in &self.chords {
+            chord.svg(node, chord_x, spacing);
+            chord_x += chord.width as i64 + spacing;
+        }
+
         for line in 0..5 {
             let y = line * NOTE_RY * 2 + 50;
 
@@ -170,7 +313,7 @@ impl RenderMeasure {
                 Line::new()
                     .set("x1", x)
                     .set("y1", y)
-                    .set("x2", x + self.width as i64)
+                    .set("x2", x + chord_x as i64)
                     .set("y2", y)
                     .set("stroke", "#000")
                     .set("stroke-width", 2),
@@ -178,7 +321,7 @@ impl RenderMeasure {
         }
 
         for line in 0..2 {
-            let line_x = x + line * self.width as i64;
+            let line_x = x + line * chord_x as i64;
 
             node.append(
                 Line::new()
@@ -188,12 +331,6 @@ impl RenderMeasure {
                     .set("y2", 98)
                     .set("stroke", "#000"),
             )
-        }
-
-        let mut chord_x = x;
-        for chord in &self.chords {
-            chord.svg(node, chord_x);
-            chord_x += chord.width as i64;
         }
     }
 }
@@ -247,6 +384,7 @@ impl Measure {
         }
 
         let mut chord_x = x + 68;
+        let spacing = 10;
         let mut pos = 0;
         while let Some(chord) = self.chords.get(pos) {
             chord_x += if chord.notes.is_empty() {
@@ -364,16 +502,16 @@ impl Measure {
                                         .set("y2", y2),
                                 );
 
-                                const OFFSET: i64 = 30;
+                                const OFFSET: i64 = 0;
                                 let next_x = x + OFFSET;
                                 doc.append(
                                     Line::new()
                                         .set("fill", "none")
                                         .set("stroke", "black")
                                         .set("stroke-width", 2)
-                                        .set("x1", next_x - 1)
+                                        .set("x1", next_x + 10)
                                         .set("y1", y1_next)
-                                        .set("x2", next_x - 1)
+                                        .set("x2", next_x + 10)
                                         .set("y2", y2_next),
                                 );
 
@@ -382,9 +520,9 @@ impl Measure {
                                         .set("fill", "none")
                                         .set("stroke", "black")
                                         .set("stroke-width", 8)
-                                        .set("x1", x)
+                                        .set("x1", x - 10)
                                         .set("y1", y)
-                                        .set("x2", next_x)
+                                        .set("x2", next_x + 100)
                                         .set("y2", y),
                                 );
 
@@ -401,7 +539,10 @@ impl Measure {
                     }
                 }
             };
+
+             chord_x += spacing;
             pos += 1;
+           
         }
 
         chord_x -= 40;
@@ -602,11 +743,11 @@ mod tests {
         let measure = RenderMeasure::new(&[
             ChordIn {
                 notes: &[-4],
-                duration: Duration::Half,
+                duration: Duration::Eigth,
             },
             ChordIn {
                 notes: &[-3, -2, -1],
-                duration: Duration::Half,
+                duration: Duration::Eigth,
             },
             ChordIn {
                 notes: &[10],

@@ -5,30 +5,30 @@
 <line stroke="black" stroke-width="2" x1="64" x2="92" y1="122" y2="122"/>
 <ellipse cx="86" cy="122" fill="black" rx="8" ry="6"/>
 <line fill="none" stroke="black" stroke-width="2" x1="85" x2="85" y1="122" y2="64"/>
-<line fill="none" stroke="black" stroke-width="2" x1="115" x2="115" y1="116" y2="64"/>
-<line fill="none" stroke="black" stroke-width="8" x1="86" x2="116" y1="68" y2="68"/>
-<line stroke="black" stroke-width="2" x1="94" x2="122" y1="98" y2="98"/>
-<line stroke="black" stroke-width="2" x1="94" x2="122" y1="110" y2="110"/>
-<ellipse cx="116" cy="116" fill="black" rx="8" ry="6"/>
-<line stroke="black" stroke-width="2" x1="94" x2="122" y1="98" y2="98"/>
-<line stroke="black" stroke-width="2" x1="94" x2="122" y1="110" y2="110"/>
-<ellipse cx="132" cy="110" fill="black" rx="8" ry="6"/>
-<line stroke="black" stroke-width="2" x1="94" x2="122" y1="98" y2="98"/>
-<ellipse cx="116" cy="104" fill="black" rx="8" ry="6"/>
-<rect height="6" width="20" x="148" y="68"/>
-<line stroke="black" stroke-width="2" x1="183" x2="211" y1="98" y2="98"/>
-<line stroke="black" stroke-width="2" x1="183" x2="211" y1="86" y2="86"/>
-<line stroke="black" stroke-width="2" x1="183" x2="211" y1="74" y2="74"/>
-<line stroke="black" stroke-width="2" x1="183" x2="211" y1="62" y2="62"/>
-<line stroke="black" stroke-width="2" x1="183" x2="211" y1="50" y2="50"/>
-<line stroke="black" stroke-width="2" x1="183" x2="211" y1="38" y2="38"/>
-<ellipse cx="205" cy="38" fill="black" rx="8" ry="6"/>
-<line stroke="black" stroke-width="2" x1="190" x2="190" y1="78" y2="38"/>
-<line stroke="#000" stroke-width="2" x1="10" x2="217" y1="50" y2="50"/>
-<line stroke="#000" stroke-width="2" x1="10" x2="217" y1="62" y2="62"/>
-<line stroke="#000" stroke-width="2" x1="10" x2="217" y1="74" y2="74"/>
-<line stroke="#000" stroke-width="2" x1="10" x2="217" y1="86" y2="86"/>
-<line stroke="#000" stroke-width="2" x1="10" x2="217" y1="98" y2="98"/>
+<line fill="none" stroke="black" stroke-width="2" x1="96" x2="96" y1="116" y2="64"/>
+<line fill="none" stroke="black" stroke-width="8" x1="76" x2="186" y1="68" y2="68"/>
+<line stroke="black" stroke-width="2" x1="64" x2="92" y1="98" y2="98"/>
+<line stroke="black" stroke-width="2" x1="64" x2="92" y1="110" y2="110"/>
+<ellipse cx="86" cy="116" fill="black" rx="8" ry="6"/>
+<line stroke="black" stroke-width="2" x1="64" x2="92" y1="98" y2="98"/>
+<line stroke="black" stroke-width="2" x1="64" x2="92" y1="110" y2="110"/>
+<ellipse cx="102" cy="110" fill="black" rx="8" ry="6"/>
+<line stroke="black" stroke-width="2" x1="64" x2="92" y1="98" y2="98"/>
+<ellipse cx="86" cy="104" fill="black" rx="8" ry="6"/>
+<rect height="6" width="20" x="158" y="68"/>
+<line stroke="black" stroke-width="2" x1="203" x2="231" y1="98" y2="98"/>
+<line stroke="black" stroke-width="2" x1="203" x2="231" y1="86" y2="86"/>
+<line stroke="black" stroke-width="2" x1="203" x2="231" y1="74" y2="74"/>
+<line stroke="black" stroke-width="2" x1="203" x2="231" y1="62" y2="62"/>
+<line stroke="black" stroke-width="2" x1="203" x2="231" y1="50" y2="50"/>
+<line stroke="black" stroke-width="2" x1="203" x2="231" y1="38" y2="38"/>
+<ellipse cx="225" cy="38" fill="black" rx="8" ry="6"/>
+<line stroke="black" stroke-width="2" x1="210" x2="210" y1="78" y2="38"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="247" y1="50" y2="50"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="247" y1="62" y2="62"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="247" y1="74" y2="74"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="247" y1="86" y2="86"/>
+<line stroke="#000" stroke-width="2" x1="10" x2="247" y1="98" y2="98"/>
 <line stroke="#000" x1="10" x2="10" y1="50" y2="98"/>
-<line stroke="#000" x1="217" x2="217" y1="50" y2="98"/>
+<line stroke="#000" x1="247" x2="247" y1="50" y2="98"/>
 </svg>
