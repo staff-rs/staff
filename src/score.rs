@@ -75,7 +75,7 @@ impl RenderChord {
 
             let mut is_staggered = false;
             for note in notes.iter().copied() {
-                let x = if ((start_left && note & 1 != 0) || (!start_left && note & 1 == 0))
+                let x = if ((start_left && note & 1 == 0) || (!start_left && note & 1 == 0))
                     && (notes.contains(&(note + 1)) || notes.contains(&(note - 1)))
                 {
                     let x = NOTE_RX * 2;
@@ -283,9 +283,9 @@ impl RenderChord {
                     .set("fill", "none")
                     .set("stroke", "black")
                     .set("stroke-width", 8)
-                    .set("x1", x + beam.x + NOTE_RX * 3 - 1)
+                    .set("x1", x + beam.x + NOTE_RX * 3 - 2)
                     .set("y1", beam.y)
-                    .set("x2", next_x + NOTE_RX * 2)
+                    .set("x2", next_x + NOTE_RX * 2 - 2)
                     .set("y2", beam.y),
             );
 
@@ -304,9 +304,9 @@ impl RenderChord {
                     .set("fill", "none")
                     .set("stroke", "black")
                     .set("stroke-width", 2)
-                    .set("x1", next_x + NOTE_RX * 2)
+                    .set("x1", next_x + NOTE_RX * 2 - 2)
                     .set("y1", beam.y1_next)
-                    .set("x2", next_x + NOTE_RX * 2)
+                    .set("x2", next_x + NOTE_RX * 2 - 2)
                     .set("y2", beam.y2_next),
             );
         } else if let Some(bar) = &self.bar {
