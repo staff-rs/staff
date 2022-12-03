@@ -3,6 +3,74 @@ use svg::{
     Document, Node,
 };
 
+pub struct RenderNote {
+    x: i64,
+    index: i64,
+}
+
+pub struct RenderChord {
+    pub notes: Vec<RenderNote>,
+    pub duration: Duration,
+    pub width: u64,
+}
+
+impl RenderChord {
+    pub fn new(notes: &[i64], duration: Duration) -> Self {
+        let mut render_notes = Vec::new();
+        let mut width = 0;
+
+        for note in notes.iter().copied() {
+            let x = if note & 1 != 0 && notes.contains(&(note + 1)) {
+                NOTE_RX * 2
+            } else {
+                0
+            };
+
+            render_notes.push(RenderNote { x, index: note });
+            width += (x + NOTE_RX * 2) as u64;
+        }
+
+        // Add width for note line
+        if duration != Duration::Whole {
+            width += 2;
+        }
+
+        Self {
+            notes: render_notes,
+            duration,
+            width,
+        }
+    }
+
+    pub fn svg<T: Node>(&self, node: &mut T) {
+        match self.duration {
+            Duration::Whole => {
+                for note in &self.notes {
+                    node.append(
+                        Ellipse::new()
+                            .set("fill", "none")
+                            .set("stroke", "black")
+                            .set("cx", note.x + NOTE_RX * 2)
+                            .set("cy", note_y(note.index))
+                            .set("rx", NOTE_RX)
+                            .set("ry", NOTE_RY),
+                    );
+                }
+            }
+            Duration::Half => {
+                for note in &self.notes {
+                    node.append(
+                        note_head(note.x, note.index)
+                            .set("fill", "none")
+                            .set("stroke", "black"),
+                    );
+                }
+            }
+            _ => todo!(),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
     Eigth,
@@ -384,7 +452,7 @@ impl Chord {
 
 #[cfg(test)]
 mod tests {
-    use super::{Chord, Clef, Duration, Measure};
+    use super::{Chord, Clef, Duration, Measure, RenderChord};
 
     #[test]
     fn f() {
@@ -400,5 +468,15 @@ mod tests {
         measure.write_svg(&mut document, 10);
 
         svg::save("image.svg", &document).unwrap();
+    }
+
+    #[test]
+    fn g() {
+        let chord = RenderChord::new(&[0, 1, 2], Duration::Whole);
+
+        let mut document = svg::Document::new();
+        chord.svg(&mut document);
+
+        svg::save("image2.svg", &document).unwrap();
     }
 }
