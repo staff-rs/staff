@@ -26,11 +26,43 @@ impl RenderChord {
         let mut render_notes = Vec::new();
         let mut width = 0;
 
+        let mut start_left = true;
+        // Add width for note line
+        let bar = if duration != Duration::Whole {
+            width += 2;
+
+            let low = *notes.iter().min().unwrap();
+            let high = *notes.iter().max().unwrap();
+
+            let extra = 40;
+            let bar = if low > 10 - high {
+                Bar {
+                    x: 1,
+                    y1: note_y(low) + extra,
+                    y2: note_y(high),
+                }
+            } else {
+                start_left = false;
+                Bar {
+                    x: NOTE_RX * 2 - 1,
+                    y1: note_y(low),
+                    y2: note_y(high) - extra,
+                }
+            };
+            Some(bar)
+        } else {
+            None
+        };
+
+        let mut is_staggered = false;
         for note in notes.iter().copied() {
-            let x = if note & 1 != 0 && notes.contains(&(note + 1)) {
+            let x = if ((start_left && note & 1 != 0) || (!start_left && note & 1 == 0))
+                && notes.contains(&(note + 1))
+            {
                 let x = NOTE_RX * 2;
-                if width == 0 {
-                    width = x as _;
+                if !is_staggered {
+                    is_staggered = true;
+                    width += x as u64;
                 }
                 x
             } else {
@@ -41,33 +73,6 @@ impl RenderChord {
         }
 
         width += (NOTE_RX * 2) as u64;
-
-        // Add width for note line
-        let bar = if duration != Duration::Whole {
-            width += 2;
-
-            let low = *notes.iter().min().unwrap();
-            let high = *notes.iter().max().unwrap();
-
-            let extra = 40;
-            let bar = if low > 10 - high {
-              
-                Bar {
-                    x: -NOTE_RX,
-                    y1: note_y(low) + extra,
-                    y2: note_y(high),
-                }
-            } else {
-                Bar {
-                    x: NOTE_RX - 1,
-                    y1: note_y(low),
-                    y2: note_y(high) - extra,
-                }
-            };
-            Some(bar)
-        } else {
-            None
-        };
 
         Self {
             notes: render_notes,
@@ -451,7 +456,7 @@ fn note_head(x: i64, note: i64) -> Ellipse {
     let cy = note_y(note);
 
     Ellipse::new()
-        .set("cx", cx)
+        .set("cx", cx + NOTE_RX)
         .set("cy", cy)
         .set("rx", NOTE_RX)
         .set("ry", NOTE_RY)
