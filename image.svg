@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<ellipse cx="50" cy="6" rx="6" ry="6"/>
-<ellipse cx="50" cy="12" rx="6" ry="6"/>
-<ellipse cx="50" cy="18" rx="6" ry="6"/>
-<line stroke="#000" stroke-width="2" x1="0" x2="100" y1="0" y2="0"/>
-<line stroke="#000" stroke-width="2" x1="0" x2="100" y1="6" y2="6"/>
-<line stroke="#000" stroke-width="2" x1="0" x2="100" y1="12" y2="12"/>
-<line stroke="#000" stroke-width="2" x1="0" x2="100" y1="18" y2="18"/>
-<line stroke="#000" stroke-width="2" x1="0" x2="100" y1="24" y2="24"/>
+<ellipse cx="5" cy="30" rx="6" ry="6"/>
+<ellipse cx="15" cy="36" rx="6" ry="6"/>
+<ellipse cx="5" cy="42" rx="6" ry="6"/>
+<line stroke="#000" stroke-width="2" x1="0" x2="20" y1="0" y2="0"/>
+<line stroke="#000" stroke-width="2" x1="0" x2="20" y1="12" y2="12"/>
+<line stroke="#000" stroke-width="2" x1="0" x2="20" y1="24" y2="24"/>
+<line stroke="#000" stroke-width="2" x1="0" x2="20" y1="36" y2="36"/>
+<line stroke="#000" stroke-width="2" x1="0" x2="20" y1="48" y2="48"/>
 </svg>
