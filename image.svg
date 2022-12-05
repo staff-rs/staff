@@ -1,17 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="24" cy="30" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="24" cy="60" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="34" cy="66" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="24" cy="72" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <line stroke="#000" stroke-width="2" x1="12" x2="46" y1="60" y2="60"/>
 <line stroke="#000" stroke-width="2" x1="12" x2="34" y1="72" y2="72"/>
+<ellipse cx="63" cy="36" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="63" cy="6" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="53" cy="12" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="63" cy="18" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<line stroke="#000" stroke-width="2" x1="1" x2="92" y1="0" y2="0"/>
-<line stroke="#000" stroke-width="2" x1="1" x2="92" y1="12" y2="12"/>
-<line stroke="#000" stroke-width="2" x1="1" x2="92" y1="24" y2="24"/>
-<line stroke="#000" stroke-width="2" x1="1" x2="92" y1="36" y2="36"/>
-<line stroke="#000" stroke-width="2" x1="1" x2="92" y1="48" y2="48"/>
+<ellipse cx="92" cy="60" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="82" cy="66" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="92" cy="72" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<line stroke="#000" stroke-width="2" x1="70" x2="104" y1="60" y2="60"/>
+<line stroke="#000" stroke-width="2" x1="80" x2="102" y1="72" y2="72"/>
+<ellipse cx="111" cy="6" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="121" cy="12" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="111" cy="18" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<line stroke="#000" stroke-width="2" x1="1" x2="150" y1="0" y2="0"/>
+<line stroke="#000" stroke-width="2" x1="1" x2="150" y1="12" y2="12"/>
+<line stroke="#000" stroke-width="2" x1="1" x2="150" y1="24" y2="24"/>
+<line stroke="#000" stroke-width="2" x1="1" x2="150" y1="36" y2="36"/>
+<line stroke="#000" stroke-width="2" x1="1" x2="150" y1="48" y2="48"/>
 <line stroke="#000" stroke-width="2" x1="1" x2="1" y1="0" y2="49"/>
-<line stroke="#000" stroke-width="2" x1="93" x2="93" y1="0" y2="49"/>
+<line stroke="#000" stroke-width="2" x1="151" x2="151" y1="0" y2="49"/>
 </svg>

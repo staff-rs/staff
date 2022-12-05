@@ -36,34 +36,25 @@ impl Chord {
             .copied()
             .map(|index| {
                 let is_left = if notes.contains(&(index - 1)) || notes.contains(&(index + 1)) {
-                    if let Some(first) = first_stagger {
-                        let is_left = (index - first) & 1 == 0;
-
-                        if is_upside_down {
-                            !is_left
-                        } else {
-                            is_left
-                        }
+                    let first = if let Some(first) = first_stagger {
+                        first
                     } else {
                         let first = if is_upside_down { high } else { low };
                         first_stagger = Some(first);
+                        first
+                    };
 
-                        dbg!(first, index);
-
-                        let is_left = (index - first) & 1 == 0;
-                        if is_upside_down {
-                            !is_left
-                        } else {
-                            is_left
-                        }
+                    if index.abs_diff(first) & 1 == 0 {
+                        is_upside_down
+                    } else {
+                        !is_upside_down
                     }
                 } else {
                     first_stagger = None;
-                    is_upside_down
+                    !is_upside_down
                 };
 
                 let x = if is_left { 0. } else { renderer.note_rx };
-
                 if is_left {
                     high_left = high_left.max(index);
                 } else {
@@ -82,6 +73,7 @@ impl Chord {
                     is_left: false,
                     is_double: false,
                 });
+
                 i += 2;
             }
         }
@@ -232,6 +224,8 @@ mod tests {
         };
 
         let chords = [
+            Chord::new(&[5, 10, 11, 12], &renderer),
+            Chord::new(&[6, 1, 2, 3], &renderer),
             Chord::new(&[10, 11, 12], &renderer),
             Chord::new(&[1, 2, 3], &renderer),
         ];
