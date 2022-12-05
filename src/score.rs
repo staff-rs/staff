@@ -8,58 +8,159 @@ pub struct Note {
     x: f64,
 }
 
+struct BarLine {
+    note: i64,
+    is_left: bool,
+    is_double: bool,
+}
+
 pub struct Chord {
     width: f64,
     notes: Vec<Note>,
+    lines: Vec<BarLine>,
 }
 
 impl Chord {
     pub fn new(notes: &[i64], renderer: &Renderer) -> Self {
         let low = *notes.iter().min().unwrap();
         let high = *notes.iter().max().unwrap();
+        let is_upside_down = low.min(high) < 5;
 
-        let is_upside_down = low + 10 > high;
+        let mut lines = Vec::new();
 
-        let mut is_staggered = false;
+        let mut high_right = 0;
+        let mut high_left = 0;
+        let mut is_staggered = None;
         let notes = notes
             .iter()
             .copied()
             .map(|index| {
-                let x = if index & 1 == 0 && notes.contains(&(index - 1)) {
-                    is_staggered = true;
-                    if is_upside_down {
-                        renderer.note_rx
+                let (x, is_left) = if index & 1 != 0 && notes.contains(&(index - 1)) {
+                    if let Some(first) = is_staggered {
+                        let is_left = (index - first) & 1 == 0;
+                        if is_upside_down {
+                            (renderer.note_rx, !is_left)
+                        } else {
+                            (0., is_left)
+                        }
                     } else {
-                        0.
+                        is_staggered = Some(index);
+
+                        if is_upside_down {
+                            (0., true)
+                        } else {
+                            (renderer.note_rx, false)
+                        }
                     }
                 } else {
                     if is_upside_down {
-                        0.
+                        (renderer.note_rx, false)
                     } else {
-                        renderer.note_rx
+                        (0., true)
                     }
                 };
+
+                if is_left {
+                    high_left = high_left.max(index);
+                } else {
+                    high_right = high_right.max(index);
+                }
+
                 Note { index, x }
             })
             .collect();
 
-        let width = if is_staggered {
-            renderer.note_rx * 2.
+        if high_right > 10 {
+            let mut i = 10;
+            while i <= high_right {
+                lines.push(BarLine {
+                    note: i,
+                    is_left: false,
+                    is_double: false,
+                });
+                i += 2;
+            }
+        }
+
+        if high_left > 10 {
+            let mut i = 10;
+            while i <= high_left {
+                if let Some(line) = lines.iter_mut().find(|line| (**line).note == i) {
+                    line.is_double = true;
+                    line.is_left = true;
+                } else {
+                    lines.push(BarLine {
+                        note: i,
+                        is_left: true,
+                        is_double: false,
+                    });
+                }
+
+                i += 2;
+            }
+        }
+
+        let mut width = if is_staggered.is_some() {
+            (renderer.note_rx + renderer.stroke_width) * 2.
         } else {
-            renderer.note_rx * 4.
+            (renderer.note_rx + renderer.stroke_width) * 4.
         };
 
-        Self { width, notes }
+        if !lines.is_empty() {
+            width += renderer.note_rx;
+        }
+
+        Self {
+            width,
+            notes,
+            lines,
+        }
     }
 
     pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, x: f64) {
+        let note_line_extra = renderer.note_rx / 2.;
+
+        let note_x = if !self.lines.is_empty() {
+            x + note_line_extra
+        } else {
+            x
+        };
+
         for note in &self.notes {
             node.append(
                 Ellipse::new()
-                    .set("cx", x + note.x + renderer.note_rx / 2.)
+                    .set("fill", "transparent")
+                    .set("stroke", "#000")
+                    .set("stroke-width", renderer.stroke_width)
+                    .set(
+                        "cx",
+                        note_x + renderer.stroke_width + note.x + renderer.note_rx / 2.,
+                    )
                     .set("cy", renderer.note_ry * note.index as f64)
                     .set("rx", renderer.note_ry)
                     .set("ry", renderer.note_ry),
+            )
+        }
+
+        for line in &self.lines {
+            let x1 = if line.is_left {
+                x
+            } else {
+                renderer.note_rx + x
+            };
+
+            let x2 = if line.is_double {
+                x1 + (note_line_extra + renderer.note_rx + renderer.stroke_width) * 2.
+            } else {
+                x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
+            };
+
+            renderer.draw_line(
+                node,
+                x1,
+                renderer.note_ry * line.note as f64,
+                x2,
+                renderer.note_ry * line.note as f64,
             )
         }
     }
@@ -121,7 +222,7 @@ mod tests {
             padding: 10.,
             stroke_width: 2.,
         };
-        renderer.svg(&mut document, Chord::new(&[5, 6, 7], &renderer));
+        renderer.svg(&mut document, Chord::new(&[12, 11, 10, 5], &renderer));
         svg::save("image.svg", &document).unwrap();
     }
 }
