@@ -16,20 +16,25 @@ struct BarLine {
 
 pub struct Chord {
     width: f64,
+    top: f64,
     notes: Vec<Note>,
     lines: Vec<BarLine>,
 }
 
 impl Chord {
     pub fn new(notes: &[i64], renderer: &Renderer) -> Self {
-        let low = *notes.iter().min().unwrap();
         let high = *notes.iter().max().unwrap();
+        let low = *notes.iter().min().unwrap();
+        let top = if low < 0 {
+            -low as f64 * renderer.note_ry + renderer.note_ry / 2.
+        } else {
+            0.
+        };
+
+        let staggered_spacing = 2.;
         let is_upside_down = low.min(high) < 5;
 
         let mut lines = Vec::new();
-
-        let staggered_spacing = 2.;
-
         let mut high_right = 0;
         let mut high_left = 0;
         let mut is_stagger = false;
@@ -101,13 +106,14 @@ impl Chord {
         }
 
         Self {
+            top,
             width,
             notes,
             lines,
         }
     }
 
-    pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, x: f64) {
+    pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, x: f64, top: f64) {
         let note_line_extra = renderer.note_rx / 2.;
 
         let note_x = if !self.lines.is_empty() {
@@ -126,7 +132,7 @@ impl Chord {
                         format!(
                             "translate({}, {})",
                             note_x + note.x,
-                            renderer.note_ry * (note.index as f64 - 1.)
+                            top + renderer.note_ry * (note.index as f64 - 1.)
                         ),
                     ),
             );
@@ -145,13 +151,8 @@ impl Chord {
                 x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
             };
 
-            renderer.draw_line(
-                node,
-                x1,
-                renderer.note_ry * line.note as f64,
-                x2,
-                renderer.note_ry * line.note as f64,
-            )
+            let y = top + renderer.note_ry * line.note as f64;
+            renderer.draw_line(node, x1, y, x2, y)
         }
     }
 }
@@ -167,25 +168,37 @@ impl Renderer {
     pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
         let mut x = self.stroke_width + self.padding;
 
+        let mut top = 0f64;
         for chord in chords {
-            chord.svg(self, node, x);
+            top = top.max(chord.top);
+        }
+
+        for chord in chords {
+            chord.svg(self, node, x, top);
             x += chord.width;
         }
 
         for line in 0..5 {
+            let y = top + (line * 2) as f64 * self.note_ry;
             self.draw_line(
                 node,
                 self.stroke_width / 2.,
-                (line * 2) as f64 * self.note_ry,
+                y,
                 self.stroke_width + x + self.padding * 2.,
-                (line * 2) as f64 * self.note_ry,
+                y,
             );
         }
 
         for line in 0..2 {
             let x =
                 line as f64 * (x + self.stroke_width + self.padding * 2.) + self.stroke_width / 2.;
-            self.draw_line(node, x, 0., x, self.note_ry * 8. + self.stroke_width / 2.);
+            self.draw_line(
+                node,
+                x,
+                top,
+                x,
+                top + self.note_ry * 8. + self.stroke_width / 2.,
+            );
         }
     }
 
@@ -221,7 +234,7 @@ mod tests {
             Chord::new(&[5, 10, 11, 12], &renderer),
             Chord::new(&[6, 1, 2, 3], &renderer),
             Chord::new(&[10, 11, 12], &renderer),
-            Chord::new(&[1, 2, 3], &renderer),
+            Chord::new(&[1, 2, 3, -5], &renderer),
         ];
         renderer.svg(&mut document, &chords);
 
