@@ -2,7 +2,9 @@
 [![crate](https://img.shields.io/crates/v/staff.svg)](https://crates.io/crates/staff)
 [![documentation](https://docs.rs/staff/badge.svg)](https://docs.rs/staff)
 
-Music theory CLI and library with midi, notes, chords, scales, and more.
+Music theory and score rendering library with midi, notes, chords, scales, and more.
+
+![staff](https://raw.githubusercontent.com/staff-rs/staff/main/image.svg)
 
 ## Installation
 ```
@@ -10,19 +12,6 @@ cargo install staff --features=cli
 ```
 
 ## Usage
-#### Command-line interface
-```
-$ staff chord C#m7
-
-C# F G# B
-```
-```
-$ staff scale D dorian
-
-D E F G A B C
-```
-
-#### Library
 ```rust
 use staff::{midi, Chord, Pitch};
 
