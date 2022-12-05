@@ -30,27 +30,16 @@ impl Chord {
 
         let mut high_right = 0;
         let mut high_left = 0;
-        let mut first_stagger = None;
+        let mut is_stagger = false;
         let notes = notes
             .iter()
             .copied()
             .map(|index| {
                 let is_left = if notes.contains(&(index - 1)) || notes.contains(&(index + 1)) {
-                    let first = if let Some(first) = first_stagger {
-                        first
-                    } else {
-                        let first = if is_upside_down { high } else { low };
-                        first_stagger = Some(first);
-                        first
-                    };
+                    is_stagger = true;
 
-                    if index.abs_diff(first) & 1 == 0 {
-                        is_upside_down
-                    } else {
-                        !is_upside_down
-                    }
+                    index & 1 != 0
                 } else {
-                    first_stagger = None;
                     !is_upside_down
                 };
 
@@ -96,7 +85,7 @@ impl Chord {
             }
         }
 
-        let mut width = if first_stagger.is_some() {
+        let mut width = if is_stagger {
             (renderer.note_rx + renderer.stroke_width) * 2.
         } else {
             (renderer.note_rx + renderer.stroke_width) * 4.

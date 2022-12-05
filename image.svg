@@ -1,14 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg">
 <ellipse cx="24" cy="30" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<ellipse cx="24" cy="60" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<ellipse cx="34" cy="66" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<ellipse cx="24" cy="72" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="34" cy="60" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="24" cy="66" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="34" cy="72" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <line stroke="#000" stroke-width="2" x1="12" x2="46" y1="60" y2="60"/>
-<line stroke="#000" stroke-width="2" x1="12" x2="34" y1="72" y2="72"/>
+<line stroke="#000" stroke-width="2" x1="22" x2="44" y1="72" y2="72"/>
 <ellipse cx="63" cy="36" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<ellipse cx="63" cy="6" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<ellipse cx="53" cy="12" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
-<ellipse cx="63" cy="18" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="53" cy="6" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="63" cy="12" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
+<ellipse cx="53" cy="18" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="92" cy="60" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="82" cy="66" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
 <ellipse cx="92" cy="72" fill="transparent" rx="6" ry="6" stroke="#000" stroke-width="2"/>
