@@ -30,35 +30,39 @@ impl Chord {
 
         let mut high_right = 0;
         let mut high_left = 0;
-        let mut is_staggered = None;
+        let mut first_stagger = None;
         let notes = notes
             .iter()
             .copied()
             .map(|index| {
-                let (x, is_left) = if index & 1 != 0 && notes.contains(&(index - 1)) {
-                    if let Some(first) = is_staggered {
+                let is_left = if notes.contains(&(index - 1)) || notes.contains(&(index + 1)) {
+                    if let Some(first) = first_stagger {
                         let is_left = (index - first) & 1 == 0;
-                        if is_upside_down {
-                            (renderer.note_rx, !is_left)
-                        } else {
-                            (0., is_left)
-                        }
-                    } else {
-                        is_staggered = Some(index);
 
                         if is_upside_down {
-                            (0., true)
+                            !is_left
                         } else {
-                            (renderer.note_rx, false)
+                            is_left
+                        }
+                    } else {
+                        let first = if is_upside_down { high } else { low };
+                        first_stagger = Some(first);
+
+                        dbg!(first, index);
+
+                        let is_left = (index - first) & 1 == 0;
+                        if is_upside_down {
+                            !is_left
+                        } else {
+                            is_left
                         }
                     }
                 } else {
-                    if is_upside_down {
-                        (renderer.note_rx, false)
-                    } else {
-                        (0., true)
-                    }
+                    first_stagger = None;
+                    is_upside_down
                 };
+
+                let x = if is_left { 0. } else { renderer.note_rx };
 
                 if is_left {
                     high_left = high_left.max(index);
@@ -100,7 +104,7 @@ impl Chord {
             }
         }
 
-        let mut width = if is_staggered.is_some() {
+        let mut width = if first_stagger.is_some() {
             (renderer.note_rx + renderer.stroke_width) * 2.
         } else {
             (renderer.note_rx + renderer.stroke_width) * 4.
@@ -174,23 +178,27 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub fn svg<T: Node>(&self, node: &mut T, chord: Chord) {
-        let x = self.stroke_width + self.padding;
-        chord.svg(self, node, x);
+    pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
+        let mut x = self.stroke_width + self.padding;
+
+        for chord in chords {
+            chord.svg(self, node, x);
+            x += chord.width;
+        }
 
         for line in 0..5 {
             self.draw_line(
                 node,
                 self.stroke_width / 2.,
                 (line * 2) as f64 * self.note_ry,
-                self.stroke_width + chord.width + self.padding * 2.,
+                self.stroke_width + x + self.padding * 2.,
                 (line * 2) as f64 * self.note_ry,
             );
         }
 
         for line in 0..2 {
-            let x = line as f64 * (chord.width + self.stroke_width + self.padding * 2.)
-                + self.stroke_width / 2.;
+            let x =
+                line as f64 * (x + self.stroke_width + self.padding * 2.) + self.stroke_width / 2.;
             self.draw_line(node, x, 0., x, self.note_ry * 8. + self.stroke_width / 2.);
         }
     }
@@ -222,7 +230,13 @@ mod tests {
             padding: 10.,
             stroke_width: 2.,
         };
-        renderer.svg(&mut document, Chord::new(&[12, 11, 10, 5], &renderer));
+
+        let chords = [
+            Chord::new(&[10, 11, 12], &renderer),
+            Chord::new(&[1, 2, 3], &renderer),
+        ];
+        renderer.svg(&mut document, &chords);
+
         svg::save("image.svg", &document).unwrap();
     }
 }
