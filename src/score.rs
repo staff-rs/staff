@@ -1,5 +1,5 @@
 use svg::{
-    node::element::{Ellipse, Line},
+    node::element::{Ellipse, Line, Path},
     Node,
 };
 
@@ -28,6 +28,8 @@ impl Chord {
 
         let mut lines = Vec::new();
 
+        let staggered_spacing = 2.;
+
         let mut high_right = 0;
         let mut high_left = 0;
         let mut is_stagger = false;
@@ -37,13 +39,16 @@ impl Chord {
             .map(|index| {
                 let is_left = if notes.contains(&(index - 1)) || notes.contains(&(index + 1)) {
                     is_stagger = true;
-
                     index & 1 != 0
                 } else {
                     !is_upside_down
                 };
 
-                let x = if is_left { 0. } else { renderer.note_rx };
+                let x = if is_left {
+                    0.
+                } else {
+                    renderer.note_rx + staggered_spacing
+                };
                 if is_left {
                     high_left = high_left.max(index);
                 } else {
@@ -86,7 +91,7 @@ impl Chord {
         }
 
         let mut width = if is_stagger {
-            (renderer.note_rx + renderer.stroke_width) * 2.
+            (renderer.note_rx + renderer.stroke_width) * 2. + staggered_spacing
         } else {
             (renderer.note_rx + renderer.stroke_width) * 4.
         };
@@ -113,18 +118,18 @@ impl Chord {
 
         for note in &self.notes {
             node.append(
-                Ellipse::new()
-                    .set("fill", "transparent")
+                Path::new()
                     .set("stroke", "#000")
-                    .set("stroke-width", renderer.stroke_width)
+                    .set("d", include_str!("../svg/note_head.txt"))
                     .set(
-                        "cx",
-                        note_x + renderer.stroke_width + note.x + renderer.note_rx / 2.,
-                    )
-                    .set("cy", renderer.note_ry * note.index as f64)
-                    .set("rx", renderer.note_ry)
-                    .set("ry", renderer.note_ry),
-            )
+                        "transform",
+                        format!(
+                            "translate({}, {})",
+                            note_x + note.x,
+                            renderer.note_ry * (note.index as f64 - 1.)
+                        ),
+                    ),
+            );
         }
 
         for line in &self.lines {
