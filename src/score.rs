@@ -3,9 +3,16 @@ use svg::{
     Node,
 };
 
+#[derive(Clone, Copy)]
+pub enum Duration {
+    Quarter,
+    Half,
+}
+
 pub struct Note {
     index: i64,
     x: f64,
+    duration: Duration,
 }
 
 struct BarLine {
@@ -29,7 +36,7 @@ pub struct Chord {
 }
 
 impl Chord {
-    pub fn new(notes: &[i64], renderer: &Renderer) -> Self {
+    pub fn new(notes: &[i64], duration: Duration, renderer: &Renderer) -> Self {
         let high = *notes.iter().max().unwrap();
         let low = *notes.iter().min().unwrap();
         let top = if low < 0 {
@@ -73,7 +80,7 @@ impl Chord {
                     low_right = low_right.min(index);
                 }
 
-                Note { index, x }
+                Note { index, x, duration }
             })
             .collect();
 
@@ -171,19 +178,18 @@ impl Chord {
         };
 
         for note in &self.notes {
-            node.append(
-                Path::new()
-                    .set("stroke", "#000")
-                    .set("d", include_str!("../svg/note_head.txt"))
-                    .set(
-                        "transform",
-                        format!(
-                            "translate({}, {})",
-                            note_x + note.x,
-                            top + renderer.note_ry * (note.index as f64 - 1.)
-                        ),
-                    ),
-            );
+            let d = match note.duration {
+                Duration::Quarter => include_str!("../svg/note_head.txt"),
+                Duration::Half => include_str!("../svg/half_note_head.txt"),
+            };
+            node.append(Path::new().set("fill", "#000").set("fill-rule", "evenodd").set("d", d).set(
+                "transform",
+                format!(
+                    "translate({}, {})",
+                    note_x + note.x,
+                    top + renderer.note_ry * (note.index as f64 - 1.)
+                ),
+            ));
         }
 
         for line in &self.lines {
@@ -285,7 +291,7 @@ impl Renderer {
 
 #[cfg(test)]
 mod tests {
-    use super::{Chord, Renderer};
+    use super::{Chord, Duration, Renderer};
 
     #[test]
     fn f() {
@@ -299,10 +305,10 @@ mod tests {
         };
 
         let chords = [
-            Chord::new(&[5, 10, 11, 12], &renderer),
-            Chord::new(&[6, 1, 2, 3], &renderer),
-            Chord::new(&[10, 11, 12], &renderer),
-            Chord::new(&[1, 2, 3, -5], &renderer),
+            Chord::new(&[5, 10, 11, 12], Duration::Quarter, &renderer),
+            Chord::new(&[6, 1, 2, 3], Duration::Half, &renderer),
+            Chord::new(&[6, 5, 7], Duration::Quarter, &renderer),
+            Chord::new(&[2, 3, 4, -5], Duration::Half, &renderer),
         ];
         renderer.svg(&mut document, &chords);
 
