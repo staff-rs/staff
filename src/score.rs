@@ -1,5 +1,5 @@
 use svg::{
-    node::element::{Ellipse, Line, Path},
+    node::element::{Ellipse, Line, Path, Rectangle},
     Node,
 };
 
@@ -182,14 +182,20 @@ impl Chord {
                 Duration::Quarter => include_str!("../svg/note_head.txt"),
                 Duration::Half => include_str!("../svg/half_note_head.txt"),
             };
-            node.append(Path::new().set("fill", "#000").set("fill-rule", "evenodd").set("d", d).set(
-                "transform",
-                format!(
-                    "translate({}, {})",
-                    note_x + note.x,
-                    top + renderer.note_ry * (note.index as f64 - 1.)
-                ),
-            ));
+            node.append(
+                Path::new()
+                    .set("fill", "#000")
+                    .set("fill-rule", "evenodd")
+                    .set("d", d)
+                    .set(
+                        "transform",
+                        format!(
+                            "translate({}, {})",
+                            note_x + note.x,
+                            top + renderer.note_ry * (note.index as f64 - 1.)
+                        ),
+                    ),
+            );
         }
 
         for line in &self.lines {
@@ -240,6 +246,16 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
+        let width: f64 = chords.iter().map(|chord| chord.width).sum();
+        node.append(
+            Rectangle::new()
+                .set("fill", "#fff")
+                .set("x", 0)
+                .set("y", 0)
+                .set("width", width + self.padding * 3. + self.stroke_width * 2.)
+                .set("height", 200),
+        );
+
         let mut x = self.stroke_width + self.padding;
 
         let mut top = 0f64;
@@ -291,6 +307,8 @@ impl Renderer {
 
 #[cfg(test)]
 mod tests {
+    use svg::{node::element::Rectangle, Node};
+
     use super::{Chord, Duration, Renderer};
 
     #[test]
