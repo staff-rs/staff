@@ -35,8 +35,12 @@ impl Chord {
         let is_upside_down = low.min(high) < 5;
 
         let mut lines = Vec::new();
+
+        let mut low_right = 0;
+        let mut low_left = 0;
         let mut high_right = 0;
         let mut high_left = 0;
+
         let mut is_stagger = false;
         let notes = notes
             .iter()
@@ -56,8 +60,10 @@ impl Chord {
                 };
                 if is_left {
                     high_left = high_left.max(index);
+                    low_left = low_left.min(index);
                 } else {
                     high_right = high_right.max(index);
+                    low_right = low_right.min(index);
                 }
 
                 Note { index, x }
@@ -92,6 +98,37 @@ impl Chord {
                 }
 
                 i += 2;
+            }
+        }
+
+        if low_right <= -2 {
+            let mut i = -2;
+            while i >= low_right {
+                lines.push(BarLine {
+                    note: i,
+                    is_left: false,
+                    is_double: false,
+                });
+
+                i -= 2;
+            }
+        }
+
+        if low_left <= -2 {
+            let mut i = -2;
+            while i >= low_left {
+                if let Some(line) = lines.iter_mut().find(|line| (**line).note == i) {
+                    line.is_double = true;
+                    line.is_left = true;
+                } else {
+                    lines.push(BarLine {
+                        note: i,
+                        is_left: true,
+                        is_double: false,
+                    });
+                }
+
+                i -= 2;
             }
         }
 
@@ -195,7 +232,7 @@ impl Renderer {
             self.draw_line(
                 node,
                 x,
-                top,
+                top - self.stroke_width / 2.,
                 x,
                 top + self.note_ry * 8. + self.stroke_width / 2.,
             );
