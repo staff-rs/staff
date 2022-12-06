@@ -14,11 +14,18 @@ struct BarLine {
     is_double: bool,
 }
 
+struct ChordLine {
+    low: i64,
+    high: i64,
+}
+
 pub struct Chord {
     width: f64,
     top: f64,
     notes: Vec<Note>,
+    line: ChordLine,
     lines: Vec<BarLine>,
+    is_upside_down: bool,
 }
 
 impl Chord {
@@ -142,10 +149,14 @@ impl Chord {
             width += renderer.note_rx;
         }
 
+        let line = ChordLine { low, high };
+
         Self {
+            is_upside_down,
             top,
             width,
             notes,
+            line,
             lines,
         }
     }
@@ -190,6 +201,26 @@ impl Chord {
 
             let y = top + renderer.note_ry * line.note as f64;
             renderer.draw_line(node, x1, y, x2, y)
+        }
+
+        let line_x = note_x + renderer.note_rx + renderer.stroke_width;
+        let chord_line_notes_size = 6.;
+        if self.is_upside_down {
+            renderer.draw_line(
+                node,
+                line_x,
+                top - renderer.note_ry / 2. + self.line.low as f64 * renderer.note_ry,
+                line_x,
+                top + (self.line.high as f64 + chord_line_notes_size) * renderer.note_ry,
+            )
+        } else {
+            renderer.draw_line(
+                node,
+                line_x,
+                top + (self.line.low as f64 - chord_line_notes_size) * renderer.note_ry,
+                line_x,
+                top + renderer.note_ry / 2. + (self.line.high as f64) * renderer.note_ry,
+            )
         }
     }
 }
