@@ -1,7 +1,7 @@
-use svg::{
-    node::element::{Ellipse, Line, Path, Rectangle},
-    Node,
-};
+use crate::{midi::Octave, Natural};
+use svg::{node::element::Path, Node};
+
+use super::{Note, Renderer};
 
 #[derive(Clone, Copy)]
 pub enum Duration {
@@ -9,45 +9,44 @@ pub enum Duration {
     Half,
 }
 
-pub struct Note {
-    index: i64,
-    x: f64,
-    duration: Duration,
+pub struct RenderNote {
+    pub index: i64,
+    pub x: f64,
 }
 
-struct BarLine {
-    note: i64,
-    is_left: bool,
-    is_double: bool,
+pub struct BarLine {
+    pub note: i64,
+    pub is_left: bool,
+    pub is_double: bool,
 }
 
-struct ChordLine {
-    low: i64,
-    high: i64,
+pub struct ChordLine {
+    pub low: i64,
+    pub high: i64,
 }
 
 pub struct Chord {
-    duration: Duration,
-    width: f64,
-    top: f64,
-    notes: Vec<Note>,
-    line: ChordLine,
-    lines: Vec<BarLine>,
-    is_upside_down: bool,
+    pub duration: Duration,
+    pub width: f64,
+    pub top: f64,
+    pub notes: Vec<RenderNote>,
+    pub line: ChordLine,
+    pub lines: Vec<BarLine>,
+    pub is_upside_down: bool,
 }
 
 impl Chord {
-    pub fn new(notes: &[i64], duration: Duration, renderer: &Renderer) -> Self {
+    pub fn new(notes: &[Note], duration: Duration, renderer: &Renderer) -> Self {
         let high = *notes.iter().max().unwrap();
         let low = *notes.iter().min().unwrap();
-        let top = if low < 0 {
-            -low as f64 * renderer.note_ry + renderer.note_ry / 2.
+        let top = if low < Note::new(Natural::F, Octave::FIVE) {
+            -low.index as f64 * renderer.note_ry + renderer.note_ry / 2.
         } else {
             0.
         };
 
         let staggered_spacing = 2.;
-        let is_upside_down = low.min(high) < 5;
+        let is_upside_down = low.min(high) < Note::new(Natural::B, Octave::FIVE);
 
         let mut lines = Vec::new();
 
@@ -60,10 +59,12 @@ impl Chord {
         let notes = notes
             .iter()
             .copied()
-            .map(|index| {
-                let is_left = if notes.contains(&(index - 1)) || notes.contains(&(index + 1)) {
+            .map(|note| {
+                let is_left = if notes.contains(&(Note::from(note.index - 1)))
+                    || notes.contains(&Note::from(note.index + 1))
+                {
                     is_stagger = true;
-                    index & 1 != 0
+                    note.index & 1 != 0
                 } else {
                     !is_upside_down
                 };
@@ -74,14 +75,17 @@ impl Chord {
                     renderer.note_rx + staggered_spacing
                 };
                 if is_left {
-                    high_left = high_left.max(index);
-                    low_left = low_left.min(index);
+                    high_left = high_left.max(note.index);
+                    low_left = low_left.min(note.index);
                 } else {
-                    high_right = high_right.max(index);
-                    low_right = low_right.min(index);
+                    high_right = high_right.max(note.index);
+                    low_right = low_right.min(note.index);
                 }
 
-                Note { index, x, duration }
+                RenderNote {
+                    index: note.index,
+                    x,
+                }
             })
             .collect();
 
@@ -157,7 +161,10 @@ impl Chord {
             width += renderer.note_rx;
         }
 
-        let line = ChordLine { low, high };
+        let line = ChordLine {
+            low: low.index,
+            high: high.index,
+        };
 
         Self {
             duration,
@@ -180,9 +187,9 @@ impl Chord {
         };
 
         for note in &self.notes {
-            let d = match note.duration {
-                Duration::Quarter => include_str!("../svg/note_head.txt"),
-                Duration::Half => include_str!("../svg/half_note_head.txt"),
+            let d = match self.duration {
+                Duration::Quarter => include_str!("../../svg/note_head.txt"),
+                Duration::Half => include_str!("../../svg/half_note_head.txt"),
             };
             node.append(
                 Path::new()
@@ -236,122 +243,5 @@ impl Chord {
                 top + renderer.note_ry / 2. + (self.line.high as f64) * renderer.note_ry,
             )
         }
-    }
-}
-
-pub struct Renderer {
-    pub document_padding: f64,
-    pub note_rx: f64,
-    pub note_ry: f64,
-    pub padding: f64,
-    pub stroke_width: f64,
-    pub spacing: f64,
-}
-
-impl Renderer {
-    pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
-        let width: f64 = chords.iter().map(|chord| chord.width).sum();
-        node.append(
-            Rectangle::new()
-                .set("fill", "#fff")
-                .set("x", 0)
-                .set("y", 0)
-                .set(
-                    "width",
-                    width + self.padding * 3. + self.stroke_width * 2. + self.document_padding * 2.,
-                )
-                .set("height", 200),
-        );
-
-        let x = self.stroke_width + self.document_padding;
-
-        let mut top = 0f64;
-        for chord in chords {
-            top = top.max(chord.top);
-        }
-        top += self.document_padding;
-
-        let mut chord_x = x + self.padding;
-        for (index, chord) in chords.iter().enumerate() {
-            chord.svg(self, node, chord_x, top);
-
-            if index < chords.len() - 1 {
-                let duration_spacing = match chord.duration {
-                    Duration::Quarter => 4.,
-                    Duration::Half => 2.,
-                };
-                chord_x += self.spacing / duration_spacing;
-            }
-
-            chord_x += chord.width;
-        }
-        let width = chord_x;
-
-        for line in 0..5 {
-            let y = top + (line * 2) as f64 * self.note_ry;
-            self.draw_line(
-                node,
-                x + self.stroke_width / 2.,
-                y,
-                x + width + self.stroke_width + self.padding,
-                y,
-            );
-        }
-
-        for line in 0..2 {
-            let line_x = x
-                + line as f64 * (chord_x + self.stroke_width + self.padding)
-                + self.stroke_width / 2.;
-            self.draw_line(
-                node,
-                line_x,
-                top - self.stroke_width / 2.,
-                line_x,
-                top + self.note_ry * 8. + self.stroke_width / 2.,
-            );
-        }
-    }
-
-    fn draw_line<T: Node>(&self, node: &mut T, x1: f64, y1: f64, x2: f64, y2: f64) {
-        node.append(
-            Line::new()
-                .set("stroke", "#000")
-                .set("stroke-width", self.stroke_width)
-                .set("x1", x1)
-                .set("y1", y1)
-                .set("x2", x2)
-                .set("y2", y2),
-        )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use svg::{node::element::Rectangle, Node};
-
-    use super::{Chord, Duration, Renderer};
-
-    #[test]
-    fn f() {
-        let mut document = svg::Document::new();
-
-        let renderer = Renderer {
-            document_padding: 10.,
-            note_rx: 10.,
-            note_ry: 6.,
-            padding: 10.,
-            stroke_width: 2.,
-            spacing: 20.,
-        };
-
-        let chords = [
-            Chord::new(&[5, 10, 11, 12], Duration::Quarter, &renderer),
-            Chord::new(&[6, 1, 2, 3], Duration::Half, &renderer),
-            Chord::new(&[6, 5, 7], Duration::Quarter, &renderer),
-            Chord::new(&[2, 3, 4, -5], Duration::Half, &renderer),
-        ];
-        renderer.svg(&mut document, &chords);
-
-        svg::save("image.svg", &document).unwrap();
     }
 }

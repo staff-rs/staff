@@ -61,12 +61,12 @@ pub use note::Note;
 mod pitch;
 pub use pitch::Pitch;
 
+pub mod render;
+
 pub mod scale;
 pub use scale::Scale;
 
 pub mod set;
-
-pub mod score;
 
 /// ```
 /// use staff::{midi, Pitch};
