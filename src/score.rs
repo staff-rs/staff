@@ -238,6 +238,7 @@ impl Chord {
 }
 
 pub struct Renderer {
+    pub document_padding: f64,
     pub note_rx: f64,
     pub note_ry: f64,
     pub padding: f64,
@@ -252,41 +253,45 @@ impl Renderer {
                 .set("fill", "#fff")
                 .set("x", 0)
                 .set("y", 0)
-                .set("width", width + self.padding * 3. + self.stroke_width * 2.)
+                .set("width", width + self.padding * 3. + self.stroke_width * 2. + self.document_padding * 2.)
                 .set("height", 200),
         );
 
-        let mut x = self.stroke_width + self.padding;
+        let x = self.stroke_width + self.document_padding;
 
         let mut top = 0f64;
         for chord in chords {
             top = top.max(chord.top);
         }
+        top += self.document_padding;
 
+        let mut chord_x = x + self.padding;
         for chord in chords {
-            chord.svg(self, node, x, top);
-            x += chord.width;
+            chord.svg(self, node, chord_x, top);
+            chord_x += chord.width;
         }
+        let width = chord_x;
 
         for line in 0..5 {
             let y = top + (line * 2) as f64 * self.note_ry;
             self.draw_line(
                 node,
-                self.stroke_width / 2.,
+                x + self.stroke_width / 2.,
                 y,
-                self.stroke_width + x + self.padding * 2.,
+                x + width + self.stroke_width + self.padding,
                 y,
             );
         }
 
         for line in 0..2 {
-            let x =
-                line as f64 * (x + self.stroke_width + self.padding * 2.) + self.stroke_width / 2.;
+            let line_x = x
+                + line as f64 * (chord_x + self.stroke_width + self.padding)
+                + self.stroke_width / 2.;
             self.draw_line(
                 node,
-                x,
+                line_x,
                 top - self.stroke_width / 2.,
-                x,
+                line_x,
                 top + self.note_ry * 8. + self.stroke_width / 2.,
             );
         }
@@ -316,6 +321,7 @@ mod tests {
         let mut document = svg::Document::new();
 
         let renderer = Renderer {
+            document_padding: 10.,
             note_rx: 10.,
             note_ry: 6.,
             padding: 10.,
