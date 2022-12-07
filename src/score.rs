@@ -27,6 +27,7 @@ struct ChordLine {
 }
 
 pub struct Chord {
+    duration: Duration,
     width: f64,
     top: f64,
     notes: Vec<Note>,
@@ -159,6 +160,7 @@ impl Chord {
         let line = ChordLine { low, high };
 
         Self {
+            duration,
             is_upside_down,
             top,
             width,
@@ -243,6 +245,7 @@ pub struct Renderer {
     pub note_ry: f64,
     pub padding: f64,
     pub stroke_width: f64,
+    pub spacing: f64,
 }
 
 impl Renderer {
@@ -253,7 +256,10 @@ impl Renderer {
                 .set("fill", "#fff")
                 .set("x", 0)
                 .set("y", 0)
-                .set("width", width + self.padding * 3. + self.stroke_width * 2. + self.document_padding * 2.)
+                .set(
+                    "width",
+                    width + self.padding * 3. + self.stroke_width * 2. + self.document_padding * 2.,
+                )
                 .set("height", 200),
         );
 
@@ -266,8 +272,17 @@ impl Renderer {
         top += self.document_padding;
 
         let mut chord_x = x + self.padding;
-        for chord in chords {
+        for (index, chord) in chords.iter().enumerate() {
             chord.svg(self, node, chord_x, top);
+
+            if index < chords.len() - 1 {
+                let duration_spacing = match chord.duration {
+                    Duration::Quarter => 4.,
+                    Duration::Half => 2.,
+                };
+                chord_x += self.spacing / duration_spacing;
+            }
+
             chord_x += chord.width;
         }
         let width = chord_x;
@@ -326,6 +341,7 @@ mod tests {
             note_ry: 6.,
             padding: 10.,
             stroke_width: 2.,
+            spacing: 20.,
         };
 
         let chords = [
