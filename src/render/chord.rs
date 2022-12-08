@@ -154,7 +154,7 @@ impl Chord {
         let mut width = if is_stagger {
             (renderer.note_rx + renderer.stroke_width) * 2. + staggered_spacing
         } else {
-            (renderer.note_rx + renderer.stroke_width) * 4.
+            renderer.note_rx * 2.
         };
 
         if !lines.is_empty() {
