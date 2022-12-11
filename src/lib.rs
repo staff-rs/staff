@@ -61,6 +61,7 @@ pub use note::Note;
 mod pitch;
 pub use pitch::Pitch;
 
+#[cfg(feature = "render")]
 pub mod render;
 
 pub mod scale;

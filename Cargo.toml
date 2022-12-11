@@ -9,8 +9,9 @@ homepage = "https://staff-rs.github.io"
 
 [features]
 cli = ["anyhow", "clap"]
+render = ["font-kit", "rusttype", "svg", "text-svg"]
 serde = ["dep:serde"]
-default = ["serde"]
+default = ["serde", "render"]
 
 [lib]
 name = "staff"
@@ -23,10 +24,10 @@ required-features = ["cli"]
 num-traits = "0.2.14"
 anyhow = { version = "1.0.61", optional = true }
 thiserror = "1.0"
-font-kit = "0.11.0"
-rusttype = "0.9.3"
-svg = "0.12.1"
-text-svg = "0.1.2"
+font-kit = { version = "0.11.0", optional = true }
+rusttype = { version = "0.9.3", optional = true }
+svg = { version = "0.12.1", optional = true }
+text-svg = { version = "0.1.2", optional = true }
 
 [dependencies.clap]
 version = "4.0.18"
