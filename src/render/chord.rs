@@ -226,7 +226,6 @@ impl Chord {
             ));
         }
 
-    
         for line in &self.lines {
             let x1 = if line.is_left {
                 x

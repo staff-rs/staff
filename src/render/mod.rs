@@ -21,7 +21,7 @@ pub struct Renderer {
     pub note_ry: f64,
     pub padding: f64,
     pub stroke_width: f64,
-    pub spacing: f64,
+    pub width: f64,
     pub font: Font<'static>,
 }
 
@@ -52,7 +52,7 @@ impl Default for Renderer {
             note_ry: 6.,
             padding: 10.,
             stroke_width: 2.,
-            spacing: 80.,
+            width: 200.,
             font,
         }
     }
@@ -61,16 +61,18 @@ impl Default for Renderer {
 impl Renderer {
     pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
         let width: f64 = chords.iter().map(|chord| chord.width).sum();
+        // TODO why multiply by 3?
+        let extra = self.width
+            - width
+            - (self.document_padding + self.padding + self.stroke_width ) *3.;
+
         node.append(
             Rectangle::new()
                 .set("fill", "#fff")
                 .set("x", 0)
                 .set("y", 0)
-                .set(
-                    "width",
-                    width + self.padding * 3. + self.stroke_width * 2. + self.document_padding * 2.,
-                )
-                .set("height", 200),
+                .set("width", self.width)
+                .set("height", 100),
         );
 
         let x = self.stroke_width + self.document_padding;
@@ -82,18 +84,14 @@ impl Renderer {
         top += self.document_padding;
 
         let mut chord_x = x + self.padding;
-        for (index, chord) in chords.iter().enumerate() {
+        for chord in chords {
             chord.svg(self, node, chord_x, top);
 
-            if index < chords.len() - 1 {
-                let duration_spacing = match chord.duration {
-                    Duration::Quarter => 4.,
-                    Duration::Half => 2.,
-                };
-                chord_x += self.spacing / duration_spacing;
-            }
-
-            chord_x += chord.width;
+            let duration_spacing = match chord.duration {
+                Duration::Quarter => 4.,
+                Duration::Half => 2.,
+            };
+            chord_x += extra / duration_spacing + chord.width;
         }
         let width = chord_x;
 
