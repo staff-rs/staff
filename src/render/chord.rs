@@ -21,7 +21,7 @@ pub struct BarLine {
     pub is_double: bool,
 }
 
-pub struct ChordLine {
+pub struct ChordStem {
     pub low: i64,
     pub high: i64,
 }
@@ -31,7 +31,7 @@ pub struct Chord {
     pub width: f64,
     pub top: f64,
     pub notes: Vec<RenderNote>,
-    pub stem: Option<ChordLine>,
+    pub stem: Option<ChordStem>,
     pub lines: Vec<BarLine>,
     pub is_upside_down: bool,
 }
@@ -176,7 +176,7 @@ impl Chord {
             width += renderer.note_rx;
         }
 
-        let stem = ChordLine { low, high };
+        let stem = ChordStem { low, high };
         Self {
             duration,
             is_upside_down,
