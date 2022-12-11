@@ -1,5 +1,5 @@
 use crate::{midi::Octave, Natural};
-use svg::{node::element::Path, Node};
+use svg::Node;
 use text_svg::Glpyh;
 
 use super::{Note, Renderer};
@@ -31,13 +31,25 @@ pub struct Chord {
     pub width: f64,
     pub top: f64,
     pub notes: Vec<RenderNote>,
-    pub line: ChordLine,
+    pub stem: Option<ChordLine>,
     pub lines: Vec<BarLine>,
     pub is_upside_down: bool,
 }
 
 impl Chord {
     pub fn new(notes: &[Note], duration: Duration, renderer: &Renderer) -> Self {
+        if notes.is_empty() {
+            return Self {
+                duration,
+                is_upside_down: false,
+                top: 0.,
+                width: renderer.note_rx * 2.,
+                notes: Vec::new(),
+                stem: None,
+                lines: Vec::new(),
+            };
+        }
+
         let high = *notes.iter().max().unwrap();
         let low = *notes.iter().min().unwrap();
         let top = if low < Note::new(Natural::F, Octave::FIVE) {
@@ -173,12 +185,26 @@ impl Chord {
             top,
             width,
             notes,
-            line,
+            stem: Some(line),
             lines,
         }
     }
 
     pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, x: f64, top: f64) {
+        if self.notes.is_empty() {
+            match self.duration {
+                Duration::Quarter => {
+                    node.append(
+                        Glpyh::new(&renderer.font, '𝄽', 75.)
+                            .path(x as _, (renderer.note_ry * 3.) as _),
+                    );
+                }
+                Duration::Half => todo!(),
+            }
+
+            return;
+        }
+
         let note_line_extra = renderer.note_rx / 2.;
 
         let note_x = if !self.lines.is_empty() {
@@ -215,24 +241,26 @@ impl Chord {
             renderer.draw_line(node, x1, y, x2, y)
         }
 
-        let line_x = note_x + renderer.note_rx + renderer.stroke_width;
-        let chord_line_notes_size = 6.;
-        if self.is_upside_down {
-            renderer.draw_line(
-                node,
-                line_x,
-                top - renderer.note_ry / 2. + self.line.low as f64 * renderer.note_ry,
-                line_x,
-                top + (self.line.high as f64 + chord_line_notes_size) * renderer.note_ry,
-            )
-        } else {
-            renderer.draw_line(
-                node,
-                line_x,
-                top + (self.line.low as f64 - chord_line_notes_size) * renderer.note_ry,
-                line_x,
-                top + renderer.note_ry / 2. + (self.line.high as f64) * renderer.note_ry,
-            )
+        if let Some(stem) = &self.stem {
+            let line_x = note_x + renderer.note_rx + renderer.stroke_width;
+            let chord_line_notes_size = 6.;
+            if self.is_upside_down {
+                renderer.draw_line(
+                    node,
+                    line_x,
+                    top - renderer.note_ry / 2. + stem.low as f64 * renderer.note_ry,
+                    line_x,
+                    top + (stem.high as f64 + chord_line_notes_size) * renderer.note_ry,
+                )
+            } else {
+                renderer.draw_line(
+                    node,
+                    line_x,
+                    top + (stem.low as f64 - chord_line_notes_size) * renderer.note_ry,
+                    line_x,
+                    top + renderer.note_ry / 2. + (stem.high as f64) * renderer.note_ry,
+                )
+            }
         }
     }
 }

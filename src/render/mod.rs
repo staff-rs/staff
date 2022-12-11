@@ -145,15 +145,18 @@ mod tests {
         let mut document = svg::Document::new();
 
         let renderer = Renderer::default();
-        let chords = [Chord::new(
-            &[
-                Note::new(Natural::E, Octave::FOUR),
-                Note::new(Natural::C, Octave::FIVE),
-                Note::new(Natural::F, Octave::FIVE),
-            ],
-            Duration::Quarter,
-            &renderer,
-        )];
+        let chords = [
+            Chord::new(
+                &[
+                    Note::new(Natural::E, Octave::FOUR),
+                    Note::new(Natural::C, Octave::FIVE),
+                    Note::new(Natural::F, Octave::FIVE),
+                ],
+                Duration::Quarter,
+                &renderer,
+            ),
+            Chord::new(&[], Duration::Quarter, &renderer),
+        ];
         renderer.svg(&mut document, &chords);
 
         svg::save("image.svg", &document).unwrap();
