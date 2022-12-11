@@ -52,7 +52,7 @@ impl Default for Renderer {
             note_ry: 6.,
             padding: 10.,
             stroke_width: 2.,
-            spacing: 20.,
+            spacing: 80.,
             font,
         }
     }
@@ -132,33 +132,5 @@ impl Renderer {
                 .set("x2", x2)
                 .set("y2", y2),
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{Chord, Duration, Note, Renderer};
-    use crate::{midi::Octave, Natural};
-
-    #[test]
-    fn it_renders() {
-        let mut document = svg::Document::new();
-
-        let renderer = Renderer::default();
-        let chords = [
-            Chord::new(
-                &[
-                    Note::new(Natural::E, Octave::FOUR),
-                    Note::new(Natural::C, Octave::FIVE),
-                    Note::new(Natural::F, Octave::FIVE),
-                ],
-                Duration::Quarter,
-                &renderer,
-            ),
-            Chord::new(&[], Duration::Quarter, &renderer),
-        ];
-        renderer.svg(&mut document, &chords);
-
-        svg::save("image.svg", &document).unwrap();
     }
 }

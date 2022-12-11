@@ -196,7 +196,7 @@ impl Chord {
                 Duration::Quarter => {
                     node.append(
                         Glpyh::new(&renderer.font, '𝄽', 75.)
-                            .path(x as _, (renderer.note_ry * 3.) as _),
+                            .path((x + renderer.note_rx) as _, (renderer.note_ry * 3.) as _),
                     );
                 }
                 Duration::Half => todo!(),
@@ -213,17 +213,20 @@ impl Chord {
             x
         };
 
+        // Render note heads
+        let c = match self.duration {
+            Duration::Quarter => '𝅘',
+            Duration::Half => '𝅗',
+        };
+        let glyph = Glpyh::new(&renderer.font, c, 75.);
         for note in &self.notes {
-            let c = match self.duration {
-                Duration::Quarter => '𝅘',
-                Duration::Half => '𝅗',
-            };
-            node.append(Glpyh::new(&renderer.font, c, 75.).path(
+            node.append(glyph.path(
                 (note_x + note.x) as _,
                 (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
             ));
         }
 
+    
         for line in &self.lines {
             let x1 = if line.is_left {
                 x
