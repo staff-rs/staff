@@ -1,3 +1,9 @@
+use std::{fs::File, io::Read};
+
+use font_kit::{
+    family_name::FamilyName, handle::Handle, properties::Properties, source::SystemSource,
+};
+use rusttype::Font;
 use svg::{
     node::element::{Line, Rectangle},
     Node,
@@ -16,10 +22,30 @@ pub struct Renderer {
     pub padding: f64,
     pub stroke_width: f64,
     pub spacing: f64,
+    pub font: Font<'static>,
 }
 
 impl Default for Renderer {
     fn default() -> Self {
+        let handle = SystemSource::new()
+            .select_best_match(
+                &[FamilyName::Title("Noto Music".to_owned())],
+                &Properties::new(),
+            )
+            .unwrap();
+
+        let font = match handle {
+            Handle::Path { path, font_index } => {
+                let mut file = File::open(path).unwrap();
+                let mut buf = Vec::new();
+                file.read_to_end(&mut buf).unwrap();
+                Font::try_from_vec_and_index(buf, font_index).unwrap()
+            }
+            Handle::Memory { bytes, font_index } => {
+                Font::try_from_vec_and_index(bytes.to_vec(), font_index).unwrap()
+            }
+        };
+
         Self {
             document_padding: 10.,
             note_rx: 10.,
@@ -27,6 +53,7 @@ impl Default for Renderer {
             padding: 10.,
             stroke_width: 2.,
             spacing: 20.,
+            font,
         }
     }
 }

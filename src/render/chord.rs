@@ -1,5 +1,6 @@
 use crate::{midi::Octave, Natural};
 use svg::{node::element::Path, Node};
+use text_svg::Glpyh;
 
 use super::{Note, Renderer};
 
@@ -187,24 +188,14 @@ impl Chord {
         };
 
         for note in &self.notes {
-            let d = match self.duration {
-                Duration::Quarter => include_str!("../../svg/note_head.txt"),
-                Duration::Half => include_str!("../../svg/half_note_head.txt"),
+            let c = match self.duration {
+                Duration::Quarter => '𝅘',
+                Duration::Half => '𝅗',
             };
-            node.append(
-                Path::new()
-                    .set("fill", "#000")
-                    .set("fill-rule", "evenodd")
-                    .set("d", d)
-                    .set(
-                        "transform",
-                        format!(
-                            "translate({}, {})",
-                            note_x + note.x,
-                            top + renderer.note_ry * (note.index as f64 - 1.)
-                        ),
-                    ),
-            );
+            node.append(Glpyh::new(&renderer.font, c, 75.).path(
+                (note_x + note.x) as _,
+                (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+            ));
         }
 
         for line in &self.lines {
