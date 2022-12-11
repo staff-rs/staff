@@ -8,25 +8,21 @@ fn main() {
     let renderer = Renderer::default();
     let chords = [
         Chord::new(
-            &[
-                Note::new(Natural::C, Octave::FOUR, Accidental::Sharp),
-            ],
+            &[Note::new(Natural::C, Octave::FOUR, Accidental::Sharp)],
             Duration::Quarter,
             &renderer,
         ),
-        /*
         Chord::new(&[], Duration::Quarter, &renderer),
         Chord::new(
             &[
-                Note::new(Natural::C, Octave::FOUR),
-                Note::new(Natural::D, Octave::FOUR),
-                Note::new(Natural::E, Octave::FOUR),
-                Note::new(Natural::G, Octave::FOUR),
+                Note::new(Natural::C, Octave::FOUR, Accidental::Natural),
+                Note::new(Natural::D, Octave::FOUR, Accidental::Natural),
+                Note::new(Natural::E, Octave::FOUR, Accidental::Natural),
+                Note::new(Natural::G, Octave::FOUR, Accidental::Natural),
             ],
             Duration::Half,
             &renderer,
         ),
-        */
     ];
     renderer.svg(&mut document, &chords);
 
