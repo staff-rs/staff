@@ -2,7 +2,7 @@ use crate::{midi::Octave, Natural};
 use svg::Node;
 use text_svg::Glpyh;
 
-use super::{Note, Renderer};
+use super::{note::note_index, Note, Renderer};
 
 #[derive(Clone, Copy)]
 pub enum Duration {
@@ -50,16 +50,16 @@ impl Chord {
             };
         }
 
-        let high = *notes.iter().max().unwrap();
-        let low = *notes.iter().min().unwrap();
-        let top = if low < Note::new(Natural::F, Octave::FIVE) {
-            -low.index as f64 * renderer.note_ry + renderer.note_ry / 2.
+        let high = notes.iter().map(|note| note.index).max().unwrap();
+        let low = notes.iter().map(|note| note.index).min().unwrap();
+        let top = if low < note_index(Natural::F, Octave::FIVE) {
+            -low as f64 * renderer.note_ry + renderer.note_ry / 2.
         } else {
             0.
         };
 
         let staggered_spacing = 2.;
-        let is_upside_down = low.min(high) < Note::new(Natural::B, Octave::FIVE);
+        let is_upside_down = low.min(high) < note_index(Natural::B, Octave::FIVE);
 
         let mut lines = Vec::new();
 
@@ -73,8 +73,10 @@ impl Chord {
             .iter()
             .copied()
             .map(|note| {
-                let is_left = if notes.contains(&(Note::from(note.index - 1)))
-                    || notes.contains(&Note::from(note.index + 1))
+                let is_left = if notes
+                    .iter()
+                    .find(|n| n.index == note.index - 1 || n.index == note.index + 1)
+                    .is_some()
                 {
                     is_stagger = true;
                     note.index & 1 != 0
@@ -174,18 +176,14 @@ impl Chord {
             width += renderer.note_rx;
         }
 
-        let line = ChordLine {
-            low: low.index,
-            high: high.index,
-        };
-
+        let stem = ChordLine { low, high };
         Self {
             duration,
             is_upside_down,
             top,
             width,
             notes,
-            stem: Some(line),
+            stem: Some(stem),
             lines,
         }
     }
