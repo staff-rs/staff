@@ -7,7 +7,6 @@ fn main() {
     let mut document = svg::Document::new();
 
     let mut renderer = Renderer::default();
-    renderer.key_signature = Some(Key::major(Pitch::D));
 
     let chords = [
         Chord::new(
@@ -27,7 +26,7 @@ fn main() {
             &renderer,
         ),
     ];
-    renderer.svg(&mut document, &chords);
+    renderer.svg(&mut document, &chords, None);
 
     svg::save("image.svg", &document).unwrap();
 }

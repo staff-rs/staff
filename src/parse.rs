@@ -78,7 +78,7 @@ mod tests {
 
         let renderer = Renderer::default();
         let chords = parse(&renderer, s);
-        renderer.svg(&mut document, &chords);
+        renderer.svg(&mut document, &chords, None);
         svg::save("ly.svg", &document).unwrap();
     }
 }

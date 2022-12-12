@@ -19,6 +19,50 @@ use crate::{midi::Octave, Key, Pitch};
 
 use self::note::note_index;
 
+pub struct KeySignature<'r> {
+    key: Key,
+    clef_glyph: Glpyh<'r>,
+    accidental_glyph: Glpyh<'r>,
+    width: f64,
+}
+
+impl<'r> KeySignature<'r> {
+    pub fn f(key: Key, x: f64, y: f64, renderer: &'r Renderer, node: &mut impl Node) -> Self {
+        let clef_glyph = Glpyh::new(&renderer.font, '𝄞', (renderer.note_ry * 10.) as _);
+        let mut width = clef_glyph.bounding_box.width() as f64 + renderer.padding;
+
+        // TODO
+        let spacing = 1.;
+        let c = if key.is_sharp() { '♯' } else { '♭' };
+        let accidental_glyph = Glpyh::new(&renderer.font, c, (renderer.accidental_size) as _);
+        for _ in key.into_iter() {
+            width += accidental_glyph.bounding_box.width() as f64 + spacing;
+        }
+
+        Self {
+            key,
+            clef_glyph,
+            accidental_glyph,
+            width: width + renderer.padding,
+        }
+    }
+
+    pub fn svg(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
+        node.append(self.clef_glyph.path(x as _, (y - renderer.note_ry) as _));
+
+        // TODO
+        let spacing = 1.;
+
+        for natural in self.key.into_iter() {
+            node.append(self.accidental_glyph.path(
+                x as _,
+                (y + renderer.note_ry * (note_index(natural, Octave::FIVE) as f64)) as f32
+                    - self.accidental_glyph.bounding_box.height() / 2.,
+            ));
+        }
+    }
+}
+
 pub struct Renderer {
     pub document_padding: f64,
     pub note_rx: f64,
@@ -28,7 +72,6 @@ pub struct Renderer {
     pub accidental_size: f64,
     pub width: f64,
     pub font: Font<'static>,
-    pub key_signature: Option<Key>,
 }
 
 impl Default for Renderer {
@@ -64,13 +107,17 @@ impl Default for Renderer {
             accidental_size: 80.,
             width: 200.,
             font,
-            key_signature: Some(Key::major(Pitch::C)),
         }
     }
 }
 
 impl Renderer {
-    pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
+    pub fn svg<T: Node>(
+        &self,
+        node: &mut T,
+        chords: &[Chord],
+        key_signature: Option<&KeySignature>,
+    ) {
         node.append(
             Rectangle::new()
                 .set("fill", "#fff")
@@ -95,24 +142,8 @@ impl Renderer {
 
         let mut chord_x = x + self.padding;
 
-        if let Some(key) = self.key_signature {
-            let glyph = Glpyh::new(&self.font, '𝄞', (self.note_ry * 10.) as _);
-            node.append(glyph.path(chord_x as _, (top - self.note_ry) as _));
-            chord_x += glyph.bounding_box.width() as f64 + self.padding;
-
-            // TODO
-            let spacing = 1.;
-            let c = if key.is_sharp() { '♯' } else { '♭' };
-            let glyph = Glpyh::new(&self.font, c, (self.accidental_size) as _);
-            for natural in key.into_iter() {
-                node.append(glyph.path(
-                    chord_x as _,
-                    (top + self.note_ry * (note_index(natural, Octave::FIVE) as f64)) as f32
-                        - glyph.bounding_box.height() / 2.,
-                ));
-                chord_x += glyph.bounding_box.width() as f64 + spacing;
-            }
-
+        if let Some(key_signature) = &key_signature {
+            key_signature.svg(x, top, self, node);
             chord_x += self.padding;
         }
 

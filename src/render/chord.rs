@@ -261,7 +261,6 @@ impl<'a> Chord<'a> {
         }
 
         let note_line_extra = renderer.note_rx / 2.;
-
         let note_x = if !self.lines.is_empty() {
             x + note_line_extra
         } else {
