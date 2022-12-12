@@ -14,6 +14,11 @@ pub use chord::{Chord, Duration, RenderNote};
 
 mod note;
 pub use note::Note;
+use text_svg::Glpyh;
+
+use crate::{Key, Pitch};
+
+use self::note::note_index;
 
 pub struct Renderer {
     pub document_padding: f64,
@@ -24,6 +29,7 @@ pub struct Renderer {
     pub accidental_size: f64,
     pub width: f64,
     pub font: Font<'static>,
+    pub key_signature: Option<Key>,
 }
 
 impl Default for Renderer {
@@ -56,17 +62,13 @@ impl Default for Renderer {
             accidental_size: 80.,
             width: 200.,
             font,
+            key_signature: Some(Key::major(Pitch::C)),
         }
     }
 }
 
 impl Renderer {
     pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
-        let width: f64 = chords.iter().map(|chord| chord.width).sum();
-        // TODO why multiply by 3?
-        let extra =
-            self.width - width - (self.document_padding + self.padding + self.stroke_width) * 3.;
-
         node.append(
             Rectangle::new()
                 .set("fill", "#fff")
@@ -77,6 +79,11 @@ impl Renderer {
         );
 
         let x = self.stroke_width + self.document_padding;
+        let width: f64 = chords.iter().map(|chord| chord.width).sum();
+
+        // TODO why multiply by 3?
+        let extra =
+            self.width - width - (self.document_padding + self.padding + self.stroke_width) * 3.;
 
         let mut top = 0f64;
         for chord in chords {
@@ -85,6 +92,24 @@ impl Renderer {
         top += self.document_padding;
 
         let mut chord_x = x + self.padding;
+
+        if let Some(key) = self.key_signature {
+            let glyph = Glpyh::new(&self.font, '𝄞', (self.note_ry * 10.) as _);
+            node.append(glyph.path(chord_x as _, (top - self.note_ry) as _));
+            chord_x += glyph.bounding_box.width() as f64 + self.padding;
+
+            // TODO
+            let spacing = 1.;
+            let c = if key.is_sharp() { '♯' } else { '♭' };
+            let glyph = Glpyh::new(&self.font, c, (self.accidental_size) as _);
+            for natural in key.into_iter() {
+                node.append(glyph.path(chord_x as _, (natural as u8 as f64 * self.note_ry) as _));
+                chord_x += glyph.bounding_box.width() as f64 + spacing;
+            }
+
+            chord_x += self.padding;
+        }
+
         for chord in chords {
             chord.svg(self, node, chord_x, top);
 

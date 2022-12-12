@@ -1,11 +1,14 @@
 use staff::note::Accidental;
 use staff::render::{Chord, Duration, Note, Renderer};
 use staff::{midi::Octave, Natural};
+use staff::{Key, Pitch};
 
 fn main() {
     let mut document = svg::Document::new();
 
-    let renderer = Renderer::default();
+    let mut renderer = Renderer::default();
+    renderer.key_signature = Some(Key::major(Pitch::FSharp));
+
     let chords = [
         Chord::new(
             &[Note::new(Natural::C, Octave::FOUR, Some(Accidental::Sharp))],
