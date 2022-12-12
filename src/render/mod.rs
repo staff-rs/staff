@@ -1,9 +1,8 @@
-use std::{fs::File, io::Read};
-
 use font_kit::{
     family_name::FamilyName, handle::Handle, properties::Properties, source::SystemSource,
 };
 use rusttype::Font;
+use std::{fs::File, io::Read};
 use svg::{
     node::element::{Line, Rectangle},
     Node,
@@ -36,7 +35,10 @@ impl Default for Renderer {
     fn default() -> Self {
         let handle = SystemSource::new()
             .select_best_match(
-                &[FamilyName::Title("Noto Music".to_owned())],
+                &[
+                    FamilyName::Title("Noto Music".to_owned()),
+                    FamilyName::Serif,
+                ],
                 &Properties::new(),
             )
             .unwrap();
