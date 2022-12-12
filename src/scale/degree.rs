@@ -26,7 +26,7 @@ impl Degree for Note {
 
         let natural_pitch = Pitch::from(*state);
         let natural = *state;
-        *state = *state + 1;
+        *state = *state + 1u8;
 
         let accidental = if pitch >= natural_pitch {
             match pitch - natural_pitch {

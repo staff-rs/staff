@@ -63,6 +63,14 @@ impl Add<u8> for Natural {
     }
 }
 
+impl Add<i8> for Natural {
+    type Output = Self;
+
+    fn add(self, rhs: i8) -> Self::Output {
+        Self::from((self as u8 as i8 + rhs) as u8)
+    }
+}
+
 impl fmt::Debug for Natural {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self)
