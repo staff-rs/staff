@@ -1,6 +1,6 @@
 use clap::{arg, Parser, Subcommand, ValueEnum};
 use staff::{
-    guitar::{Fretboard, STANDARD},
+    fretboard::{Fretboard, STANDARD},
     midi::{MidiNote, Octave},
     note::Accidental,
     Chord, Interval, Key, Note, Pitch, Scale,
@@ -109,7 +109,7 @@ fn main() -> Result {
             for name in names {
                 let chord: Chord = name.parse().unwrap();
                 if *guitar {
-                    let midi_notes: Vec<_> = chord.clone().midi_notes().collect();
+                    let midi_notes: Vec<_> = chord.clone().into_iter().collect();
                     for i in 0..16 {
                         let s = i.to_string();
                         // TODO handle other cases
@@ -127,10 +127,7 @@ fn main() -> Result {
                                 midi_notes.iter().find(|note| note.pitch() == n.pitch())
                             {
                                 if *functions {
-                                    s.push_str(
-                                        &(*note - MidiNote::new(chord.root(), Octave::FOUR))
-                                            .to_string(),
-                                    );
+                                    s.push_str(&(*note - chord.root).to_string());
                                 } else {
                                     s.push_str(&n.to_string());
                                 }
