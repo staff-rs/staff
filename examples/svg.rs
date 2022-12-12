@@ -7,7 +7,7 @@ fn main() {
     let mut document = svg::Document::new();
 
     let mut renderer = Renderer::default();
-    renderer.key_signature = Some(Key::major(Pitch::FSharp));
+    renderer.key_signature = Some(Key::major(Pitch::D));
 
     let chords = [
         Chord::new(

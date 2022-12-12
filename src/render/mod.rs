@@ -16,7 +16,7 @@ mod note;
 pub use note::Note;
 use text_svg::Glpyh;
 
-use crate::{Key, Pitch};
+use crate::{midi::Octave, Key, Pitch};
 
 use self::note::note_index;
 
@@ -103,7 +103,11 @@ impl Renderer {
             let c = if key.is_sharp() { '♯' } else { '♭' };
             let glyph = Glpyh::new(&self.font, c, (self.accidental_size) as _);
             for natural in key.into_iter() {
-                node.append(glyph.path(chord_x as _, (natural as u8 as f64 * self.note_ry) as _));
+                node.append(glyph.path(
+                    chord_x as _,
+                    (top + self.note_ry * (note_index(natural, Octave::FIVE) as f64)) as f32
+                        - glyph.bounding_box.height() / 2.,
+                ));
                 chord_x += glyph.bounding_box.width() as f64 + spacing;
             }
 
