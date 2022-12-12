@@ -1,6 +1,6 @@
 //! Key signatures
 
-use crate::{Interval, Natural, Pitch};
+use crate::{note::Accidental, Interval, Natural, Pitch};
 use core::fmt::{self, Write};
 
 /// A key signature represented as the total number of sharps or flats.
@@ -38,11 +38,25 @@ impl Key {
 
     /// Returns the number of flats in this key.
     pub fn flats(self) -> u8 {
-        Pitch::B.into_byte() - self.sharps
+        Pitch::B.into_byte() + 1 - self.sharps
     }
 
     pub fn is_sharp(self) -> bool {
         self.sharps <= 6
+    }
+
+    pub fn accidental(self, natural: Natural) -> Accidental {
+        // TODO maybe use a `Set`
+        self.into_iter()
+            .find(|n| *n == natural)
+            .map(|_| {
+                if self.is_sharp() {
+                    Accidental::Sharp
+                } else {
+                    Accidental::Flat
+                }
+            })
+            .unwrap_or(Accidental::Natural)
     }
 }
 
@@ -52,15 +66,16 @@ impl IntoIterator for Key {
     type IntoIter = Iter;
 
     fn into_iter(self) -> Self::IntoIter {
-        let (natural, remaining, semitones) = if self.sharps <= 6 {
+        let (natural, remaining, step) = if self.sharps <= 6 {
             (Natural::F, self.sharps, 4)
         } else {
-            (Natural::B, self.flats(), -4)
+            (Natural::B, self.flats(), 3)
         };
+
         Iter {
             natural,
             remaining,
-            step: semitones,
+            step,
         }
     }
 }
@@ -84,7 +99,7 @@ impl fmt::Display for Key {
 pub struct Iter {
     natural: Natural,
     remaining: u8,
-    step: i8,
+    step: u8,
 }
 
 impl Iterator for Iter {
@@ -113,5 +128,20 @@ mod tests {
         let key = Key::major(Pitch::D);
         let sharps: Vec<_> = key.into_iter().collect();
         assert_eq!(sharps, [Natural::F, Natural::C]);
+    }
+
+    #[test]
+    fn it_iters_flats_for_e_flat_major() {
+        let key = Key::major(Pitch::DSharp);
+        let sharps: Vec<_> = key.into_iter().collect();
+        assert_eq!(sharps, [Natural::B, Natural::E, Natural::A]);
+    }
+
+    #[test]
+    fn it_returns_the_accidental_for_d_in_c_sharp_major() {
+        let key = Key::major(Pitch::CSharp);
+
+        let accidental = key.accidental(Natural::D);
+        assert_eq!(accidental, Accidental::Flat);
     }
 }
