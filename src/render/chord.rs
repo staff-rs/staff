@@ -30,6 +30,39 @@ pub struct ChordAccidental<'a> {
     pub glyph: Glpyh<'a>,
     pub index: i64,
     pub x: f64,
+    pub is_flat: bool,
+}
+
+impl<'a> ChordAccidental<'a> {
+    pub fn new(accidental: Accidental, index: i64, renderer: &'a Renderer) -> Self {
+        let (c, is_flat) = match accidental {
+            Accidental::Natural => ('♮', false),
+            Accidental::Sharp => ('♯', false),
+            Accidental::Flat => ('♭', true),
+            _ => todo!(),
+        };
+        let glyph = Glpyh::new(&renderer.font, c, renderer.accidental_size as _);
+
+        Self {
+            glyph,
+            index,
+            x: 0.,
+            is_flat,
+        }
+    }
+
+    pub fn svg(&self, x: f64, y: f64, renderer: &'a Renderer, node: &mut impl Node) -> f32 {
+        let y = if self.is_flat {
+            (y + renderer.note_ry * (self.index as f64 + 1.)) as f32
+                - self.glyph.bounding_box.height()
+        } else {
+            (y + renderer.note_ry * (self.index as f64)) as f32
+                - self.glyph.bounding_box.height() / 2.
+        };
+        node.append(self.glyph.path((x + self.x) as _, y));
+
+        self.glyph.bounding_box.width()
+    }
 }
 
 pub struct Chord<'a> {
@@ -83,18 +116,8 @@ impl<'a> Chord<'a> {
             .copied()
             .map(|note| {
                 if let Some(accidental) = note.accidental {
-                    let c = match accidental {
-                        Accidental::Natural => '♮',
-                        Accidental::Sharp => '♯',
-                        Accidental::Flat => '♭',
-                        _ => todo!(),
-                    };
-                    let glyph = Glpyh::new(&renderer.font, c, renderer.accidental_size as _);
-                    accidentals.push(ChordAccidental {
-                        glyph,
-                        index: note.index,
-                        x: 0.,
-                    })
+                    let chord_accidental = ChordAccidental::new(accidental, note.index, renderer);
+                    accidentals.push(chord_accidental);
                 }
 
                 let is_left = if notes
@@ -231,12 +254,8 @@ impl<'a> Chord<'a> {
         let mut accidentals_width = 0.;
         if !self.accidentals.is_empty() {
             for chord_accidental in &self.accidentals {
-                accidentals_width = chord_accidental.glyph.bounding_box.width() as _;
-                node.append(chord_accidental.glyph.path(
-                    (x + chord_accidental.x) as _,
-                    (top + renderer.note_ry * (chord_accidental.index as f64)) as f32
-                        - chord_accidental.glyph.bounding_box.height() / 2.,
-                ));
+                let width = chord_accidental.svg(x, top, &renderer, node);
+                accidentals_width = width as f64;
             }
             x += accidentals_width + renderer.note_rx / 2.;
         }
