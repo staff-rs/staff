@@ -15,6 +15,7 @@ pub fn parse<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
             '\\' => todo!(),
             c => {
                 let natural = Natural::try_from(c).unwrap();
+
                 let mut i = 0;
                 match chars.peek() {
                     Some('\'') => {

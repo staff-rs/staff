@@ -280,7 +280,7 @@ impl<'a> Chord<'a> {
         }
 
         if let Some(stem) = &self.stem {
-            let line_x = note_x + renderer.note_rx + renderer.stroke_width;
+            let line_x = note_x + renderer.note_rx + renderer.stroke_width / 1.4;
             let chord_line_notes_size = 6.;
             if self.is_upside_down {
                 renderer.draw_line(
@@ -296,7 +296,7 @@ impl<'a> Chord<'a> {
                     line_x,
                     top + (stem.low as f64 - chord_line_notes_size) * renderer.note_ry,
                     line_x,
-                    top + renderer.note_ry / 2. + (stem.high as f64) * renderer.note_ry,
+                    top + renderer.note_ry / 2. + (stem.high as f64 - 0.75) * renderer.note_ry,
                 )
             }
         }
