@@ -50,6 +50,8 @@ pub use interval::Interval;
 mod key;
 pub use crate::key::Key;
 
+pub mod parse;
+
 mod natural;
 pub use natural::Natural;
 
