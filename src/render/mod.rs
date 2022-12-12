@@ -21,6 +21,7 @@ pub struct Renderer {
     pub note_ry: f64,
     pub padding: f64,
     pub stroke_width: f64,
+    pub accidental_size: f64,
     pub width: f64,
     pub font: Font<'static>,
 }
@@ -52,6 +53,7 @@ impl Default for Renderer {
             note_ry: 6.,
             padding: 10.,
             stroke_width: 2.,
+            accidental_size: 80.,
             width: 200.,
             font,
         }
@@ -62,9 +64,8 @@ impl Renderer {
     pub fn svg<T: Node>(&self, node: &mut T, chords: &[Chord]) {
         let width: f64 = chords.iter().map(|chord| chord.width).sum();
         // TODO why multiply by 3?
-        let extra = self.width
-            - width
-            - (self.document_padding + self.padding + self.stroke_width ) *3.;
+        let extra =
+            self.width - width - (self.document_padding + self.padding + self.stroke_width) * 3.;
 
         node.append(
             Rectangle::new()

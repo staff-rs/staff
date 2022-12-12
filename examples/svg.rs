@@ -8,17 +8,17 @@ fn main() {
     let renderer = Renderer::default();
     let chords = [
         Chord::new(
-            &[Note::new(Natural::C, Octave::FOUR, Accidental::Sharp)],
+            &[Note::new(Natural::C, Octave::FOUR, Some(Accidental::Sharp))],
             Duration::Quarter,
             &renderer,
         ),
         Chord::new(&[], Duration::Quarter, &renderer),
         Chord::new(
             &[
-                Note::new(Natural::C, Octave::FOUR, Accidental::Natural),
-                Note::new(Natural::D, Octave::FOUR, Accidental::Natural),
-                Note::new(Natural::E, Octave::FOUR, Accidental::Natural),
-                Note::new(Natural::G, Octave::FOUR, Accidental::Natural),
+                Note::new(Natural::C, Octave::FOUR, Some(Accidental::Flat)),
+                Note::new(Natural::D, Octave::FOUR, None),
+                Note::new(Natural::E, Octave::FOUR, None),
+                Note::new(Natural::G, Octave::FOUR, Some(Accidental::Natural)),
             ],
             Duration::Half,
             &renderer,

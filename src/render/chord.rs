@@ -1,4 +1,4 @@
-use crate::{midi::Octave, Natural};
+use crate::{midi::Octave, note::Accidental, Natural};
 use svg::Node;
 use text_svg::Glpyh;
 
@@ -26,7 +26,13 @@ pub struct ChordStem {
     pub high: i64,
 }
 
-pub struct Chord {
+pub struct ChordAccidental<'a> {
+    pub glyph: Glpyh<'a>,
+    pub index: i64,
+    pub x: f64,
+}
+
+pub struct Chord<'a> {
     pub duration: Duration,
     pub width: f64,
     pub top: f64,
@@ -34,10 +40,11 @@ pub struct Chord {
     pub stem: Option<ChordStem>,
     pub lines: Vec<BarLine>,
     pub is_upside_down: bool,
+    pub accidentals: Vec<ChordAccidental<'a>>,
 }
 
-impl Chord {
-    pub fn new(notes: &[Note], duration: Duration, renderer: &Renderer) -> Self {
+impl<'a> Chord<'a> {
+    pub fn new(notes: &[Note], duration: Duration, renderer: &'a Renderer) -> Self {
         if notes.is_empty() {
             return Self {
                 duration,
@@ -47,6 +54,7 @@ impl Chord {
                 notes: Vec::new(),
                 stem: None,
                 lines: Vec::new(),
+                accidentals: Vec::new(),
             };
         }
 
@@ -62,6 +70,7 @@ impl Chord {
         let is_upside_down = low.min(high) < note_index(Natural::B, Octave::FIVE);
 
         let mut lines = Vec::new();
+        let mut accidentals = Vec::new();
 
         let mut low_right = 0;
         let mut low_left = 0;
@@ -73,6 +82,21 @@ impl Chord {
             .iter()
             .copied()
             .map(|note| {
+                if let Some(accidental) = note.accidental {
+                    let c = match accidental {
+                        Accidental::Natural => '♮',
+                        Accidental::Sharp => '♯',
+                        Accidental::Flat => '♭',
+                        _ => todo!(),
+                    };
+                    let glyph = Glpyh::new(&renderer.font, c, renderer.accidental_size as _);
+                    accidentals.push(ChordAccidental {
+                        glyph,
+                        index: note.index,
+                        x: 0.,
+                    })
+                }
+
                 let is_left = if notes
                     .iter()
                     .find(|n| n.index == note.index - 1 || n.index == note.index + 1)
@@ -185,10 +209,11 @@ impl Chord {
             notes,
             stem: Some(stem),
             lines,
+            accidentals,
         }
     }
 
-    pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, x: f64, top: f64) {
+    pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, mut x: f64, top: f64) {
         if self.notes.is_empty() {
             match self.duration {
                 Duration::Quarter => {
@@ -201,6 +226,19 @@ impl Chord {
             }
 
             return;
+        }
+
+        let mut accidentals_width = 0.;
+        if !self.accidentals.is_empty() {
+            for chord_accidental in &self.accidentals {
+                accidentals_width = chord_accidental.glyph.bounding_box.width() as _;
+                node.append(chord_accidental.glyph.path(
+                    (x + chord_accidental.x) as _,
+                    (top + renderer.note_ry * (chord_accidental.index as f64)) as f32
+                        - chord_accidental.glyph.bounding_box.height() / 2.,
+                ));
+            }
+            x += accidentals_width + renderer.note_rx / 2.;
         }
 
         let note_line_extra = renderer.note_rx / 2.;
