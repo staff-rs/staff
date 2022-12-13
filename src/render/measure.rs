@@ -66,7 +66,12 @@ impl<'r> Measure<'r> {
     }
 
     pub fn svg(&self, x: f64, y: f64, renderer: &'r Renderer, node: &mut impl Node) {
-        let width: f64 = self.chords.iter().map(|chord| chord.width).sum();
+        let width: f64 = self
+            .key_signature
+            .as_ref()
+            .map(|key_signature| key_signature.width)
+            .unwrap_or(0.)
+            + self.chords.iter().map(|chord| chord.width).sum::<f64>();
 
         // TODO why multiply by 3?
         let extra = renderer.width
