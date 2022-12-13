@@ -1,5 +1,6 @@
 use crate::{
     midi::Octave,
+    note::Accidental,
     render::{Chord, Duration, Measure, Note, Renderer},
     Natural,
 };
@@ -22,6 +23,24 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
             '\\' => todo!(),
             c => {
                 let natural = Natural::try_from(c).unwrap();
+
+                let accidental = match chars.peek() {
+                    Some('i') => {
+                        chars.next();
+                        if chars.next() != Some('s') {
+                            todo!()
+                        }
+                        Some(Accidental::Sharp)
+                    }
+                    Some('e') => {
+                        chars.next();
+                        if chars.next() != Some('s') {
+                            todo!()
+                        }
+                        Some(Accidental::Flat)
+                    }
+                    _ => None,
+                };
 
                 let mut i = 0;
                 match chars.peek() {
@@ -62,7 +81,7 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
                 }
 
                 // TODO check octave
-                let note = Note::new(natural, Octave::new_unchecked(i + 3), None);
+                let note = Note::new(natural, Octave::new_unchecked(i + 3), accidental);
                 chords.push(Chord::new(&[note], duration, &renderer));
             }
         }
@@ -78,7 +97,7 @@ mod tests {
 
     #[test]
     fn f() {
-        let s = "c'4 e' g' c'\nc'4 e' g' c''";
+        let s = "c'4 eis' g' c'\nc'4 ees' g' c''";
 
         let renderer = Renderer::default();
         let measures = parse_measures(&renderer, s);
