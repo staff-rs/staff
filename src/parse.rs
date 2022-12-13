@@ -9,7 +9,7 @@ use std::{iter::Peekable, str::Chars};
 #[derive(Debug)]
 pub enum Group {
     Chord,
-    Group,
+    Block,
 }
 
 #[derive(Debug)]
@@ -18,6 +18,7 @@ pub enum Token<'a> {
     End(Group),
     Command(&'a str),
     Literal(&'a str),
+    LineBreak,
 }
 
 pub struct Tokens<'a> {
@@ -30,13 +31,20 @@ impl<'a> Tokens<'a> {
         let start = self.pos;
         loop {
             match self.input.chars().nth(self.pos) {
-                Some(' ') | Some('\n') => {
+                Some(' ') => {
                     self.pos += 1;
                     break if self.pos - 1 > start {
                         Some(&self.input[start..self.pos - 1])
                     } else {
                         None
                     };
+                }
+                Some('>') | Some('\n') => {
+                    break if self.pos - 1 > start {
+                        Some(&self.input[start..self.pos - 1])
+                    } else {
+                        None
+                    }
                 }
                 None => {
                     break if self.pos > start {
@@ -73,11 +81,23 @@ impl<'a> Iterator for Tokens<'a> {
                 }
                 Some('{') => {
                     self.pos += 1;
-                    break Some(Token::Start(Group::Group));
+                    break Some(Token::Start(Group::Block));
                 }
                 Some('}') => {
                     self.pos += 1;
-                    break Some(Token::End(Group::Group));
+                    break Some(Token::End(Group::Block));
+                }
+                Some('<') => {
+                    self.pos += 1;
+                    break Some(Token::Start(Group::Chord));
+                }
+                Some('>') => {
+                    self.pos += 1;
+                    break Some(Token::End(Group::Chord));
+                }
+                Some('\n') => {
+                    self.pos += 1;
+                    break Some(Token::LineBreak);
                 }
                 Some(c) => {
                     if let Some(literal) = self.parse_literal() {
