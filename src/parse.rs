@@ -57,7 +57,7 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
                         chars.next();
                         i = -1;
 
-                        while chars.peek().copied() == Some('\'') {
+                        while chars.peek().copied() == Some(',') {
                             chars.next();
                             i -= 1;
                         }
@@ -70,6 +70,7 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
                         chars.next();
                         duration = match n {
                             4 => Duration::Quarter,
+                            2 => Duration::Half,
                             _ => todo!(),
                         };
                     }
@@ -77,7 +78,7 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
 
                 match chars.next() {
                     Some(' ') | None => {}
-                    Some(_) => todo!(),
+                    Some(c) => panic!("{:?} {:?}", natural, c),
                 }
 
                 // TODO check octave
@@ -97,7 +98,7 @@ mod tests {
 
     #[test]
     fn f() {
-        let s = "c'4 eis' g' c'\nc'4 ees' g' c''";
+        let s = "c'4 eis'2 g'4\nf''2 ees'4 c''";
 
         let renderer = Renderer::default();
         let measures = parse_measures(&renderer, s);
