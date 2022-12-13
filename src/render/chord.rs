@@ -301,10 +301,11 @@ impl<'a> Chord<'a> {
             let line_x = note_x + renderer.note_rx + renderer.stroke_width / 1.4;
             let chord_line_notes_size = 6.;
             if self.is_upside_down {
+                let line_x = line_x + renderer.stroke_width / 1.4;
                 renderer.draw_line(
                     node,
                     line_x,
-                    top - renderer.note_ry / 2. + stem.low as f64 * renderer.note_ry,
+                    top - renderer.note_ry / 2. + (stem.low as f64 + 0.75) * renderer.note_ry,
                     line_x,
                     top + (stem.high as f64 + chord_line_notes_size) * renderer.note_ry,
                 )
