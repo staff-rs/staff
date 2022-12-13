@@ -59,14 +59,14 @@ impl Default for Renderer {
             padding: 10.,
             stroke_width: 2.,
             accidental_size: 80.,
-            width: 300.,
+            width: 400.,
             font,
         }
     }
 }
 
 impl Renderer {
-    pub fn render(&self, measure: &Measure) -> Document {
+    pub fn render(&self, measures: &[Measure]) -> Document {
         let mut document = svg::Document::new();
         document.append(
             Rectangle::new()
@@ -77,8 +77,21 @@ impl Renderer {
                 .set("height", 100),
         );
 
-        let x = self.stroke_width + self.document_padding;
-        measure.svg(x, 0., self, &mut document);
+        let mut x = self.stroke_width + self.document_padding;
+
+        // TODO why multiply by 3?
+        let extra = self.width
+            - measures
+                .iter()
+                .map(|measure| {
+                    measure.width + (self.document_padding + self.padding + self.stroke_width) * 3.
+                })
+                .sum::<f64>();
+
+        for measure in measures {
+            measure.svg(x, 0., extra, self, &mut document);
+            x += measure.width + extra + self.document_padding * 2. + self.stroke_width;
+        }
 
         document
     }

@@ -1,10 +1,17 @@
 use crate::{
     midi::Octave,
-    render::{Chord, Duration, Note, Renderer},
+    render::{Chord, Duration, Measure, Note, Renderer},
     Natural,
 };
 
-pub fn parse<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
+pub fn parse_measures<'a>(renderer: &'a Renderer, input: &str) -> Vec<Measure<'a>> {
+    input
+        .lines()
+        .map(|line| Measure::new(parse_chords(renderer, line), None))
+        .collect()
+}
+
+pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
     let mut chars = input.chars().peekable();
     let mut duration = Duration::Quarter;
 
@@ -66,22 +73,17 @@ pub fn parse<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        render::{measure::Measure, KeySignature, Renderer},
-        Key, Pitch,
-    };
-
-    use super::parse;
+    use super::parse_measures;
+    use crate::render::Renderer;
 
     #[test]
     fn f() {
-        let s = "c'4 e' g' c''";
+        let s = "c'4 e' g' c'\nc'4 e' g' c''";
 
         let renderer = Renderer::default();
-        let chords = parse(&renderer, s);
-        let key_signature = KeySignature::new(Key::major(Pitch::G), &renderer);
-        let measure = Measure::new(chords, Some(key_signature));
-        let svg = renderer.render(&measure);
+        let measures = parse_measures(&renderer, s);
+
+        let svg = renderer.render(&measures);
 
         svg::save("ly.svg", &svg).unwrap();
     }

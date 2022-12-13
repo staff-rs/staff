@@ -55,29 +55,32 @@ impl<'r> KeySignature<'r> {
 pub struct Measure<'r> {
     chords: Vec<Chord<'r>>,
     key_signature: Option<KeySignature<'r>>,
+    pub width: f64,
 }
 
 impl<'r> Measure<'r> {
     pub fn new(chords: Vec<Chord<'r>>, key_signature: Option<KeySignature<'r>>) -> Self {
-        Self {
-            chords,
-            key_signature,
-        }
-    }
-
-    pub fn svg(&self, x: f64, y: f64, renderer: &'r Renderer, node: &mut impl Node) {
-        let width: f64 = self
-            .key_signature
+        let width: f64 = key_signature
             .as_ref()
             .map(|key_signature| key_signature.width)
             .unwrap_or(0.)
-            + self.chords.iter().map(|chord| chord.width).sum::<f64>();
+            + chords.iter().map(|chord| chord.width).sum::<f64>();
 
-        // TODO why multiply by 3?
-        let extra = renderer.width
-            - width
-            - (renderer.document_padding + renderer.padding + renderer.stroke_width) * 3.;
+        Self {
+            chords,
+            key_signature,
+            width,
+        }
+    }
 
+    pub fn svg(
+        &self,
+        x: f64,
+        y: f64,
+        extra_width: f64,
+        renderer: &'r Renderer,
+        node: &mut impl Node,
+    ) {
         let mut top = y;
         for chord in &self.chords {
             top = top.max(chord.top);
@@ -98,9 +101,9 @@ impl<'r> Measure<'r> {
                 Duration::Quarter => 4.,
                 Duration::Half => 2.,
             };
-            chord_x += extra / duration_spacing + chord.width;
+            chord_x += extra_width / duration_spacing + chord.width;
         }
-        let width = chord_x;
+        let width = chord_x - x;
 
         for line in 0..5 {
             let y = top + (line * 2) as f64 * renderer.note_ry;
@@ -115,7 +118,7 @@ impl<'r> Measure<'r> {
 
         for line in 0..2 {
             let line_x = x
-                + line as f64 * (chord_x + renderer.stroke_width + renderer.padding)
+                + line as f64 * (width + renderer.stroke_width + renderer.padding)
                 + renderer.stroke_width / 2.;
             renderer.draw_line(
                 node,
