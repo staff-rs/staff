@@ -5,63 +5,17 @@ use rusttype::Font;
 use std::{fs::File, io::Read};
 use svg::{
     node::element::{Line, Rectangle},
-    Node,
+    Document, Node,
 };
 
 pub mod chord;
 pub use chord::{Chord, Duration, RenderNote};
 
+pub mod measure;
+pub use measure::{KeySignature, Measure};
+
 mod note;
 pub use note::Note;
-use text_svg::Glpyh;
-
-use crate::{midi::Octave, Key, Pitch};
-
-use self::note::note_index;
-
-pub struct KeySignature<'r> {
-    key: Key,
-    clef_glyph: Glpyh<'r>,
-    accidental_glyph: Glpyh<'r>,
-    width: f64,
-}
-
-impl<'r> KeySignature<'r> {
-    pub fn f(key: Key, x: f64, y: f64, renderer: &'r Renderer, node: &mut impl Node) -> Self {
-        let clef_glyph = Glpyh::new(&renderer.font, '𝄞', (renderer.note_ry * 10.) as _);
-        let mut width = clef_glyph.bounding_box.width() as f64 + renderer.padding;
-
-        // TODO
-        let spacing = 1.;
-        let c = if key.is_sharp() { '♯' } else { '♭' };
-        let accidental_glyph = Glpyh::new(&renderer.font, c, (renderer.accidental_size) as _);
-        for _ in key.into_iter() {
-            width += accidental_glyph.bounding_box.width() as f64 + spacing;
-        }
-
-        Self {
-            key,
-            clef_glyph,
-            accidental_glyph,
-            width: width + renderer.padding,
-        }
-    }
-
-    pub fn svg(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
-        node.append(self.clef_glyph.path(x as _, (y - renderer.note_ry) as _));
-
-        // TODO
-        let spacing = 1.;
-
-        for natural in self.key.into_iter() {
-            node.append(self.accidental_glyph.path(
-                x as _,
-                (y + renderer.note_ry * (note_index(natural, Octave::FIVE) as f64)) as f32
-                    - self.accidental_glyph.bounding_box.height() / 2.,
-            ));
-        }
-    }
-}
 
 pub struct Renderer {
     pub document_padding: f64,
@@ -112,13 +66,9 @@ impl Default for Renderer {
 }
 
 impl Renderer {
-    pub fn svg<T: Node>(
-        &self,
-        node: &mut T,
-        chords: &[Chord],
-        key_signature: Option<&KeySignature>,
-    ) {
-        node.append(
+    pub fn render(&self, measure: &Measure) -> Document {
+        let mut document = svg::Document::new();
+        document.append(
             Rectangle::new()
                 .set("fill", "#fff")
                 .set("x", 0)
@@ -128,59 +78,9 @@ impl Renderer {
         );
 
         let x = self.stroke_width + self.document_padding;
-        let width: f64 = chords.iter().map(|chord| chord.width).sum();
+        measure.svg(x, 0., self, &mut document);
 
-        // TODO why multiply by 3?
-        let extra =
-            self.width - width - (self.document_padding + self.padding + self.stroke_width) * 3.;
-
-        let mut top = 0f64;
-        for chord in chords {
-            top = top.max(chord.top);
-        }
-        top += self.document_padding;
-
-        let mut chord_x = x + self.padding;
-
-        if let Some(key_signature) = &key_signature {
-            key_signature.svg(x, top, self, node);
-            chord_x += self.padding;
-        }
-
-        for chord in chords {
-            chord.svg(self, node, chord_x, top);
-
-            let duration_spacing = match chord.duration {
-                Duration::Quarter => 4.,
-                Duration::Half => 2.,
-            };
-            chord_x += extra / duration_spacing + chord.width;
-        }
-        let width = chord_x;
-
-        for line in 0..5 {
-            let y = top + (line * 2) as f64 * self.note_ry;
-            self.draw_line(
-                node,
-                x + self.stroke_width / 2.,
-                y,
-                x + width + self.stroke_width + self.padding,
-                y,
-            );
-        }
-
-        for line in 0..2 {
-            let line_x = x
-                + line as f64 * (chord_x + self.stroke_width + self.padding)
-                + self.stroke_width / 2.;
-            self.draw_line(
-                node,
-                line_x,
-                top - self.stroke_width / 2.,
-                line_x,
-                top + self.note_ry * 8. + self.stroke_width / 2.,
-            );
-        }
+        document
     }
 
     fn draw_line<T: Node>(&self, node: &mut T, x1: f64, y1: f64, x2: f64, y2: f64) {

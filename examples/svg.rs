@@ -1,14 +1,13 @@
 use staff::note::Accidental;
-use staff::render::{Chord, Duration, Note, Renderer};
+use staff::render::measure::Measure;
+use staff::render::{Chord, Duration, KeySignature, Note, Renderer};
 use staff::{midi::Octave, Natural};
 use staff::{Key, Pitch};
 
 fn main() {
-    let mut document = svg::Document::new();
+    let renderer = Renderer::default();
 
-    let mut renderer = Renderer::default();
-
-    let chords = [
+    let chords = vec![
         Chord::new(
             &[Note::new(Natural::C, Octave::FOUR, Some(Accidental::Sharp))],
             Duration::Quarter,
@@ -26,7 +25,10 @@ fn main() {
             &renderer,
         ),
     ];
-    renderer.svg(&mut document, &chords, None);
 
-    svg::save("image.svg", &document).unwrap();
+    let key_signature = KeySignature::new(Key::major(Pitch::G), &renderer);
+    let measure = Measure::new(chords, Some(key_signature));
+    let svg = renderer.render(&measure);
+
+    svg::save("image.svg", &svg).unwrap();
 }

@@ -66,7 +66,10 @@ pub fn parse<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::render::Renderer;
+    use crate::{
+        render::{measure::Measure, KeySignature, Renderer},
+        Key, Pitch,
+    };
 
     use super::parse;
 
@@ -74,11 +77,12 @@ mod tests {
     fn f() {
         let s = "c'4 e' g' c''";
 
-        let mut document = svg::Document::new();
-
         let renderer = Renderer::default();
         let chords = parse(&renderer, s);
-        renderer.svg(&mut document, &chords, None);
-        svg::save("ly.svg", &document).unwrap();
+        let key_signature = KeySignature::new(Key::major(Pitch::G), &renderer);
+        let measure = Measure::new(chords, Some(key_signature));
+        let svg = renderer.render(&measure);
+
+        svg::save("ly.svg", &svg).unwrap();
     }
 }
