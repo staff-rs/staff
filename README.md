@@ -4,12 +4,20 @@
 
 Music theory and score rendering library with midi, notes, chords, scales, and more.
 
-![staff](https://raw.githubusercontent.com/staff-rs/staff/main/image.svg)
+![staff](https://raw.githubusercontent.com/staff-rs/staff/main/example.svg)
 
 ## Installation
 ```
 cargo install staff --features=cli
 ```
+
+## Usage
+`example.ly`
+```
+c'4 eis'2 g'4
+f''2 ees'4 c''
+```
+`$ staff engrave example.ly > example.svg`
 
 ## Library
 ```rust
