@@ -14,8 +14,8 @@ cargo install staff --features=cli
 ## Usage
 `example.ly`
 ```
-c'4 eis'2 g'4
-f''2 ees'4 c''
+<c''4 g'> <eis'2 f' g'> g'4
+f''2 <c'4 eis'> c''
 ```
 `$ staff engrave example.ly > example.svg`
 
