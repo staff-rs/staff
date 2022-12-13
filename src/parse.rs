@@ -1,11 +1,94 @@
-use std::{iter::Peekable, str::Chars};
-
 use crate::{
     midi::Octave,
     note::Accidental,
     render::{Chord, Duration, Measure, Note, Renderer},
     Natural,
 };
+use std::{iter::Peekable, str::Chars};
+
+#[derive(Debug)]
+pub enum Group {
+    Chord,
+    Group,
+}
+
+#[derive(Debug)]
+pub enum Token<'a> {
+    Start(Group),
+    End(Group),
+    Command(&'a str),
+    Literal(&'a str),
+}
+
+pub struct Tokens<'a> {
+    input: &'a str,
+    pos: usize,
+}
+
+impl<'a> Tokens<'a> {
+    fn parse_literal(&mut self) -> Option<&'a str> {
+        let start = self.pos;
+        loop {
+            match self.input.chars().nth(self.pos) {
+                Some(' ') | Some('\n') => {
+                    self.pos += 1;
+                    break if self.pos - 1 > start {
+                        Some(&self.input[start..self.pos - 1])
+                    } else {
+                        None
+                    };
+                }
+                None => {
+                    break if self.pos > start {
+                        Some(&self.input[start..self.pos])
+                    } else {
+                        None
+                    }
+                }
+                Some(_) => self.pos += 1,
+            }
+        }
+    }
+}
+
+impl<'a> From<&'a str> for Tokens<'a> {
+    fn from(input: &'a str) -> Self {
+        Self { input, pos: 0 }
+    }
+}
+
+impl<'a> Iterator for Tokens<'a> {
+    type Item = Token<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            match self.input.chars().nth(self.pos) {
+                Some('\\') => {
+                    self.pos += 1;
+                    if let Some(literal) = self.parse_literal() {
+                        break Some(Token::Command(literal));
+                    } else {
+                        todo!()
+                    }
+                }
+                Some('{') => {
+                    self.pos += 1;
+                    break Some(Token::Start(Group::Group));
+                }
+                Some('}') => {
+                    self.pos += 1;
+                    break Some(Token::End(Group::Group));
+                }
+                Some(c) => {
+                    if let Some(literal) = self.parse_literal() {
+                        break Some(Token::Literal(literal));
+                    }
+                }
+                None => break None,
+            }
+        }
+    }
+}
 
 pub fn parse_measures<'a>(renderer: &'a Renderer, input: &str) -> Vec<Measure<'a>> {
     input
@@ -127,18 +210,13 @@ fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_measures;
-    use crate::render::Renderer;
+    use crate::parse::Tokens;
 
     #[test]
     fn f() {
-        let s = "c'4 eis'2 g'4\nf''2 ees'4 c''";
+        let s = include_str!("../test.ly");
 
-        let renderer = Renderer::default();
-        let measures = parse_measures(&renderer, s);
-
-        let svg = renderer.render(&measures);
-
-        svg::save("ly.svg", &svg).unwrap();
+        let tokens = Tokens::from(s);
+        dbg!(tokens.collect::<Vec<_>>());
     }
 }
