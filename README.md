@@ -11,7 +11,7 @@ Music theory and score rendering library with midi, notes, chords, scales, and m
 cargo install staff --features=cli
 ```
 
-## Usage
+## Library
 ```rust
 use staff::{midi, Chord, Pitch};
 

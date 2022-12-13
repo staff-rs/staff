@@ -3,11 +3,15 @@ use staff::{
     fretboard::{Fretboard, STANDARD},
     midi::{MidiNote, Octave},
     note::Accidental,
+    parse::parse_measures,
+    render::Renderer,
     Chord, Interval, Key, Note, Pitch, Scale,
 };
 use std::{
     fmt::Display,
-    io::{self, Write},
+    fs::File,
+    io::{self, Read, Write},
+    path::PathBuf,
 };
 
 #[derive(Parser)]
@@ -24,6 +28,9 @@ enum Instrument {
 
 #[derive(Subcommand)]
 enum Command {
+    Engrave {
+        path: PathBuf,
+    },
     /// Display a chord's notes
     Chord {
         /// Name (symbol) of the chord
@@ -87,6 +94,20 @@ where
 fn main() -> Result {
     let cli = App::parse();
     match &cli.command {
+        Command::Engrave { path } => {
+            let mut input = String::new();
+            let mut file = File::open(path).unwrap();
+            file.read_to_string(&mut input).unwrap();
+
+            let renderer = Renderer::default();
+            let measures = parse_measures(&renderer, &input);
+
+            let svg = renderer.render(&measures);
+            svg::write(io::stdout(), &svg).unwrap();
+            println!();
+
+            Ok(())
+        }
         Command::Chord {
             names,
             guitar,

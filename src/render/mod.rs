@@ -59,7 +59,7 @@ impl Default for Renderer {
             padding: 10.,
             stroke_width: 2.,
             accidental_size: 80.,
-            width: 400.,
+            width: 350.,
             font,
         }
     }
@@ -67,7 +67,10 @@ impl Default for Renderer {
 
 impl Renderer {
     pub fn render(&self, measures: &[Measure]) -> Document {
-        let mut document = svg::Document::new();
+        let mut document = svg::Document::new()
+            .set("width", self.width)
+            .set("height", 100);
+
         document.append(
             Rectangle::new()
                 .set("fill", "#fff")
@@ -83,10 +86,9 @@ impl Renderer {
         let extra = self.width
             - measures
                 .iter()
-                .map(|measure| {
-                    measure.width + (self.document_padding + self.padding + self.stroke_width) * 3.
-                })
-                .sum::<f64>();
+                .map(|measure| measure.width + (self.padding + self.stroke_width) * 6.)
+                .sum::<f64>()
+            - self.document_padding * 2.;
 
         for measure in measures {
             measure.svg(x, 0., extra, self, &mut document);
