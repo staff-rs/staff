@@ -1,3 +1,5 @@
+use std::{iter::Peekable, str::Chars};
+
 use crate::{
     midi::Octave,
     note::Accidental,
@@ -12,6 +14,65 @@ pub fn parse_measures<'a>(renderer: &'a Renderer, input: &str) -> Vec<Measure<'a
         .collect()
 }
 
+fn parse_notes(c: char, chars: &mut Peekable<Chars>, duration: &mut Duration) -> Note {
+    let natural = Natural::try_from(c).unwrap();
+
+    let accidental = match chars.peek() {
+        Some('i') => {
+            chars.next();
+            if chars.next() != Some('s') {
+                todo!()
+            }
+            Some(Accidental::Sharp)
+        }
+        Some('e') => {
+            chars.next();
+            if chars.next() != Some('s') {
+                todo!()
+            }
+            Some(Accidental::Flat)
+        }
+        _ => None,
+    };
+
+    let mut i = 0;
+    match chars.peek() {
+        Some('\'') => {
+            chars.next();
+            i = 1;
+
+            while chars.peek().copied() == Some('\'') {
+                chars.next();
+                i += 1;
+            }
+        }
+        Some(',') => {
+            chars.next();
+            i = -1;
+
+            while chars.peek().copied() == Some(',') {
+                chars.next();
+                i -= 1;
+            }
+        }
+        _ => {}
+    }
+
+    if let Some(c) = chars.peek() {
+        if let Some(n) = c.to_digit(10) {
+            chars.next();
+            *duration = match n {
+                4 => Duration::Quarter,
+                2 => Duration::Half,
+                _ => todo!(),
+            };
+        }
+    }
+
+    // TODO check octave
+    Note::new(natural, Octave::new_unchecked(i + 3), accidental)
+}
+
 pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
     let mut chars = input.chars().peekable();
     let mut duration = Duration::Quarter;
@@ -21,6 +82,25 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
     while let Some(c) = chars.next() {
         match c {
             '\\' => todo!(),
+            '<' => {
+                let mut notes = Vec::new();
+                loop {
+                    match chars.next() {
+                        Some(' ') => {}
+                        Some('>') => {
+                            chars.next();
+                            break;
+                        }
+                        Some(c) => {
+                            let note = parse_notes(c, &mut chars, &mut duration);
+                            notes.push(note);
+                        }
+                        None => todo!(),
+                    }
+                }
+
+                chords.push(Chord::new(&notes, duration, renderer));
+            }
             c => {
                 let natural = Natural::try_from(c).unwrap();
 
