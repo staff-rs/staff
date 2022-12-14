@@ -99,7 +99,7 @@ impl<'a> Iterator for Tokens<'a> {
                     self.pos += 1;
                     break Some(Token::LineBreak);
                 }
-                Some(c) => {
+                Some(_c) => {
                     if let Some(literal) = self.parse_literal() {
                         break Some(Token::Literal(literal));
                     }

@@ -171,8 +171,8 @@ impl<'a> Chord<'a> {
             }
         }
 
-        if high_left > 10 {
-            let mut i = 10;
+        if high_left > 8 {
+            let mut i = 8;
             while i <= high_left {
                 if let Some(line) = lines.iter_mut().find(|line| (**line).note == i) {
                     line.is_double = true;
