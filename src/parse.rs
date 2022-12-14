@@ -113,7 +113,7 @@ impl<'a> Iterator for Tokens<'a> {
 pub fn parse_measures<'a>(renderer: &'a Renderer, input: &str) -> Vec<Measure<'a>> {
     input
         .lines()
-        .map(|line| Measure::new(parse_chords(renderer, line), None))
+        .map(|line| Measure::new(parse_chords(renderer, line), None, renderer))
         .collect()
 }
 

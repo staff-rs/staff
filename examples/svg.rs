@@ -27,8 +27,8 @@ fn main() {
     ];
 
     let key_signature = KeySignature::new(Key::major(Pitch::G), &renderer);
-    let measure = Measure::new(chords, Some(key_signature));
+    let measure = Measure::new(chords, Some(key_signature), &renderer);
     let svg = renderer.render(&[measure]);
 
-    svg::save("image.svg", &svg).unwrap();
+    svg::save("example.svg", &svg).unwrap();
 }

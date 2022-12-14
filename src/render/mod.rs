@@ -82,17 +82,14 @@ impl Renderer {
 
         let mut x = self.stroke_width + self.document_padding;
 
-        // TODO why multiply by 3?
-        let extra = self.width
-            - measures
-                .iter()
-                .map(|measure| measure.width + (self.padding + self.stroke_width) * 6.)
-                .sum::<f64>()
-            - self.document_padding * 2.;
+        let measures_width = measures.iter().map(|measure| measure.width).sum::<f64>();
+        let remaining = self.width - measures_width - self.document_padding * 2.;
 
         for measure in measures {
-            measure.svg(x, 0., extra, self, &mut document);
-            x += measure.width + extra + self.document_padding * 2. + self.stroke_width;
+            let measure_exta =
+                remaining * (measure.width / measures_width) - self.stroke_width * 2.;
+            measure.svg(x, 0., measure_exta, self, &mut document);
+            x += measure.width + measure_exta + self.stroke_width;
         }
 
         document

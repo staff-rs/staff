@@ -59,12 +59,17 @@ pub struct Measure<'r> {
 }
 
 impl<'r> Measure<'r> {
-    pub fn new(chords: Vec<Chord<'r>>, key_signature: Option<KeySignature<'r>>) -> Self {
+    pub fn new(
+        chords: Vec<Chord<'r>>,
+        key_signature: Option<KeySignature<'r>>,
+        renderer: &'r Renderer,
+    ) -> Self {
         let width: f64 = key_signature
             .as_ref()
             .map(|key_signature| key_signature.width)
             .unwrap_or(0.)
-            + chords.iter().map(|chord| chord.width).sum::<f64>();
+            + chords.iter().map(|chord| chord.width).sum::<f64>()
+            + renderer.padding * 2.;
 
         Self {
             chords,

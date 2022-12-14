@@ -99,7 +99,7 @@ impl<'a> Chord<'a> {
             0.
         };
 
-        let staggered_spacing = 2.;
+        let staggered_spacing = renderer.stroke_width / 2.;
         let is_upside_down = low.min(high) < note_index(Natural::B, Octave::FIVE);
 
         let mut lines = Vec::new();
@@ -111,12 +111,15 @@ impl<'a> Chord<'a> {
         let mut high_left = 0;
 
         let mut is_stagger = false;
+        let mut accidental_width = 0f64;
         let notes = notes
             .iter()
             .copied()
             .map(|note| {
                 if let Some(accidental) = note.accidental {
                     let chord_accidental = ChordAccidental::new(accidental, note.index, renderer);
+                    accidental_width =
+                        accidental_width.max(chord_accidental.glyph.bounding_box.width() as _);
                     accidentals.push(chord_accidental);
                 }
 
@@ -134,7 +137,11 @@ impl<'a> Chord<'a> {
                 let x = if is_left {
                     0.
                 } else {
-                    renderer.note_rx + staggered_spacing
+                    if !is_stagger {
+                        renderer.note_rx + renderer.stroke_width
+                    } else {
+                        renderer.note_rx + staggered_spacing
+                    }
                 };
                 if is_left {
                     high_left = high_left.max(note.index);
@@ -214,10 +221,12 @@ impl<'a> Chord<'a> {
         }
 
         let mut width = if is_stagger {
-            (renderer.note_rx + renderer.stroke_width) * 2. + staggered_spacing
+            (renderer.note_rx * 2. + renderer.stroke_width) * 2. + staggered_spacing
         } else {
             renderer.note_rx * 2.
         };
+
+        width += accidental_width;
 
         if !lines.is_empty() {
             width += renderer.note_rx;
