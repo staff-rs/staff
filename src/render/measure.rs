@@ -102,10 +102,14 @@ impl<'r> Measure<'r> {
         for chord in &self.chords {
             chord.svg(renderer, node, chord_x, top);
 
-            let duration_spacing = match chord.duration {
+            let mut duration_spacing = match chord.duration {
                 Duration::Quarter => 4.,
                 Duration::Half => 2.,
+                Duration::Whole => 1.,
             };
+            if chord.is_dotted {
+                duration_spacing /= 2.;
+            }
             chord_x += extra_width / duration_spacing + chord.width;
         }
         let width = chord_x - x;

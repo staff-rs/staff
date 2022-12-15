@@ -132,6 +132,7 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
         match c {
             '\\' => todo!(),
             '<' => {
+                let mut is_dotted = false;
                 let mut notes = Vec::new();
                 loop {
                     match chars.next() {
@@ -141,28 +142,30 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
                             break;
                         }
                         Some(c) => {
-                            let note = parse_note(c, &mut chars, &mut duration);
+                            let note = parse_note(c, &mut chars, &mut duration, &mut is_dotted);
                             notes.push(note);
                         }
                         None => todo!(),
                     }
                 }
 
-                chords.push(Chord::new(&notes, duration, renderer));
+                chords.push(Chord::new(&notes, duration, is_dotted, renderer));
             }
             'r' => {
+                let mut is_dotted = false;
                 parse_duration(&mut chars, &mut duration);
                 chars.next();
 
-                chords.push(Chord::new(&[], duration, renderer));
+                chords.push(Chord::new(&[], duration, is_dotted, renderer));
             }
             c => {
-                let note = parse_note(c, &mut chars, &mut duration);
+                let mut is_dotted = false;
+                let note = parse_note(c, &mut chars, &mut duration, &mut is_dotted);
                 match chars.next() {
                     Some(' ') | None => {}
-                    Some(_) => todo!(),
+                    Some(c) => todo!("{:?}", c),
                 }
-                chords.push(Chord::new(&[note], duration, &renderer));
+                chords.push(Chord::new(&[note], duration, is_dotted, &renderer));
             }
         }
     }
@@ -170,7 +173,12 @@ pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
     chords
 }
 
-fn parse_note(c: char, chars: &mut Peekable<Chars>, duration: &mut Duration) -> Note {
+fn parse_note(
+    c: char,
+    chars: &mut Peekable<Chars>,
+    duration: &mut Duration,
+    is_dotted: &mut bool,
+) -> Note {
     let natural = Natural::try_from(c).unwrap();
 
     let accidental = match chars.peek() {
@@ -216,6 +224,11 @@ fn parse_note(c: char, chars: &mut Peekable<Chars>, duration: &mut Duration) -> 
 
     parse_duration(chars, duration);
 
+    if chars.peek() == Some(&'.') {
+        chars.next();
+        *is_dotted = true;
+    }
+
     // TODO check octave
     Note::new(natural, Octave::new_unchecked(i + 3), accidental)
 }
@@ -227,6 +240,7 @@ fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
             *duration = match n {
                 4 => Duration::Quarter,
                 2 => Duration::Half,
+                1 => Duration::Whole,
                 _ => todo!(),
             };
         }

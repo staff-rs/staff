@@ -4,10 +4,11 @@ use text_svg::Glpyh;
 
 use super::{note::note_index, Note, Renderer};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
     Quarter,
     Half,
+    Whole,
 }
 
 pub struct RenderNote {
@@ -74,10 +75,16 @@ pub struct Chord<'a> {
     pub lines: Vec<BarLine>,
     pub is_upside_down: bool,
     pub accidentals: Vec<ChordAccidental<'a>>,
+    pub is_dotted: bool,
 }
 
 impl<'a> Chord<'a> {
-    pub fn new(notes: &[Note], duration: Duration, renderer: &'a Renderer) -> Self {
+    pub fn new(
+        notes: &[Note],
+        duration: Duration,
+        is_dotted: bool,
+        renderer: &'a Renderer,
+    ) -> Self {
         if notes.is_empty() {
             return Self {
                 duration,
@@ -88,6 +95,7 @@ impl<'a> Chord<'a> {
                 stem: None,
                 lines: Vec::new(),
                 accidentals: Vec::new(),
+                is_dotted: false,
             };
         }
 
@@ -232,16 +240,26 @@ impl<'a> Chord<'a> {
             width += renderer.note_rx;
         }
 
-        let stem = ChordStem { low, high };
+        if is_dotted {
+            width += renderer.note_rx * 2.;
+        }
+
+        let stem = if duration != Duration::Whole {
+            Some(ChordStem { low, high })
+        } else {
+            None
+        };
+
         Self {
             duration,
             is_upside_down,
             top,
             width,
             notes,
-            stem: Some(stem),
+            stem: stem,
             lines,
             accidentals,
+            is_dotted,
         }
     }
 
@@ -255,6 +273,7 @@ impl<'a> Chord<'a> {
                     ));
                 }
                 Duration::Half => todo!(),
+                Duration::Whole => todo!(),
             }
 
             return;
@@ -280,9 +299,19 @@ impl<'a> Chord<'a> {
         let c = match self.duration {
             Duration::Quarter => '𝅘',
             Duration::Half => '𝅗',
+            Duration::Whole => '𝅝',
         };
         let glyph = Glpyh::new(&renderer.font, c, 75.);
+
+        let dot_glyph = Glpyh::new(&renderer.font, '.', 75.);
         for note in &self.notes {
+            if self.is_dotted {
+                node.append(dot_glyph.path(
+                    (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
+                    (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                ));
+            }
+
             node.append(glyph.path(
                 (note_x + note.x) as _,
                 (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
