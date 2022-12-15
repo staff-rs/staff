@@ -3,7 +3,7 @@ use staff::{
     fretboard::{Fretboard, STANDARD},
     midi::{MidiNote, Octave},
     note::Accidental,
-    parse::parse_measures,
+    parse::parse,
     render::Renderer,
     Chord, Interval, Key, Note, Pitch, Scale,
 };
@@ -100,7 +100,7 @@ fn main() -> Result {
             file.read_to_string(&mut input).unwrap();
 
             let renderer = Renderer::default();
-            let measures = parse_measures(&renderer, &input);
+            let measures = parse(&renderer, &input);
 
             let svg = renderer.render(&measures);
             svg::write(io::stdout(), &svg).unwrap();

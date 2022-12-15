@@ -66,10 +66,10 @@ impl Default for Renderer {
 }
 
 impl Renderer {
-    pub fn render(&self, measures: &[Measure]) -> Document {
+    pub fn render(&self, staff: &Staff) -> Document {
         let mut document = svg::Document::new()
             .set("width", self.width)
-            .set("height", 100);
+            .set("height", 500);
 
         document.append(
             Rectangle::new()
@@ -77,19 +77,29 @@ impl Renderer {
                 .set("x", 0)
                 .set("y", 0)
                 .set("width", self.width)
-                .set("height", 100),
+                .set("height", 500),
         );
 
-        let mut x = self.stroke_width + self.document_padding;
+        let mut y = 0.;
+        for row in &staff.rows {
+            let mut x = self.stroke_width + self.document_padding;
 
-        let measures_width = measures.iter().map(|measure| measure.width).sum::<f64>();
-        let remaining = self.width - measures_width - self.document_padding * 2.;
+            let measures_width = row
+                .measures
+                .iter()
+                .map(|measure| measure.width)
+                .sum::<f64>();
+            let remaining = self.width - measures_width - self.document_padding * 2.;
 
-        for measure in measures {
-            let measure_exta =
-                remaining * (measure.width / measures_width) - self.stroke_width * 2.;
-            measure.svg(x, 0., measure_exta, self, &mut document);
-            x += measure.width + measure_exta + self.stroke_width;
+            for measure in &row.measures {
+                let measure_exta =
+                    remaining * (measure.width / measures_width) - self.stroke_width * 2.;
+                measure.svg(x, y, measure_exta, self, &mut document);
+
+                x += measure.width + measure_exta + self.stroke_width;
+            }
+
+            y += 100.;
         }
 
         document
@@ -105,5 +115,34 @@ impl Renderer {
                 .set("x2", x2)
                 .set("y2", y2),
         )
+    }
+}
+
+pub struct Row<'r> {
+    measures: Vec<Measure<'r>>,
+    width: f64,
+}
+
+#[derive(Default)]
+pub struct Staff<'r> {
+    rows: Vec<Row<'r>>,
+}
+
+impl<'r> Staff<'r> {
+    pub fn push(&mut self, renderer: &Renderer, measure: Measure<'r>) {
+        if let Some(row) = self.rows.last_mut() {
+            let width = row.width + measure.width;
+            if width < renderer.width {
+                row.measures.push(measure);
+                row.width = width;
+                return;
+            }
+        }
+
+        let row = Row {
+            width: measure.width,
+            measures: vec![measure],
+        };
+        self.rows.push(row);
     }
 }

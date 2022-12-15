@@ -1,7 +1,7 @@
 use crate::{
     midi::Octave,
     note::Accidental,
-    render::{Chord, Duration, Measure, Note, Renderer},
+    render::{Chord, Duration, Measure, Note, Renderer, Staff},
     Natural,
 };
 use std::{iter::Peekable, str::Chars};
@@ -110,11 +110,16 @@ impl<'a> Iterator for Tokens<'a> {
     }
 }
 
-pub fn parse_measures<'a>(renderer: &'a Renderer, input: &str) -> Vec<Measure<'a>> {
-    input
+pub fn parse<'a>(renderer: &'a Renderer, input: &str) -> Staff<'a> {
+    let mut staff = Staff::default();
+    let measures = input
         .lines()
-        .map(|line| Measure::new(parse_chords(renderer, line), None, renderer))
-        .collect()
+        .map(|line| Measure::new(parse_chords(renderer, line), None, renderer));
+
+    for measure in measures {
+        staff.push(renderer, measure);
+    }
+    staff
 }
 
 pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
@@ -230,13 +235,16 @@ fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
 
 #[cfg(test)]
 mod tests {
-    use crate::parse::Tokens;
+    use super::parse;
+    use crate::render::Renderer;
 
     #[test]
     fn f() {
-        let s = include_str!("../test.ly");
+        let input = include_str!("../example.ly");
+        let renderer = Renderer::default();
+        let staff = parse(&renderer, input);
 
-        let tokens = Tokens::from(s);
-        dbg!(tokens.collect::<Vec<_>>());
+        let document = renderer.render(&staff);
+        svg::save("example.svg", &document).unwrap();
     }
 }
