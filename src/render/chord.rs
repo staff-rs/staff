@@ -249,10 +249,10 @@ impl<'a> Chord<'a> {
         if self.notes.is_empty() {
             match self.duration {
                 Duration::Quarter => {
-                    node.append(
-                        Glpyh::new(&renderer.font, '𝄽', 75.)
-                            .path((x + renderer.note_rx) as _, (renderer.note_ry * 3.) as _),
-                    );
+                    node.append(Glpyh::new(&renderer.font, '𝄽', 75.).path(
+                        (x + renderer.note_rx) as _,
+                        (top + renderer.note_ry * 3.) as _,
+                    ));
                 }
                 Duration::Half => todo!(),
             }

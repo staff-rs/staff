@@ -1,6 +1,6 @@
 use staff::note::Accidental;
 use staff::render::measure::Measure;
-use staff::render::{Chord, Duration, KeySignature, Note, Renderer};
+use staff::render::{Chord, Duration, KeySignature, Note, Renderer, Staff};
 use staff::{midi::Octave, Natural};
 use staff::{Key, Pitch};
 
@@ -28,7 +28,9 @@ fn main() {
 
     let key_signature = KeySignature::new(Key::major(Pitch::G), &renderer);
     let measure = Measure::new(chords, Some(key_signature), &renderer);
-    let svg = renderer.render(&[measure]);
+    let mut staff = Staff::default();
+    staff.push(&renderer, measure);
 
+    let svg = renderer.render(&staff);
     svg::save("example.svg", &svg).unwrap();
 }
