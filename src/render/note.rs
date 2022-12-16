@@ -1,7 +1,7 @@
 use crate::{midi::Octave, note::Accidental, Natural};
 
 pub fn note_index(natural: Natural, octave: Octave) -> i64 {
-    let mut octave_index = (Octave::FIVE.into_i8() as i64 - octave.into_i8() as i64);
+    let mut octave_index = Octave::FIVE.into_i8() as i64 - octave.into_i8() as i64;
     if natural < Natural::C {
         octave_index -= 1;
     }

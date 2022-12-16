@@ -1,8 +1,8 @@
 use crate::{
     midi::Octave,
     note::Accidental,
-    render::{Chord, Duration, Measure, Note, Renderer, Staff},
-    Natural,
+    render::{Chord, Duration, KeySignature, Measure, Note, Renderer, Staff},
+    Key, Natural, Pitch,
 };
 use std::{iter::Peekable, str::Chars};
 
@@ -19,8 +19,16 @@ pub enum Command {
 
 #[derive(Debug)]
 pub enum MeasureItem {
-    Note(Note),
-    Chord { notes: Vec<Note> },
+    Note {
+        note: Note,
+        duration: Duration,
+        is_dotted: bool,
+    },
+    Chord {
+        notes: Vec<Note>,
+        duration: Duration,
+        is_dotted: bool,
+    },
 }
 
 #[derive(Debug)]
@@ -29,13 +37,52 @@ pub enum Item {
     Measure { items: Vec<MeasureItem> },
 }
 
-pub struct Score<'a> {
+pub struct Parser<'a> {
     tokens: Tokens<'a>,
 }
 
-impl<'a> Score<'a> {}
+impl<'a> Parser<'a> {
+    pub fn staff<'r>(&mut self, renderer: &'r Renderer) -> Staff<'r> {
+        let mut staff = Staff::default();
+        let mut key_signature = None;
 
-impl<'a> Iterator for Score<'a> {
+        for item in self {
+            match item {
+                Item::Command(cmd) => match cmd {
+                    Command::Clef { kind } => match kind {
+                        ClefKind::Treble => {
+                            key_signature = Some(KeySignature::new(Key::major(Pitch::C), renderer));
+                        }
+                        _ => todo!(),
+                    },
+                },
+                Item::Measure { items } => {
+                    let chords = items
+                        .iter()
+                        .map(|item| match item {
+                            MeasureItem::Chord {
+                                notes,
+                                duration,
+                                is_dotted,
+                            } => Chord::new(notes, *duration, *is_dotted, renderer),
+                            MeasureItem::Note {
+                                note,
+                                duration,
+                                is_dotted,
+                            } => Chord::new(&[*note], *duration, *is_dotted, renderer),
+                        })
+                        .collect();
+                    let measure = Measure::new(chords, key_signature.take(), renderer);
+                    staff.push(renderer, measure);
+                }
+            }
+        }
+
+        staff
+    }
+}
+
+impl<'a> Iterator for Parser<'a> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -60,10 +107,10 @@ impl<'a> Iterator for Score<'a> {
                 },
                 Some(Token::Start(Group::Chord)) => {
                     let mut notes = Vec::new();
+                    let mut is_dotted = false;
                     loop {
                         match self.tokens.next() {
                             Some(Token::Literal(literal)) => {
-                                let mut is_dotted = false;
                                 let mut chars = literal.chars().peekable();
                                 let c = chars.next().unwrap();
                                 let note = parse_note(
@@ -80,7 +127,11 @@ impl<'a> Iterator for Score<'a> {
                         }
                     }
 
-                    let chord = MeasureItem::Chord { notes };
+                    let chord = MeasureItem::Chord {
+                        notes,
+                        duration: current_duration,
+                        is_dotted,
+                    };
                     if let Some(measure) = &mut current_measure {
                         measure.push(chord);
                     } else {
@@ -93,7 +144,11 @@ impl<'a> Iterator for Score<'a> {
                     let c = chars.next().unwrap();
                     let note = parse_note(c, &mut chars, &mut current_duration, &mut is_dotted);
 
-                    let item = MeasureItem::Note(note);
+                    let item = MeasureItem::Note {
+                        note,
+                        duration: current_duration,
+                        is_dotted,
+                    };
                     if let Some(measure) = &mut current_measure {
                         measure.push(item);
                     } else {
@@ -102,11 +157,17 @@ impl<'a> Iterator for Score<'a> {
                 }
                 Some(Token::LineBreak) => {
                     if let Some(measure) = current_measure.take() {
-                        break Some(Item::Measure { items: measure })
+                        break Some(Item::Measure { items: measure });
                     }
                 }
                 Some(_) => {}
-                None => break None,
+                None => {
+                    break if let Some(measure) = current_measure.take() {
+                        Some(Item::Measure { items: measure })
+                    } else {
+                        None
+                    }
+                }
             }
         }
     }
@@ -222,69 +283,6 @@ impl<'a> Iterator for Tokens<'a> {
     }
 }
 
-pub fn parse<'a>(renderer: &'a Renderer, input: &str) -> Staff<'a> {
-    let mut staff = Staff::default();
-    let measures = input
-        .lines()
-        .map(|line| Measure::new(parse_chords(renderer, line), None, renderer));
-
-    for measure in measures {
-        staff.push(renderer, measure);
-    }
-    staff
-}
-
-pub fn parse_chords<'a>(renderer: &'a Renderer, input: &str) -> Vec<Chord<'a>> {
-    let mut chars = input.chars().peekable();
-    let mut duration = Duration::Quarter;
-
-    let mut chords = Vec::new();
-
-    while let Some(c) = chars.next() {
-        match c {
-            '\\' => todo!(),
-            '<' => {
-                let mut is_dotted = false;
-                let mut notes = Vec::new();
-                loop {
-                    match chars.next() {
-                        Some(' ') => {}
-                        Some('>') => {
-                            chars.next();
-                            break;
-                        }
-                        Some(c) => {
-                            let note = parse_note(c, &mut chars, &mut duration, &mut is_dotted);
-                            notes.push(note);
-                        }
-                        None => todo!(),
-                    }
-                }
-
-                chords.push(Chord::new(&notes, duration, is_dotted, renderer));
-            }
-            'r' => {
-                let mut is_dotted = false;
-                parse_duration(&mut chars, &mut duration);
-                chars.next();
-
-                chords.push(Chord::new(&[], duration, is_dotted, renderer));
-            }
-            c => {
-                let mut is_dotted = false;
-                let note = parse_note(c, &mut chars, &mut duration, &mut is_dotted);
-                match chars.next() {
-                    Some(' ') | None => {}
-                    Some(c) => todo!("{:?}", c),
-                }
-                chords.push(Chord::new(&[note], duration, is_dotted, &renderer));
-            }
-        }
-    }
-
-    chords
-}
-
 fn parse_note(
     c: char,
     chars: &mut Peekable<Chars>,
@@ -361,15 +359,19 @@ fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse, Score};
+    use super::Parser;
     use crate::{parse::Tokens, render::Renderer};
 
     #[test]
     fn f() {
         let input = include_str!("../test.ly");
-        let mut tokens = Tokens::from(input);
-        let score = Score { tokens };
-        let items: Vec<_> = score.collect();
-        dbg!(items);
+        let tokens = Tokens::from(input);
+        let mut score = Parser { tokens };
+
+        let renderer = Renderer::default();
+        let staff = score.staff(&renderer);
+
+        let svg = renderer.render(&staff);
+        svg::save("example.svg", &svg).unwrap();
     }
 }

@@ -3,7 +3,7 @@ use crate::{midi::Octave, note::Accidental, Natural};
 use svg::Node;
 use text_svg::Glpyh;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Duration {
     Quarter,
     Half,
