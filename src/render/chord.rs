@@ -1,8 +1,7 @@
+use super::{note::note_index, Note, Renderer};
 use crate::{midi::Octave, note::Accidental, Natural};
 use svg::Node;
 use text_svg::Glpyh;
-
-use super::{note::note_index, Note, Renderer};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Duration {
@@ -62,7 +61,7 @@ impl<'a> ChordAccidental<'a> {
         };
         node.append(self.glyph.path((x + self.x) as _, y));
 
-        self.glyph.bounding_box.width()
+        dbg!(self.glyph.bounding_box.width())
     }
 }
 

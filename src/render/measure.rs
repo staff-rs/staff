@@ -69,7 +69,8 @@ impl<'r> Measure<'r> {
             .map(|key_signature| key_signature.width)
             .unwrap_or(0.)
             + chords.iter().map(|chord| chord.width).sum::<f64>()
-            + renderer.padding * 2.;
+            + renderer.padding * 2.
+            + renderer.stroke_width * 2.;
 
         Self {
             chords,

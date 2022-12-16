@@ -90,13 +90,11 @@ impl Renderer {
                 .map(|measure| measure.width)
                 .sum::<f64>();
             let remaining = self.width - measures_width - self.document_padding * 2.;
+            let measure_exta = remaining / row.measures.len() as f64;
 
             for measure in &row.measures {
-                let measure_exta =
-                    remaining * (measure.width / measures_width) - self.stroke_width * 2.;
                 measure.svg(x, y, measure_exta, self, &mut document);
-
-                x += measure.width + measure_exta + self.stroke_width;
+                x += measure.width + measure_exta;
             }
 
             y += 100.;
