@@ -7,6 +7,93 @@ use crate::{
 use std::{iter::Peekable, str::Chars};
 
 #[derive(Debug)]
+pub enum ClefKind {
+    Treble,
+    Bass,
+}
+
+#[derive(Debug)]
+pub enum Command {
+    Clef { kind: ClefKind },
+}
+
+#[derive(Debug)]
+pub enum Item {
+    Command(Command),
+    Note(Note),
+    Chord { notes: Vec<Note> },
+}
+
+pub struct Score<'a> {
+    tokens: Tokens<'a>,
+}
+
+impl<'a> Iterator for Score<'a> {
+    type Item = Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut current_duration = Duration::Whole;
+        loop {
+            match self.tokens.next() {
+                Some(Token::Command(command)) => match command {
+                    "clef" => {
+                        if let Some(Token::Literal(literal)) = self.tokens.next() {
+                            let kind = match literal {
+                                "treble" => ClefKind::Treble,
+                                "bass" => ClefKind::Bass,
+                                s => todo!("{:?}", s),
+                            };
+                            break Some(Item::Command(Command::Clef { kind }));
+                        } else {
+                            todo!()
+                        }
+                    }
+                    _ => todo!(),
+                },
+                Some(Token::Start(Group::Chord)) => {
+                    let mut notes = Vec::new();
+                    loop {
+                        match self.tokens.next() {
+                            Some(Token::Literal(literal)) => {
+                                let mut is_dotted = false;
+                                let mut chars = literal.chars().peekable();
+                                let c = chars.next().unwrap();
+                                let note = parse_note(
+                                    c,
+                                    &mut chars,
+                                    &mut current_duration,
+                                    &mut is_dotted,
+                                );
+                                notes.push(note);
+                                break;
+                            }
+                            Some(Token::End(Group::Chord)) => break,
+                            _ => todo!(),
+                        }
+                    }
+                    break Some(Item::Chord { notes });
+                }
+                Some(Token::Literal(literal)) => {
+                    let mut is_dotted = false;
+                    let mut chars = literal.chars().peekable();
+                    let c = chars.next().unwrap();
+                    let note = parse_note(c, &mut chars, &mut current_duration, &mut is_dotted);
+                    break Some(Item::Note(note));
+                }
+                Some(_) => {}
+                None => break None,
+            }
+        }
+    }
+}
+
+pub enum Error<'a> {
+    UnknownArgument(&'a str),
+    UnknownCommand(&'a str),
+    UnexpectedEOF,
+}
+
+#[derive(Debug)]
 pub enum Group {
     Chord,
     Block,
@@ -40,8 +127,8 @@ impl<'a> Tokens<'a> {
                     };
                 }
                 Some('>') | Some('\n') => {
-                    break if self.pos - 1 > start {
-                        Some(&self.input[start..self.pos - 1])
+                    break if self.pos > start {
+                        Some(&self.input[start..self.pos])
                     } else {
                         None
                     }
@@ -249,16 +336,15 @@ fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
 
 #[cfg(test)]
 mod tests {
-    use super::parse;
-    use crate::render::Renderer;
+    use super::{parse, Score};
+    use crate::{parse::Tokens, render::Renderer};
 
     #[test]
     fn f() {
-        let input = include_str!("../example.ly");
-        let renderer = Renderer::default();
-        let staff = parse(&renderer, input);
-
-        let document = renderer.render(&staff);
-        svg::save("example.svg", &document).unwrap();
+        let input = include_str!("../test.ly");
+        let mut tokens = Tokens::from(input);
+        let score = Score { tokens };
+        let items: Vec<_> = score.collect();
+        dbg!(items);
     }
 }
