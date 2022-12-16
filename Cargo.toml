@@ -8,10 +8,10 @@ repository = "https://github.com/staff-rs/staff"
 homepage = "https://staff-rs.github.io"
 
 [features]
-cli = ["anyhow", "clap"]
-render = ["font-kit", "rusttype", "svg", "text-svg"]
+cli = ["anyhow", "clap", "render"]
+render = ["dep:font-kit", "dep:rusttype", "dep:svg", "dep:text-svg"]
 serde = ["dep:serde"]
-default = ["serde", "render"]
+default = ["cli"]
 
 [lib]
 name = "staff"

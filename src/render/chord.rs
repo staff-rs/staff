@@ -61,7 +61,7 @@ impl<'a> ChordAccidental<'a> {
         };
         node.append(self.glyph.path((x + self.x) as _, y));
 
-        dbg!(self.glyph.bounding_box.width())
+        self.glyph.bounding_box.width()
     }
 }
 

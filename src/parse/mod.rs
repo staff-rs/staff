@@ -176,10 +176,11 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-pub enum Error<'a> {
-    UnknownArgument(&'a str),
-    UnknownCommand(&'a str),
-    UnexpectedEOF,
+impl<'a> From<&'a str> for Parser<'a> {
+    fn from(input: &'a str) -> Self {
+        let tokens = Tokens::from(input);
+        Self { tokens }
+    }
 }
 
 fn parse_note(
