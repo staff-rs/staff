@@ -18,21 +18,29 @@ pub enum Command {
 }
 
 #[derive(Debug)]
-pub enum Item {
-    Command(Command),
+pub enum MeasureItem {
     Note(Note),
     Chord { notes: Vec<Note> },
+}
+
+#[derive(Debug)]
+pub enum Item {
+    Command(Command),
+    Measure { items: Vec<MeasureItem> },
 }
 
 pub struct Score<'a> {
     tokens: Tokens<'a>,
 }
 
+impl<'a> Score<'a> {}
+
 impl<'a> Iterator for Score<'a> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut current_duration = Duration::Whole;
+        let mut current_measure: Option<Vec<MeasureItem>> = None;
         loop {
             match self.tokens.next() {
                 Some(Token::Command(command)) => match command {
@@ -71,14 +79,31 @@ impl<'a> Iterator for Score<'a> {
                             _ => todo!(),
                         }
                     }
-                    break Some(Item::Chord { notes });
+
+                    let chord = MeasureItem::Chord { notes };
+                    if let Some(measure) = &mut current_measure {
+                        measure.push(chord);
+                    } else {
+                        current_measure = Some(vec![chord]);
+                    }
                 }
                 Some(Token::Literal(literal)) => {
                     let mut is_dotted = false;
                     let mut chars = literal.chars().peekable();
                     let c = chars.next().unwrap();
                     let note = parse_note(c, &mut chars, &mut current_duration, &mut is_dotted);
-                    break Some(Item::Note(note));
+
+                    let item = MeasureItem::Note(note);
+                    if let Some(measure) = &mut current_measure {
+                        measure.push(item);
+                    } else {
+                        current_measure = Some(vec![item]);
+                    }
+                }
+                Some(Token::LineBreak) => {
+                    if let Some(measure) = current_measure.take() {
+                        break Some(Item::Measure { items: measure })
+                    }
                 }
                 Some(_) => {}
                 None => break None,
