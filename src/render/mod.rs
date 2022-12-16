@@ -1,3 +1,5 @@
+//! Sheet music engraving
+
 use font_kit::{
     family_name::FamilyName, handle::Handle, properties::Properties, source::SystemSource,
 };
@@ -25,6 +27,7 @@ pub struct Renderer {
     pub stroke_width: f64,
     pub accidental_size: f64,
     pub width: f64,
+    pub height: f64,
     pub font: Font<'static>,
     pub min_spacing: f64,
 }
@@ -61,6 +64,7 @@ impl Default for Renderer {
             stroke_width: 2.,
             accidental_size: 80.,
             width: 500.,
+            height: 200.,
             font,
             min_spacing: 30.,
         }
@@ -71,7 +75,7 @@ impl Renderer {
     pub fn render(&self, staff: &Staff) -> Document {
         let mut document = svg::Document::new()
             .set("width", self.width)
-            .set("height", 500);
+            .set("height", self.height);
 
         document.append(
             Rectangle::new()
@@ -79,7 +83,7 @@ impl Renderer {
                 .set("x", 0)
                 .set("y", 0)
                 .set("width", self.width)
-                .set("height", 500),
+                .set("height", self.height),
         );
 
         let mut y = 0.;

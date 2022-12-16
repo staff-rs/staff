@@ -1,3 +1,5 @@
+//! LilyPond format parsing
+
 use crate::{
     midi::Octave,
     note::Accidental,
@@ -254,24 +256,5 @@ fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
                 _ => todo!(),
             };
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Parser;
-    use crate::{parse::Tokens, render::Renderer};
-
-    #[test]
-    fn f() {
-        let input = include_str!("../../test.ly");
-        let tokens = Tokens::from(input);
-        let mut score = Parser { tokens };
-
-        let renderer = Renderer::default();
-        let staff = score.staff(&renderer);
-
-        let svg = renderer.render(&staff);
-        svg::save("example.svg", &svg).unwrap();
     }
 }
