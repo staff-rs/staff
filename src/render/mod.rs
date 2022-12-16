@@ -60,9 +60,9 @@ impl Default for Renderer {
             padding: 10.,
             stroke_width: 2.,
             accidental_size: 80.,
-            width: 350.,
+            width: 500.,
             font,
-            min_spacing: 20.,
+            min_spacing: 30.,
         }
     }
 }
