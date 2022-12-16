@@ -26,6 +26,7 @@ pub struct Renderer {
     pub accidental_size: f64,
     pub width: f64,
     pub font: Font<'static>,
+    pub min_spacing: f64,
 }
 
 impl Default for Renderer {
@@ -61,6 +62,7 @@ impl Default for Renderer {
             accidental_size: 80.,
             width: 350.,
             font,
+            min_spacing: 20.,
         }
     }
 }

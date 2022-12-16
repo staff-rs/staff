@@ -233,6 +233,8 @@ impl<'a> Chord<'a> {
             renderer.note_rx * 2.
         };
 
+        width += renderer.min_spacing;
+
         width += accidental_width;
 
         if !lines.is_empty() {
