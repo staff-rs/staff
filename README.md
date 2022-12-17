@@ -8,16 +8,20 @@ Music theory and score rendering library with midi, notes, chords, scales, and m
 
 ## Installation
 ```
-cargo install staff --features=cli
+cargo install staff
 ```
 
 ## Usage
 `example.ly`
 ```
-<c''4 g'> <eis'2 f' g'> g'4
-f''2 <c'4 eis'> c''
+\clef treble
+a'1
+d'2. e'4
+f'2 e'4 f'
+b'2. a'4
+g'2 fis'4 g'
 ```
-`$ staff engrave example.ly > example.svg`
+`$ staff example.ly > example.svg`
 
 ## Library
 ```rust
