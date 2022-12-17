@@ -7,6 +7,7 @@ Music theory and score rendering library with midi, notes, chords, scales, and m
 ![staff](https://raw.githubusercontent.com/staff-rs/staff/main/example.svg)
 
 ## Installation
+This crate currently uses the [Noto Music](https://fonts.google.com/noto/specimen/Noto+Music) font by default.
 ```
 cargo install staff
 ```
