@@ -84,6 +84,7 @@ impl<'r> Measure<'r> {
         x: f64,
         y: f64,
         extra_width: f64,
+        index: usize,
         renderer: &'r Renderer,
         node: &mut impl Node,
     ) {
@@ -119,24 +120,31 @@ impl<'r> Measure<'r> {
             let y = top + (line * 2) as f64 * renderer.note_ry;
             renderer.draw_line(
                 node,
-                x + renderer.stroke_width / 2.,
+                x,
                 y,
                 x + width + renderer.stroke_width + renderer.padding,
                 y,
             );
         }
 
-        for line in 0..2 {
-            let line_x = x
-                + line as f64 * (width + renderer.stroke_width + renderer.padding)
-                + renderer.stroke_width / 2.;
+        if index == 0 {
             renderer.draw_line(
                 node,
-                line_x,
+                x,
                 top - renderer.stroke_width / 2.,
-                line_x,
+                x,
                 top + renderer.note_ry * 8. + renderer.stroke_width / 2.,
             );
         }
+
+        let line_x =
+            x + (width + renderer.stroke_width + renderer.padding) + renderer.stroke_width / 2.;
+        renderer.draw_line(
+            node,
+            line_x,
+            top - renderer.stroke_width / 2.,
+            line_x,
+            top + renderer.note_ry * 8. + renderer.stroke_width / 2.,
+        );
     }
 }
