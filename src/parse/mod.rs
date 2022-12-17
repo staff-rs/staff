@@ -75,6 +75,7 @@ impl<'a> Parser<'a> {
                             } => Chord::new(&[*note], *duration, *is_dotted, renderer),
                         })
                         .collect();
+
                     let measure = Measure::new(chords, key_signature.take(), renderer);
                     staff.push(renderer, measure);
                 }

@@ -233,7 +233,16 @@ impl<'a> Chord<'a> {
             renderer.note_rx * 2.
         };
 
-        width += renderer.min_spacing;
+        let mut duration_spacing = match duration {
+            Duration::Quarter => 4.,
+            Duration::Half => 2.,
+            Duration::Whole => 1.,
+        };
+        if is_dotted {
+            duration_spacing /= 2.;
+        }
+
+        width += renderer.min_spacing / duration_spacing;
 
         width += accidental_width;
 

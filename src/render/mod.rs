@@ -62,7 +62,7 @@ impl Default for Renderer {
             accidental_size: 80.,
             width: 500.,
             font,
-            min_spacing: 30.,
+            min_spacing: 40.,
         }
     }
 }
