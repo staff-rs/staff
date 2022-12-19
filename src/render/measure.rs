@@ -1,9 +1,7 @@
+use super::{note::note_index, Chord, Duration, Renderer};
+use crate::{midi::Octave, Key};
 use svg::Node;
 use text_svg::Glpyh;
-
-use crate::{midi::Octave, Key};
-
-use super::{note::note_index, Chord, Duration, Renderer};
 
 pub struct KeySignature<'r> {
     clef_glyph: Glpyh<'r>,

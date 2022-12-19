@@ -15,7 +15,7 @@ pub struct RenderNote {
     pub x: f64,
 }
 
-pub struct BarLine {
+pub struct LedgerLine {
     pub note: i64,
     pub is_left: bool,
     pub is_double: bool,
@@ -71,7 +71,7 @@ pub struct Chord<'a> {
     pub top: f64,
     pub notes: Vec<RenderNote>,
     pub stem: Option<ChordStem>,
-    pub lines: Vec<BarLine>,
+    pub lines: Vec<LedgerLine>,
     pub is_upside_down: bool,
     pub accidentals: Vec<ChordAccidental<'a>>,
     pub is_dotted: bool,
@@ -168,7 +168,7 @@ impl<'a> Chord<'a> {
         if high_right > 10 {
             let mut i = 10;
             while i <= high_right {
-                lines.push(BarLine {
+                lines.push(LedgerLine {
                     note: i,
                     is_left: false,
                     is_double: false,
@@ -185,7 +185,7 @@ impl<'a> Chord<'a> {
                     line.is_double = true;
                     line.is_left = true;
                 } else {
-                    lines.push(BarLine {
+                    lines.push(LedgerLine {
                         note: i,
                         is_left: true,
                         is_double: false,
@@ -199,7 +199,7 @@ impl<'a> Chord<'a> {
         if low_right <= -2 {
             let mut i = -2;
             while i >= low_right {
-                lines.push(BarLine {
+                lines.push(LedgerLine {
                     note: i,
                     is_left: false,
                     is_double: false,
@@ -216,7 +216,7 @@ impl<'a> Chord<'a> {
                     line.is_double = true;
                     line.is_left = true;
                 } else {
-                    lines.push(BarLine {
+                    lines.push(LedgerLine {
                         note: i,
                         is_left: true,
                         is_double: false,
