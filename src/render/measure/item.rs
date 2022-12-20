@@ -25,9 +25,45 @@ pub struct LedgerLine {
     pub is_double: bool,
 }
 
-pub struct ChordStem {
+pub struct Stem {
     pub low: i64,
     pub high: i64,
+}
+
+impl Stem {
+    pub fn new(low: i64, high: i64) -> Self {
+        Self { low, high }
+    }
+
+    pub fn svg(
+        &self,
+        x: f64,
+        y: f64,
+        is_upside_down: bool,
+        renderer: &Renderer,
+        node: &mut impl Node,
+    ) {
+        let line_x = x + renderer.note_rx + renderer.stroke_width / 1.4;
+        let chord_line_notes_size = 6.;
+        if is_upside_down {
+            let line_x = line_x + renderer.stroke_width / 1.4;
+            renderer.draw_line(
+                node,
+                line_x,
+                y - renderer.note_ry / 2. + (self.low as f64 + 0.75) * renderer.note_ry,
+                line_x,
+                y + (self.high as f64 + chord_line_notes_size) * renderer.note_ry,
+            )
+        } else {
+            renderer.draw_line(
+                node,
+                line_x,
+                y + (self.low as f64 - chord_line_notes_size) * renderer.note_ry,
+                line_x,
+                y + renderer.note_ry / 2. + (self.high as f64 - 0.75) * renderer.note_ry,
+            )
+        }
+    }
 }
 
 pub struct ChordAccidental<'a> {
@@ -82,7 +118,7 @@ pub enum MeasureItemKind<'r> {
         notes: Vec<NoteHead>,
         is_upside_down: bool,
         ledger_lines: Vec<LedgerLine>,
-        stem: Option<ChordStem>,
+        stem: Option<Stem>,
         accidentals: Vec<ChordAccidental<'r>>,
     },
 }
@@ -331,7 +367,7 @@ impl<'r> MeasureItem<'r> {
         }
 
         let stem = if duration != DurationKind::Whole {
-            Some(ChordStem { low, high })
+            Some(Stem::new(low, high))
         } else {
             None
         };
@@ -352,7 +388,7 @@ impl<'r> MeasureItem<'r> {
         }
     }
 
-    pub fn svg(&self, mut x: f64, renderer: &Renderer, node: &mut impl Node) {
+    pub fn svg(&self, mut x: f64, top: f64, renderer: &Renderer, node: &mut impl Node) {
         match &self.kind {
             MeasureItemKind::Rest => match self.duration {
                 DurationKind::Quarter => {
@@ -374,7 +410,7 @@ impl<'r> MeasureItem<'r> {
                 let mut accidentals_width = 0.;
                 if !accidentals.is_empty() {
                     for chord_accidental in accidentals {
-                        let width = chord_accidental.svg(x, self.top, &renderer, node);
+                        let width = chord_accidental.svg(x, top, &renderer, node);
                         accidentals_width = width as f64;
                     }
                     x += accidentals_width + renderer.note_rx / 2.;
@@ -400,13 +436,13 @@ impl<'r> MeasureItem<'r> {
                     if self.is_dotted {
                         node.append(dot_glyph.path(
                             (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
-                            (self.top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                            (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
                         ));
                     }
 
                     node.append(glyph.path(
                         (note_x + note.x) as _,
-                        (self.top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                        (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
                     ));
                 }
 
@@ -423,44 +459,55 @@ impl<'r> MeasureItem<'r> {
                         x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
                     };
 
-                    let y = self.top + renderer.note_ry * line.note as f64;
+                    let y = top + renderer.note_ry * line.note as f64;
                     renderer.draw_line(node, x1, y, x2, y)
                 }
 
                 if let Some(stem) = &stem {
-                    let line_x = note_x + renderer.note_rx + renderer.stroke_width / 1.4;
-                    let chord_line_notes_size = 6.;
-                    if *is_upside_down {
-                        let line_x = line_x + renderer.stroke_width / 1.4;
-                        renderer.draw_line(
-                            node,
-                            line_x,
-                            self.top - renderer.note_ry / 2.
-                                + (stem.low as f64 + 0.75) * renderer.note_ry,
-                            line_x,
-                            self.top
-                                + (stem.high as f64 + chord_line_notes_size) * renderer.note_ry,
-                        )
-                    } else {
-                        renderer.draw_line(
-                            node,
-                            line_x,
-                            self.top + (stem.low as f64 - chord_line_notes_size) * renderer.note_ry,
-                            line_x,
-                            self.top
-                                + renderer.note_ry / 2.
-                                + (stem.high as f64 - 0.75) * renderer.note_ry,
-                        )
-                    }
+                    stem.svg(note_x, top, *is_upside_down, renderer, node);
                 }
             }
             MeasureItemKind::Note {
-                note: _,
-                is_upside_down: _,
-                has_ledger_line: _,
-                has_stem: _,
+                note,
+                is_upside_down,
+                has_ledger_line,
+                has_stem,
                 accidental: _,
-            } => todo!(),
+            } => {
+                let note_line_extra = renderer.note_rx / 2.;
+                let note_x = if *has_ledger_line {
+                    x + note_line_extra
+                } else {
+                    x
+                };
+
+                // Render note heads
+                let c = match self.duration {
+                    DurationKind::Quarter => '𝅘',
+                    DurationKind::Half => '𝅗',
+                    DurationKind::Whole => '𝅝',
+                };
+                let glyph = Glpyh::new(&renderer.font, c, 75.);
+
+                let dot_glyph = Glpyh::new(&renderer.font, '.', 75.);
+
+                if self.is_dotted {
+                    node.append(dot_glyph.path(
+                        (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
+                        (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                    ));
+                }
+
+                node.append(glyph.path(
+                    (note_x + note.x) as _,
+                    (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                ));
+
+                if *has_stem {
+                    let stem = Stem::new(note.index, note.index);
+                    stem.svg(note_x, top, *is_upside_down, renderer, node);
+                }
+            }
         }
     }
 }

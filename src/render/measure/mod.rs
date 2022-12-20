@@ -103,7 +103,7 @@ impl<'r> Measure<'r> {
         }
 
         for chord in &self.chords {
-            chord.svg(chord_x, renderer, node);
+            chord.svg(chord_x, top, renderer, node);
 
             let mut duration_spacing = match chord.duration {
                 DurationKind::Quarter => 4.,

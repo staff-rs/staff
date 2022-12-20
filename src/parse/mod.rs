@@ -80,12 +80,7 @@ impl<'a> Parser<'a> {
                                 note,
                                 duration,
                                 is_dotted,
-                            } => measure::MeasureItem::chord(
-                                *duration,
-                                *is_dotted,
-                                &[*note],
-                                renderer,
-                            ),
+                            } => measure::MeasureItem::note(*duration, *is_dotted, *note, renderer),
                         })
                         .collect();
 
