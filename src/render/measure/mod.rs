@@ -129,6 +129,6 @@ impl<'r> Measure<'r> {
             top + renderer.note_ry * 8. + renderer.stroke_width / 2.,
         );
 
-        line_x as f64 + renderer.stroke_width
+        line_x as f64
     }
 }

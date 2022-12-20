@@ -111,7 +111,7 @@ impl<'r> MeasureItem<'r> {
         } else {
             0.
         };
-        let is_upside_down = note.index < note_index(Natural::B, Octave::FIVE);
+        let is_upside_down = note.index > note_index(Natural::B, Octave::FIVE);
 
         let (accidental, accidental_width) = if let Some(accidental) = note.accidental {
             let chord_accidental = ChordAccidental::new(accidental, note.index, renderer);
