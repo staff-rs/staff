@@ -1,4 +1,4 @@
-use super::{note::note_index, Chord, Duration, Renderer};
+use super::{note::note_index, Duration, MeasureItem, Renderer};
 use crate::{midi::Octave, Key};
 use svg::Node;
 use text_svg::Glpyh;
@@ -51,14 +51,14 @@ impl<'r> KeySignature<'r> {
 }
 
 pub struct Measure<'r> {
-    chords: Vec<Chord<'r>>,
+    chords: Vec<MeasureItem<'r>>,
     key_signature: Option<KeySignature<'r>>,
     pub width: f64,
 }
 
 impl<'r> Measure<'r> {
     pub fn new(
-        chords: Vec<Chord<'r>>,
+        chords: Vec<MeasureItem<'r>>,
         key_signature: Option<KeySignature<'r>>,
         renderer: &'r Renderer,
     ) -> Self {
@@ -100,7 +100,7 @@ impl<'r> Measure<'r> {
         }
 
         for chord in &self.chords {
-            chord.svg(renderer, node, chord_x, top);
+            chord.svg(chord_x, renderer, node);
 
             let mut duration_spacing = match chord.duration {
                 Duration::Quarter => 4.,
@@ -112,8 +112,8 @@ impl<'r> Measure<'r> {
             }
             chord_x += extra_width / duration_spacing + chord.width;
         }
-        let width = chord_x - x;
 
+        let width = chord_x - x;
         for line in 0..5 {
             let y = top + (line * 2) as f64 * renderer.note_ry;
             renderer.draw_line(

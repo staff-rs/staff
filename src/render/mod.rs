@@ -11,7 +11,7 @@ use svg::{
 };
 
 pub mod chord;
-pub use chord::{Chord, Duration, RenderNote};
+pub use chord::{Duration, MeasureItem, RenderNote};
 
 pub mod measure;
 pub use measure::{KeySignature, Measure};

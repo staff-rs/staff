@@ -65,39 +65,48 @@ impl<'a> ChordAccidental<'a> {
     }
 }
 
-pub struct Chord<'a> {
+pub enum MeasureItemKind<'r> {
+    Rest,
+    Note {
+        note: RenderNote,
+        ledger_line: Option<LedgerLine>,
+        stem: Option<ChordStem>,
+        accidental: Option<ChordAccidental<'r>>,
+    },
+    Chord {
+        notes: Vec<RenderNote>,
+        ledger_lines: Vec<LedgerLine>,
+        stem: Option<ChordStem>,
+        is_upside_down: bool,
+        accidentals: Vec<ChordAccidental<'r>>,
+    },
+}
+
+pub struct MeasureItem<'r> {
+    pub kind: MeasureItemKind<'r>,
     pub duration: Duration,
     pub width: f64,
     pub top: f64,
-    pub notes: Vec<RenderNote>,
-    pub stem: Option<ChordStem>,
-    pub lines: Vec<LedgerLine>,
-    pub is_upside_down: bool,
-    pub accidentals: Vec<ChordAccidental<'a>>,
     pub is_dotted: bool,
 }
 
-impl<'a> Chord<'a> {
-    pub fn new(
-        notes: &[Note],
+impl<'r> MeasureItem<'r> {
+    pub fn rest(duration: Duration, is_dotted: bool, renderer: &Renderer) -> Self {
+        Self {
+            kind: MeasureItemKind::Rest,
+            duration,
+            top: 0.,
+            width: renderer.note_rx * 2.,
+            is_dotted,
+        }
+    }
+
+    pub fn chord(
         duration: Duration,
         is_dotted: bool,
-        renderer: &'a Renderer,
+        notes: &[Note],
+        renderer: &'r Renderer,
     ) -> Self {
-        if notes.is_empty() {
-            return Self {
-                duration,
-                is_upside_down: false,
-                top: 0.,
-                width: renderer.note_rx * 2.,
-                notes: Vec::new(),
-                stem: None,
-                lines: Vec::new(),
-                accidentals: Vec::new(),
-                is_dotted: false,
-            };
-        }
-
         let high = notes.iter().map(|note| note.index).max().unwrap();
         let low = notes.iter().map(|note| note.index).min().unwrap();
         let top = if low < note_index(Natural::F, Octave::FIVE) {
@@ -109,7 +118,7 @@ impl<'a> Chord<'a> {
         let staggered_spacing = renderer.stroke_width / 2.;
         let is_upside_down = low.min(high) < note_index(Natural::B, Octave::FIVE);
 
-        let mut lines = Vec::new();
+        let mut ledger_lines = Vec::new();
         let mut accidentals = Vec::new();
 
         let mut low_right = 0;
@@ -168,7 +177,7 @@ impl<'a> Chord<'a> {
         if high_right > 10 {
             let mut i = 10;
             while i <= high_right {
-                lines.push(LedgerLine {
+                ledger_lines.push(LedgerLine {
                     note: i,
                     is_left: false,
                     is_double: false,
@@ -181,11 +190,11 @@ impl<'a> Chord<'a> {
         if high_left > 8 {
             let mut i = 8;
             while i <= high_left {
-                if let Some(line) = lines.iter_mut().find(|line| (**line).note == i) {
+                if let Some(line) = ledger_lines.iter_mut().find(|line| (**line).note == i) {
                     line.is_double = true;
                     line.is_left = true;
                 } else {
-                    lines.push(LedgerLine {
+                    ledger_lines.push(LedgerLine {
                         note: i,
                         is_left: true,
                         is_double: false,
@@ -199,7 +208,7 @@ impl<'a> Chord<'a> {
         if low_right <= -2 {
             let mut i = -2;
             while i >= low_right {
-                lines.push(LedgerLine {
+                ledger_lines.push(LedgerLine {
                     note: i,
                     is_left: false,
                     is_double: false,
@@ -212,11 +221,11 @@ impl<'a> Chord<'a> {
         if low_left <= -2 {
             let mut i = -2;
             while i >= low_left {
-                if let Some(line) = lines.iter_mut().find(|line| (**line).note == i) {
+                if let Some(line) = ledger_lines.iter_mut().find(|line| (**line).note == i) {
                     line.is_double = true;
                     line.is_left = true;
                 } else {
-                    lines.push(LedgerLine {
+                    ledger_lines.push(LedgerLine {
                         note: i,
                         is_left: true,
                         is_double: false,
@@ -246,7 +255,7 @@ impl<'a> Chord<'a> {
 
         width += accidental_width;
 
-        if !lines.is_empty() {
+        if !ledger_lines.is_empty() {
             width += renderer.note_rx;
         }
 
@@ -260,112 +269,130 @@ impl<'a> Chord<'a> {
             None
         };
 
-        Self {
-            duration,
+        let kind = MeasureItemKind::Chord {
+            notes,
+            ledger_lines,
+            stem,
             is_upside_down,
+            accidentals,
+        };
+        Self {
+            kind,
             top,
             width,
-            notes,
-            stem: stem,
-            lines,
-            accidentals,
+            duration,
             is_dotted,
         }
     }
 
-    pub fn svg<T: Node>(&self, renderer: &Renderer, node: &mut T, mut x: f64, top: f64) {
-        if self.notes.is_empty() {
-            match self.duration {
+    pub fn svg(&self, mut x: f64, renderer: &Renderer, node: &mut impl Node) {
+        match &self.kind {
+            MeasureItemKind::Rest => match self.duration {
                 Duration::Quarter => {
                     node.append(Glpyh::new(&renderer.font, '𝄽', 75.).path(
                         (x + renderer.note_rx) as _,
-                        (top + renderer.note_ry * 3.) as _,
+                        (self.top + renderer.note_ry * 3.) as _,
                     ));
                 }
                 Duration::Half => todo!(),
                 Duration::Whole => todo!(),
+            },
+            MeasureItemKind::Chord {
+                notes,
+                ledger_lines,
+                stem,
+                is_upside_down,
+                accidentals,
+            } => {
+                let mut accidentals_width = 0.;
+                if !accidentals.is_empty() {
+                    for chord_accidental in accidentals {
+                        let width = chord_accidental.svg(x, self.top, &renderer, node);
+                        accidentals_width = width as f64;
+                    }
+                    x += accidentals_width + renderer.note_rx / 2.;
+                }
+
+                let note_line_extra = renderer.note_rx / 2.;
+                let note_x = if !ledger_lines.is_empty() {
+                    x + note_line_extra
+                } else {
+                    x
+                };
+
+                // Render note heads
+                let c = match self.duration {
+                    Duration::Quarter => '𝅘',
+                    Duration::Half => '𝅗',
+                    Duration::Whole => '𝅝',
+                };
+                let glyph = Glpyh::new(&renderer.font, c, 75.);
+
+                let dot_glyph = Glpyh::new(&renderer.font, '.', 75.);
+                for note in notes {
+                    if self.is_dotted {
+                        node.append(dot_glyph.path(
+                            (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
+                            (self.top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                        ));
+                    }
+
+                    node.append(glyph.path(
+                        (note_x + note.x) as _,
+                        (self.top + renderer.note_ry * (note.index as f64 - 1.)) as _,
+                    ));
+                }
+
+                for line in ledger_lines {
+                    let x1 = if line.is_left {
+                        x
+                    } else {
+                        renderer.note_rx + x
+                    };
+
+                    let x2 = if line.is_double {
+                        x1 + (note_line_extra + renderer.note_rx + renderer.stroke_width) * 2.
+                    } else {
+                        x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
+                    };
+
+                    let y = self.top + renderer.note_ry * line.note as f64;
+                    renderer.draw_line(node, x1, y, x2, y)
+                }
+
+                if let Some(stem) = &stem {
+                    let line_x = note_x + renderer.note_rx + renderer.stroke_width / 1.4;
+                    let chord_line_notes_size = 6.;
+                    if *is_upside_down {
+                        let line_x = line_x + renderer.stroke_width / 1.4;
+                        renderer.draw_line(
+                            node,
+                            line_x,
+                            self.top - renderer.note_ry / 2.
+                                + (stem.low as f64 + 0.75) * renderer.note_ry,
+                            line_x,
+                            self.top
+                                + (stem.high as f64 + chord_line_notes_size) * renderer.note_ry,
+                        )
+                    } else {
+                        renderer.draw_line(
+                            node,
+                            line_x,
+                            self.top + (stem.low as f64 - chord_line_notes_size) * renderer.note_ry,
+                            line_x,
+                            self.top
+                                + renderer.note_ry / 2.
+                                + (stem.high as f64 - 0.75) * renderer.note_ry,
+                        )
+                    }
+                }
             }
-
-            return;
-        }
-
-        let mut accidentals_width = 0.;
-        if !self.accidentals.is_empty() {
-            for chord_accidental in &self.accidentals {
-                let width = chord_accidental.svg(x, top, &renderer, node);
-                accidentals_width = width as f64;
-            }
-            x += accidentals_width + renderer.note_rx / 2.;
-        }
-
-        let note_line_extra = renderer.note_rx / 2.;
-        let note_x = if !self.lines.is_empty() {
-            x + note_line_extra
-        } else {
-            x
-        };
-
-        // Render note heads
-        let c = match self.duration {
-            Duration::Quarter => '𝅘',
-            Duration::Half => '𝅗',
-            Duration::Whole => '𝅝',
-        };
-        let glyph = Glpyh::new(&renderer.font, c, 75.);
-
-        let dot_glyph = Glpyh::new(&renderer.font, '.', 75.);
-        for note in &self.notes {
-            if self.is_dotted {
-                node.append(dot_glyph.path(
-                    (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
-                    (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
-                ));
-            }
-
-            node.append(glyph.path(
-                (note_x + note.x) as _,
-                (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
-            ));
-        }
-
-        for line in &self.lines {
-            let x1 = if line.is_left {
-                x
-            } else {
-                renderer.note_rx + x
-            };
-
-            let x2 = if line.is_double {
-                x1 + (note_line_extra + renderer.note_rx + renderer.stroke_width) * 2.
-            } else {
-                x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
-            };
-
-            let y = top + renderer.note_ry * line.note as f64;
-            renderer.draw_line(node, x1, y, x2, y)
-        }
-
-        if let Some(stem) = &self.stem {
-            let line_x = note_x + renderer.note_rx + renderer.stroke_width / 1.4;
-            let chord_line_notes_size = 6.;
-            if self.is_upside_down {
-                let line_x = line_x + renderer.stroke_width / 1.4;
-                renderer.draw_line(
-                    node,
-                    line_x,
-                    top - renderer.note_ry / 2. + (stem.low as f64 + 0.75) * renderer.note_ry,
-                    line_x,
-                    top + (stem.high as f64 + chord_line_notes_size) * renderer.note_ry,
-                )
-            } else {
-                renderer.draw_line(
-                    node,
-                    line_x,
-                    top + (stem.low as f64 - chord_line_notes_size) * renderer.note_ry,
-                    line_x,
-                    top + renderer.note_ry / 2. + (stem.high as f64 - 0.75) * renderer.note_ry,
-                )
-            }
+            MeasureItemKind::Note {
+                note,
+                ledger_line,
+                stem,
+                accidental,
+            } => todo!(),
         }
     }
 }
