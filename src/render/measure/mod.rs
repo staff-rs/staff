@@ -70,11 +70,10 @@ impl<'r> Measure<'r> {
         }
         top += renderer.document_padding;
 
-        let mut chord_x = x + renderer.padding;
-
+        let mut item_x = x + renderer.padding;
         for item in &self.items {
-            item.svg(chord_x, top, renderer, node);
-            chord_x += item.width;
+            item.svg(item_x, top, renderer, node);
+            item_x += item.width;
 
             match &item.kind {
                 MeasureItemKind::Chord {
@@ -94,13 +93,13 @@ impl<'r> Measure<'r> {
                     has_ledger_line: _,
                     has_stem: _,
                     accidental: _,
-                } => chord_x += extra_width / (4. / duration.beats(4)),
-                MeasureItemKind::KeySignature(_) => chord_x += renderer.padding,
+                } => item_x += extra_width / (4. / duration.beats(4)),
+                MeasureItemKind::KeySignature(_) => item_x += renderer.padding,
                 _ => {}
             }
         }
 
-        let width = chord_x - x;
+        let width = item_x - x;
         for line in 0..5 {
             let y = top + (line * 2) as f64 * renderer.note_ry;
             renderer.draw_line(

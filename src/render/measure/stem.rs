@@ -20,10 +20,10 @@ impl Stem {
         renderer: &Renderer,
         node: &mut impl Node,
     ) {
-        let line_x = x + renderer.note_rx + renderer.stroke_width / 1.4;
+        let line_x = x + renderer.note_rx + renderer.stroke_width;
         let chord_line_notes_size = 6.;
         if is_upside_down {
-            let line_x = line_x + renderer.stroke_width / 1.4;
+            let line_x = line_x + renderer.stroke_width;
             renderer.draw_line(
                 node,
                 line_x,

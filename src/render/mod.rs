@@ -58,7 +58,7 @@ impl Default for Renderer {
             note_rx: 10.,
             note_ry: 6.,
             padding: 10.,
-            stroke_width: 2.,
+            stroke_width: 1.5,
             accidental_size: 80.,
             width: 500.,
             height: 200.,
