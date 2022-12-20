@@ -9,7 +9,7 @@ pub struct Clef<'r> {
 impl<'r> Clef<'r> {
     pub fn new(renderer: &'r Renderer) -> (Self, f64) {
         let clef_glyph = Glpyh::new(&renderer.font, '𝄞', (renderer.note_ry * 10.) as _);
-        let mut width = clef_glyph.bounding_box.width() as f64 + renderer.padding;
+        let width = clef_glyph.bounding_box.width() as f64 + renderer.padding;
         let me = Self { clef_glyph };
         (me, width)
     }

@@ -72,11 +72,32 @@ impl<'r> Measure<'r> {
 
         let mut chord_x = x + renderer.padding;
 
-        for chord in &self.items {
-            chord.svg(chord_x, top, renderer, node);
+        for item in &self.items {
+            item.svg(chord_x, top, renderer, node);
+            chord_x += item.width;
 
-            chord_x += extra_width / self.items.len() as f64;
-            chord_x += chord.width;
+            match &item.kind {
+                MeasureItemKind::Chord {
+                    top: _,
+                    duration,
+                    notes: _,
+                    is_upside_down: _,
+                    ledger_lines: _,
+                    stem: _,
+                    accidentals: _,
+                }
+                | MeasureItemKind::Note {
+                    top: _,
+                    duration,
+                    note: _,
+                    is_upside_down: _,
+                    has_ledger_line: _,
+                    has_stem: _,
+                    accidental: _,
+                } => chord_x += extra_width / (4. / duration.beats(4)),
+                MeasureItemKind::KeySignature(_) => chord_x += renderer.padding,
+                _ => {}
+            }
         }
 
         let width = chord_x - x;

@@ -54,7 +54,7 @@ impl Default for Renderer {
         };
 
         Self {
-            document_padding: 10.,
+            document_padding: 20.,
             note_rx: 10.,
             note_ry: 6.,
             padding: 10.,

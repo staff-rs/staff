@@ -6,9 +6,9 @@ use crate::{
     note::Accidental,
     render::{
         measure::{self},
-        Clef, Measure, Note, Renderer, Staff,
+        Measure, Note, Renderer, Staff,
     },
-    Key, Natural, Pitch,
+    Key, Natural,
 };
 use std::{iter::Peekable, str::Chars};
 
@@ -56,7 +56,7 @@ impl<'a> Parser<'a> {
                     let chords = items
                         .iter()
                         .map(|item| match item {
-                            MeasureItem::Clef { kind } => measure::MeasureItem::clef(renderer),
+                            MeasureItem::Clef { kind: _ } => measure::MeasureItem::clef(renderer),
                             MeasureItem::Key(key) => {
                                 measure::MeasureItem::key_signature(*key, renderer)
                             }
@@ -85,6 +85,7 @@ impl<'a> Iterator for Parser<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let mut current_duration = DurationKind::Whole;
         let mut current_measure: Option<Vec<MeasureItem>> = None;
+        let mut has_notes = false;
         loop {
             match self.tokens.next() {
                 Some(Token::Command(command)) => match command {
@@ -164,6 +165,7 @@ impl<'a> Iterator for Parser<'a> {
                         }
                     }
 
+                    has_notes = true;
                     let chord = MeasureItem::Chord {
                         notes,
                         duration: Duration::new(current_duration, is_dotted),
@@ -180,6 +182,7 @@ impl<'a> Iterator for Parser<'a> {
                     let c = chars.next().unwrap();
                     let note = parse_note(c, &mut chars, &mut current_duration, &mut is_dotted);
 
+                    has_notes = true;
                     let item = MeasureItem::Note {
                         note,
                         duration: Duration::new(current_duration, is_dotted),
@@ -191,8 +194,10 @@ impl<'a> Iterator for Parser<'a> {
                     }
                 }
                 Some(Token::LineBreak) => {
-                    if let Some(measure) = current_measure.take() {
-                        break Some(Item::Measure { items: measure });
+                    if has_notes {
+                        if let Some(measure) = current_measure.take() {
+                            break Some(Item::Measure { items: measure });
+                        }
                     }
                 }
                 Some(_) => {}
