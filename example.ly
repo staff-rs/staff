@@ -1,4 +1,5 @@
 \clef treble
+\key fes \major
 a'1
 d'2. e'4
 f'2 e'4 f'

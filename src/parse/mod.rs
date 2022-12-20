@@ -22,12 +22,11 @@ pub enum ClefKind {
 }
 
 #[derive(Debug)]
-pub enum Command {
-    Clef { kind: ClefKind },
-}
-
-#[derive(Debug)]
 pub enum MeasureItem {
+    Clef {
+        kind: ClefKind,
+    },
+    Key(Key),
     Note {
         note: Note,
         duration: Duration,
@@ -40,7 +39,6 @@ pub enum MeasureItem {
 
 #[derive(Debug)]
 pub enum Item {
-    Command(Command),
     Measure { items: Vec<MeasureItem> },
 }
 
@@ -51,22 +49,17 @@ pub struct Parser<'a> {
 impl<'a> Parser<'a> {
     pub fn staff<'r>(&mut self, renderer: &'r Renderer) -> Staff<'r> {
         let mut staff = Staff::default();
-        let mut key_signature = None;
 
         for item in self {
             match item {
-                Item::Command(cmd) => match cmd {
-                    Command::Clef { kind } => match kind {
-                        ClefKind::Treble => {
-                            key_signature = Some(Clef::new(Key::major(Pitch::C), renderer));
-                        }
-                        _ => todo!(),
-                    },
-                },
                 Item::Measure { items } => {
                     let chords = items
                         .iter()
                         .map(|item| match item {
+                            MeasureItem::Clef { kind } => measure::MeasureItem::clef(renderer),
+                            MeasureItem::Key(key) => {
+                                measure::MeasureItem::key_signature(*key, renderer)
+                            }
                             MeasureItem::Chord { notes, duration } => {
                                 measure::MeasureItem::chord(*duration, notes, renderer)
                             }
@@ -102,7 +95,47 @@ impl<'a> Iterator for Parser<'a> {
                                 "bass" => ClefKind::Bass,
                                 s => todo!("{:?}", s),
                             };
-                            break Some(Item::Command(Command::Clef { kind }));
+                            let clef = MeasureItem::Clef { kind };
+                            if let Some(measure) = &mut current_measure {
+                                measure.push(clef);
+                            } else {
+                                current_measure = Some(vec![clef]);
+                            }
+                        } else {
+                            todo!()
+                        }
+                    }
+                    "key" => {
+                        if let Some(Token::Literal(literal)) = self.tokens.next() {
+                            let mut chars = literal.chars().peekable();
+                            let c = chars.next().unwrap();
+                            let mut is_dotted = false;
+                            let (natural, _, accidental) = parse_note_parts(
+                                c,
+                                &mut chars,
+                                &mut current_duration,
+                                &mut is_dotted,
+                            );
+                            let root = crate::Note::new(
+                                natural,
+                                accidental.unwrap_or(Accidental::Natural),
+                            );
+
+                            let key = if let Some(Token::Command(cmd)) = self.tokens.next() {
+                                match cmd {
+                                    "major" => Key::major(root.into()),
+                                    _ => todo!(),
+                                }
+                            } else {
+                                todo!()
+                            };
+
+                            let item = MeasureItem::Key(key);
+                            if let Some(measure) = &mut current_measure {
+                                measure.push(item);
+                            } else {
+                                current_measure = Some(vec![item]);
+                            }
                         } else {
                             todo!()
                         }
@@ -188,6 +221,16 @@ fn parse_note(
     duration: &mut DurationKind,
     is_dotted: &mut bool,
 ) -> Note {
+    let (natural, octave, accidental) = parse_note_parts(c, chars, duration, is_dotted);
+    Note::new(natural, octave, accidental)
+}
+
+fn parse_note_parts(
+    c: char,
+    chars: &mut Peekable<Chars>,
+    duration: &mut DurationKind,
+    is_dotted: &mut bool,
+) -> (Natural, Octave, Option<Accidental>) {
     let natural = Natural::try_from(c).unwrap();
 
     let accidental = match chars.peek() {
@@ -239,7 +282,7 @@ fn parse_note(
     }
 
     // TODO check octave
-    Note::new(natural, Octave::new_unchecked(i + 3), accidental)
+    (natural, Octave::new_unchecked(i + 3), accidental)
 }
 
 fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut DurationKind) {

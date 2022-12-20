@@ -7,6 +7,9 @@ pub use clef::Clef;
 pub mod item;
 pub use self::item::MeasureItem;
 
+mod key_signature;
+pub use key_signature::KeySignature;
+
 mod note_head;
 use self::item::MeasureItemKind;
 pub use self::note_head::NoteHead;
@@ -15,17 +18,17 @@ mod stem;
 pub use stem::Stem;
 
 pub struct Measure<'r> {
-    chords: Vec<MeasureItem<'r>>,
+    pub items: Vec<MeasureItem<'r>>,
     pub width: f64,
 }
 
 impl<'r> Measure<'r> {
-    pub fn new(chords: Vec<MeasureItem<'r>>, renderer: &'r Renderer) -> Self {
-        let width: f64 = chords.iter().map(|chord| chord.width).sum::<f64>()
+    pub fn new(items: Vec<MeasureItem<'r>>, renderer: &'r Renderer) -> Self {
+        let width: f64 = items.iter().map(|chord| chord.width).sum::<f64>()
             + renderer.padding * 2.
             + renderer.stroke_width * 2.;
 
-        Self { chords, width }
+        Self { items, width }
     }
 
     pub fn svg(
@@ -38,7 +41,7 @@ impl<'r> Measure<'r> {
         node: &mut impl Node,
     ) {
         let mut top = y;
-        for item in &self.chords {
+        for item in &self.items {
             match &item.kind {
                 MeasureItemKind::Chord {
                     top: chord_top,
@@ -69,34 +72,10 @@ impl<'r> Measure<'r> {
 
         let mut chord_x = x + renderer.padding;
 
-        for chord in &self.chords {
+        for chord in &self.items {
             chord.svg(chord_x, top, renderer, node);
 
-            let duration = match &chord.kind {
-                MeasureItemKind::Chord {
-                    top,
-                    duration,
-                    notes,
-                    is_upside_down,
-                    ledger_lines,
-                    stem,
-                    accidentals,
-                } => Some(duration),
-                MeasureItemKind::Note {
-                    top,
-                    duration,
-                    note,
-                    is_upside_down,
-                    has_ledger_line,
-                    has_stem,
-                    accidental,
-                } => Some(duration),
-                MeasureItemKind::Rest { duration } => Some(duration),
-                _ => None,
-            };
-            if let Some(duration) = duration {
-                chord_x += extra_width / duration.beats(4);
-            }
+            chord_x += extra_width / self.items.len() as f64;
             chord_x += chord.width;
         }
 

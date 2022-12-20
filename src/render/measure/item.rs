@@ -1,10 +1,10 @@
-use super::{Clef, NoteHead, Stem};
+use super::{Clef, KeySignature, NoteHead, Stem};
 use crate::{
     duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
     render::{note::note_index, Note, Renderer},
-    Natural,
+    Key, Natural,
 };
 use svg::Node;
 use text_svg::Glpyh;
@@ -77,6 +77,7 @@ pub enum MeasureItemKind<'r> {
         accidentals: Vec<ChordAccidental<'r>>,
     },
     Clef(Clef<'r>),
+    KeySignature(KeySignature<'r>),
 }
 
 pub struct MeasureItem<'r> {
@@ -85,6 +86,18 @@ pub struct MeasureItem<'r> {
 }
 
 impl<'r> MeasureItem<'r> {
+    pub fn clef(renderer: &'r Renderer) -> Self {
+        let (clef, width) = Clef::new(renderer);
+        let kind = MeasureItemKind::Clef(clef);
+        Self { kind, width }
+    }
+
+    pub fn key_signature(key: Key, renderer: &'r Renderer) -> Self {
+        let (key_signature, width) = KeySignature::new(key, renderer);
+        let kind = MeasureItemKind::KeySignature(key_signature);
+        Self { kind, width }
+    }
+
     pub fn rest(duration: Duration, renderer: &Renderer) -> Self {
         Self {
             kind: MeasureItemKind::Rest { duration },
@@ -403,7 +416,12 @@ impl<'r> MeasureItem<'r> {
                     stem.svg(note_x, y, *is_upside_down, renderer, node);
                 }
             }
-            MeasureItemKind::Clef(clef) => todo!(),
+            MeasureItemKind::Clef(clef) => {
+                clef.svg(x, y, renderer, node);
+            }
+            MeasureItemKind::KeySignature(key_signature) => {
+                key_signature.svg(x, y, renderer, node);
+            }
         }
     }
 }
