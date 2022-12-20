@@ -5,10 +5,11 @@ use crate::{
 };
 use svg::Node;
 use text_svg::Glpyh;
+use super::NoteHead;
 
 pub struct KeySignature<'r> {
-    pub accidental_glyph: Glpyh<'r>,
-    pub accidentals: Vec<(i64, f64)>,
+    pub glyph: Glpyh<'r>,
+    pub accidentals: Vec<NoteHead>,
 }
 
 impl<'r> KeySignature<'r> {
@@ -25,12 +26,12 @@ impl<'r> KeySignature<'r> {
             .map(|natural| {
                 let x = width;
                 width += accidental_glyph.bounding_box.width() as f64 + spacing;
-                (note_index(natural, Octave::FIVE), x)
+                NoteHead::new(note_index(natural, Octave::FIVE), x)
             })
             .collect();
 
         let me = Self {
-            accidental_glyph,
+            glyph: accidental_glyph,
             accidentals,
         };
 
@@ -38,10 +39,11 @@ impl<'r> KeySignature<'r> {
     }
 
     pub fn svg(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
-        for (index, accidental_x) in &self.accidentals {
-            node.append(self.accidental_glyph.path(
-                (x + *accidental_x) as _,
-                (y + renderer.note_ry * (*index as f64)) as f32 - renderer.note_ry as f32 / 2.,
+        for note_head in &self.accidentals {
+            node.append(self.glyph.path(
+                (x + note_head.x) as _,
+                (y + renderer.note_ry * (note_head.index as f64)) as f32
+                    - renderer.note_ry as f32 / 2.,
             ));
         }
     }
