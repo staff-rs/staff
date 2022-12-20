@@ -1,5 +1,9 @@
-use super::{note::note_index, Note, Renderer};
-use crate::{midi::Octave, note::Accidental, Natural};
+use crate::{
+    midi::Octave,
+    note::Accidental,
+    render::{note::note_index, Note, Renderer},
+    Natural,
+};
 use svg::Node;
 use text_svg::Glpyh;
 
@@ -69,15 +73,16 @@ pub enum MeasureItemKind<'r> {
     Rest,
     Note {
         note: RenderNote,
+        is_upside_down: bool,
         ledger_line: Option<LedgerLine>,
         stem: Option<ChordStem>,
         accidental: Option<ChordAccidental<'r>>,
     },
     Chord {
         notes: Vec<RenderNote>,
+        is_upside_down: bool,
         ledger_lines: Vec<LedgerLine>,
         stem: Option<ChordStem>,
-        is_upside_down: bool,
         accidentals: Vec<ChordAccidental<'r>>,
     },
 }
@@ -97,6 +102,79 @@ impl<'r> MeasureItem<'r> {
             duration,
             top: 0.,
             width: renderer.note_rx * 2.,
+            is_dotted,
+        }
+    }
+
+    pub fn note(duration: Duration, is_dotted: bool, note: Note, renderer: &'r Renderer) -> Self {
+        let top = if note.index < note_index(Natural::F, Octave::FIVE) {
+            -note.index as f64 * renderer.note_ry + renderer.note_ry / 2.
+        } else {
+            0.
+        };
+
+        let is_upside_down = note.index < note_index(Natural::B, Octave::FIVE);
+
+        let mut accidental_width = 0f64;
+
+        let accidental = note.accidental.map(|accidental| {
+            let chord_accidental = ChordAccidental::new(accidental, note.index, renderer);
+            accidental_width = chord_accidental.glyph.bounding_box.width() as _;
+            chord_accidental
+        });
+
+        let x = 0.;
+
+        let render_note = RenderNote {
+            index: note.index,
+            x,
+        };
+
+        let mut width = renderer.note_rx * 2.;
+
+        let mut duration_spacing = match duration {
+            Duration::Quarter => 4.,
+            Duration::Half => 2.,
+            Duration::Whole => 1.,
+        };
+        if is_dotted {
+            duration_spacing /= 2.;
+        }
+
+        width += renderer.min_spacing / duration_spacing;
+
+        width += accidental_width;
+
+        let ledger_line = None;
+        if ledger_line.is_some() {
+            width += renderer.note_rx;
+        }
+
+        if is_dotted {
+            width += renderer.note_rx * 2.;
+        }
+
+        let stem = if duration != Duration::Whole {
+            Some(ChordStem {
+                low: note.index,
+                high: note.index,
+            })
+        } else {
+            None
+        };
+
+        let kind = MeasureItemKind::Note {
+            note: render_note,
+            ledger_line,
+            stem,
+            accidental,
+            is_upside_down,
+        };
+        Self {
+            kind,
+            top,
+            width,
+            duration,
             is_dotted,
         }
     }
@@ -389,6 +467,7 @@ impl<'r> MeasureItem<'r> {
             }
             MeasureItemKind::Note {
                 note,
+                is_upside_down,
                 ledger_line,
                 stem,
                 accidental,

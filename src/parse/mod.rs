@@ -3,7 +3,11 @@
 use crate::{
     midi::Octave,
     note::Accidental,
-    render::{self, Duration, KeySignature, Measure, Note, Renderer, Staff},
+    render::{
+        self,
+        measure::{self, item::Duration},
+        KeySignature, Measure, Note, Renderer, Staff,
+    },
     Key, Natural, Pitch,
 };
 use std::{iter::Peekable, str::Chars};
@@ -69,12 +73,14 @@ impl<'a> Parser<'a> {
                                 notes,
                                 duration,
                                 is_dotted,
-                            } => render::MeasureItem::chord(*duration, *is_dotted, notes, renderer),
+                            } => {
+                                measure::MeasureItem::chord(*duration, *is_dotted, notes, renderer)
+                            }
                             MeasureItem::Note {
                                 note,
                                 duration,
                                 is_dotted,
-                            } => render::MeasureItem::chord(
+                            } => measure::MeasureItem::chord(
                                 *duration,
                                 *is_dotted,
                                 &[*note],

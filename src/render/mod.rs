@@ -10,9 +10,6 @@ use svg::{
     Document, Node,
 };
 
-pub mod chord;
-pub use chord::{Duration, MeasureItem, RenderNote};
-
 pub mod measure;
 pub use measure::{KeySignature, Measure};
 

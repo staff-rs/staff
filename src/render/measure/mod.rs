@@ -1,7 +1,11 @@
-use super::{note::note_index, Duration, MeasureItem, Renderer};
+use super::{note::note_index, Renderer};
 use crate::{midi::Octave, Key};
 use svg::Node;
 use text_svg::Glpyh;
+
+pub mod item;
+use self::item::Duration;
+pub use self::item::MeasureItem;
 
 pub struct KeySignature<'r> {
     clef_glyph: Glpyh<'r>,
