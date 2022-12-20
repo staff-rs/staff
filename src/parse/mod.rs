@@ -10,7 +10,7 @@ use crate::{
     },
     Key, Natural,
 };
-use std::{iter::Peekable, str::Chars};
+use std::iter::Peekable;
 
 mod tokens;
 pub use tokens::{Group, Token, Tokens};
@@ -43,7 +43,7 @@ pub enum Item {
 }
 
 pub struct Parser<'a> {
-    tokens: Tokens<'a>,
+    tokens: Peekable<Tokens<'a>>,
 }
 
 impl<'a> Parser<'a> {
@@ -83,7 +83,7 @@ impl<'a> Iterator for Parser<'a> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut current_duration = DurationKind::Whole;
+        let mut current_duration = Duration::new(DurationKind::Whole, false);
         let mut current_measure: Option<Vec<MeasureItem>> = None;
         let mut has_notes = false;
         loop {
@@ -108,15 +108,7 @@ impl<'a> Iterator for Parser<'a> {
                     }
                     "key" => {
                         if let Some(Token::Literal(literal)) = self.tokens.next() {
-                            let mut chars = literal.chars().peekable();
-                            let c = chars.next().unwrap();
-                            let mut is_dotted = false;
-                            let (natural, _, accidental) = parse_note_parts(
-                                c,
-                                &mut chars,
-                                &mut current_duration,
-                                &mut is_dotted,
-                            );
+                            let (natural, _, accidental, _used) = parse_note_parts(literal);
                             let root = crate::Note::new(
                                 natural,
                                 accidental.unwrap_or(Accidental::Natural),
@@ -145,22 +137,21 @@ impl<'a> Iterator for Parser<'a> {
                 },
                 Some(Token::Start(Group::Chord)) => {
                     let mut notes = Vec::new();
-                    let mut is_dotted = false;
                     loop {
                         match self.tokens.next() {
                             Some(Token::Literal(literal)) => {
-                                let mut chars = literal.chars().peekable();
-                                let c = chars.next().unwrap();
-                                let note = parse_note(
-                                    c,
-                                    &mut chars,
-                                    &mut current_duration,
-                                    &mut is_dotted,
-                                );
+                                let (note, _used) = parse_note(literal);
                                 notes.push(note);
+                            }
+                            Some(Token::End(Group::Chord)) => {
+                                if let Some(Token::Literal(literal)) = self.tokens.peek() {
+                                    if let Some((duration, _)) = parse_duration(literal) {
+                                        self.tokens.next();
+                                        current_duration = duration;
+                                    }
+                                }
                                 break;
                             }
-                            Some(Token::End(Group::Chord)) => break,
                             _ => todo!(),
                         }
                     }
@@ -168,7 +159,7 @@ impl<'a> Iterator for Parser<'a> {
                     has_notes = true;
                     let chord = MeasureItem::Chord {
                         notes,
-                        duration: Duration::new(current_duration, is_dotted),
+                        duration: current_duration,
                     };
                     if let Some(measure) = &mut current_measure {
                         measure.push(chord);
@@ -177,15 +168,15 @@ impl<'a> Iterator for Parser<'a> {
                     }
                 }
                 Some(Token::Literal(literal)) => {
-                    let mut is_dotted = false;
-                    let mut chars = literal.chars().peekable();
-                    let c = chars.next().unwrap();
-                    let note = parse_note(c, &mut chars, &mut current_duration, &mut is_dotted);
+                    let (note, used) = parse_note(literal);
+                    if let Some((duration, _used)) = parse_duration(&literal[used..]) {
+                        current_duration = duration;
+                    }
 
                     has_notes = true;
                     let item = MeasureItem::Note {
                         note,
-                        duration: Duration::new(current_duration, is_dotted),
+                        duration: current_duration,
                     };
                     if let Some(measure) = &mut current_measure {
                         measure.push(item);
@@ -215,91 +206,88 @@ impl<'a> Iterator for Parser<'a> {
 
 impl<'a> From<&'a str> for Parser<'a> {
     fn from(input: &'a str) -> Self {
-        let tokens = Tokens::from(input);
+        let tokens = Tokens::from(input).peekable();
         Self { tokens }
     }
 }
 
-fn parse_note(
-    c: char,
-    chars: &mut Peekable<Chars>,
-    duration: &mut DurationKind,
-    is_dotted: &mut bool,
-) -> Note {
-    let (natural, octave, accidental) = parse_note_parts(c, chars, duration, is_dotted);
-    Note::new(natural, octave, accidental)
+fn parse_note(s: &str) -> (Note, usize) {
+    let (natural, octave, accidental, pos) = parse_note_parts(s);
+    (Note::new(natural, octave, accidental), pos)
 }
 
-fn parse_note_parts(
-    c: char,
-    chars: &mut Peekable<Chars>,
-    duration: &mut DurationKind,
-    is_dotted: &mut bool,
-) -> (Natural, Octave, Option<Accidental>) {
-    let natural = Natural::try_from(c).unwrap();
+fn parse_note_parts(s: &str) -> (Natural, Octave, Option<Accidental>, usize) {
+    let natural_c = s.chars().next().unwrap();
+    let natural = Natural::try_from(natural_c).unwrap();
 
-    let accidental = match chars.peek() {
+    let mut pos = 1;
+    let accidental = match s.chars().nth(pos) {
         Some('i') => {
-            chars.next();
-            if chars.next() != Some('s') {
+            if s.chars().nth(pos + 1) != Some('s') {
                 todo!()
             }
+            pos += 2;
             Some(Accidental::Sharp)
         }
         Some('e') => {
-            chars.next();
-            if chars.next() != Some('s') {
+            if s.chars().nth(pos + 1) != Some('s') {
                 todo!()
             }
+            pos += 2;
             Some(Accidental::Flat)
         }
         _ => None,
     };
 
     let mut i = 0;
-    match chars.peek() {
+    match s.chars().nth(pos) {
         Some('\'') => {
-            chars.next();
+            pos += 1;
             i = 1;
 
-            while chars.peek().copied() == Some('\'') {
-                chars.next();
+            while s.chars().nth(pos) == Some('\'') {
+                pos += 1;
                 i += 1;
             }
         }
         Some(',') => {
-            chars.next();
+            pos += 1;
             i = -1;
 
-            while chars.peek().copied() == Some(',') {
-                chars.next();
+            while s.chars().nth(pos) == Some(',') {
+                pos += 1;
                 i -= 1;
             }
         }
         _ => {}
     }
 
-    parse_duration(chars, duration);
-
-    if chars.peek() == Some(&'.') {
-        chars.next();
-        *is_dotted = true;
-    }
-
     // TODO check octave
-    (natural, Octave::new_unchecked(i + 3), accidental)
+    (natural, Octave::new_unchecked(i + 3), accidental, pos)
 }
 
-fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut DurationKind) {
-    if let Some(c) = chars.peek() {
+fn parse_duration(s: &str) -> Option<(Duration, usize)> {
+    let mut pos = 0;
+    if let Some(c) = s.chars().nth(pos) {
         if let Some(n) = c.to_digit(10) {
-            chars.next();
-            *duration = match n {
+            pos += 1;
+            let kind = match n {
                 4 => DurationKind::Quarter,
                 2 => DurationKind::Half,
                 1 => DurationKind::Whole,
                 _ => todo!(),
             };
+
+            let is_dotted = if s.chars().nth(pos + 1) == Some('.') {
+                pos += 1;
+                true
+            } else {
+                false
+            };
+
+            return Some((Duration::new(kind, is_dotted), pos));
         }
     }
+
+    None
 }
