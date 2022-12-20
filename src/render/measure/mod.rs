@@ -1,5 +1,5 @@
 use super::{note::note_index, Renderer};
-use crate::{duration::DurationKind, midi::Octave, Key};
+use crate::{midi::Octave, Key};
 use svg::Node;
 use text_svg::Glpyh;
 
@@ -105,15 +105,8 @@ impl<'r> Measure<'r> {
         for chord in &self.chords {
             chord.svg(chord_x, top, renderer, node);
 
-            let mut duration_spacing = match chord.duration {
-                DurationKind::Quarter => 4.,
-                DurationKind::Half => 2.,
-                DurationKind::Whole => 1.,
-            };
-            if chord.is_dotted {
-                duration_spacing /= 2.;
-            }
-            chord_x += extra_width / duration_spacing + chord.width;
+            let beats = chord.duration.beats(4);
+            chord_x += extra_width / beats + chord.width;
         }
 
         let width = chord_x - x;

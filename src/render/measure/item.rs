@@ -1,5 +1,5 @@
 use crate::{
-    duration::DurationKind,
+    duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
     render::{note::note_index, Note, Renderer},
@@ -125,29 +125,22 @@ pub enum MeasureItemKind<'r> {
 
 pub struct MeasureItem<'r> {
     pub kind: MeasureItemKind<'r>,
-    pub duration: DurationKind,
+    pub duration: Duration,
     pub width: f64,
     pub top: f64,
-    pub is_dotted: bool,
 }
 
 impl<'r> MeasureItem<'r> {
-    pub fn rest(duration: DurationKind, is_dotted: bool, renderer: &Renderer) -> Self {
+    pub fn rest(duration: Duration, _is_dotted: bool, renderer: &Renderer) -> Self {
         Self {
             kind: MeasureItemKind::Rest,
             duration,
             top: 0.,
             width: renderer.note_rx * 2.,
-            is_dotted,
         }
     }
 
-    pub fn note(
-        duration: DurationKind,
-        is_dotted: bool,
-        note: Note,
-        renderer: &'r Renderer,
-    ) -> Self {
+    pub fn note(duration: Duration, note: Note, renderer: &'r Renderer) -> Self {
         let top = if note.index < note_index(Natural::F, Octave::FIVE) {
             -note.index as f64 * renderer.note_ry + renderer.note_ry / 2.
         } else {
@@ -166,16 +159,9 @@ impl<'r> MeasureItem<'r> {
         let render_note = NoteHead::new(note.index, 0.);
         let mut width = renderer.note_rx * 2.;
 
-        let mut duration_spacing = match duration {
-            DurationKind::Quarter => 4.,
-            DurationKind::Half => 2.,
-            DurationKind::Whole => 1.,
-        };
-        if is_dotted {
-            duration_spacing /= 2.;
-        }
+        let beats = duration.beats(4);
 
-        width += renderer.min_spacing / duration_spacing;
+        width += renderer.min_spacing / beats;
         width += accidental_width;
 
         let has_ledger_line = note.index < -2 || note.index > 10;
@@ -183,11 +169,11 @@ impl<'r> MeasureItem<'r> {
             width += renderer.note_rx;
         }
 
-        if is_dotted {
+        if duration.is_dotted {
             width += renderer.note_rx * 2.;
         }
 
-        let has_stem = duration != DurationKind::Whole;
+        let has_stem = duration.kind != DurationKind::Whole;
         let kind = MeasureItemKind::Note {
             note: render_note,
             has_ledger_line,
@@ -200,16 +186,10 @@ impl<'r> MeasureItem<'r> {
             top,
             width,
             duration,
-            is_dotted,
         }
     }
 
-    pub fn chord(
-        duration: DurationKind,
-        is_dotted: bool,
-        notes: &[Note],
-        renderer: &'r Renderer,
-    ) -> Self {
+    pub fn chord(duration: Duration, notes: &[Note], renderer: &'r Renderer) -> Self {
         let high = notes.iter().map(|note| note.index).max().unwrap();
         let low = notes.iter().map(|note| note.index).min().unwrap();
         let top = if low < note_index(Natural::F, Octave::FIVE) {
@@ -345,16 +325,8 @@ impl<'r> MeasureItem<'r> {
             renderer.note_rx * 2.
         };
 
-        let mut duration_spacing = match duration {
-            DurationKind::Quarter => 4.,
-            DurationKind::Half => 2.,
-            DurationKind::Whole => 1.,
-        };
-        if is_dotted {
-            duration_spacing /= 2.;
-        }
-
-        width += renderer.min_spacing / duration_spacing;
+        let beats = duration.beats(4);
+        width += renderer.min_spacing / beats;
 
         width += accidental_width;
 
@@ -362,11 +334,11 @@ impl<'r> MeasureItem<'r> {
             width += renderer.note_rx;
         }
 
-        if is_dotted {
+        if duration.is_dotted {
             width += renderer.note_rx * 2.;
         }
 
-        let stem = if duration != DurationKind::Whole {
+        let stem = if duration.kind != DurationKind::Whole {
             Some(Stem::new(low, high))
         } else {
             None
@@ -384,13 +356,12 @@ impl<'r> MeasureItem<'r> {
             top,
             width,
             duration,
-            is_dotted,
         }
     }
 
     pub fn svg(&self, mut x: f64, top: f64, renderer: &Renderer, node: &mut impl Node) {
         match &self.kind {
-            MeasureItemKind::Rest => match self.duration {
+            MeasureItemKind::Rest => match self.duration.kind {
                 DurationKind::Quarter => {
                     node.append(Glpyh::new(&renderer.font, '𝄽', 75.).path(
                         (x + renderer.note_rx) as _,
@@ -424,7 +395,7 @@ impl<'r> MeasureItem<'r> {
                 };
 
                 // Render note heads
-                let c = match self.duration {
+                let c = match self.duration.kind {
                     DurationKind::Quarter => '𝅘',
                     DurationKind::Half => '𝅗',
                     DurationKind::Whole => '𝅝',
@@ -433,7 +404,7 @@ impl<'r> MeasureItem<'r> {
 
                 let dot_glyph = Glpyh::new(&renderer.font, '.', 75.);
                 for note in notes {
-                    if self.is_dotted {
+                    if self.duration.is_dotted {
                         node.append(dot_glyph.path(
                             (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
                             (top + renderer.note_ry * (note.index as f64 - 1.)) as _,
@@ -482,7 +453,7 @@ impl<'r> MeasureItem<'r> {
                 };
 
                 // Render note heads
-                let c = match self.duration {
+                let c = match self.duration.kind {
                     DurationKind::Quarter => '𝅘',
                     DurationKind::Half => '𝅗',
                     DurationKind::Whole => '𝅝',
@@ -491,7 +462,7 @@ impl<'r> MeasureItem<'r> {
 
                 let dot_glyph = Glpyh::new(&renderer.font, '.', 75.);
 
-                if self.is_dotted {
+                if self.duration.is_dotted {
                     node.append(dot_glyph.path(
                         (note_x + note.x + renderer.note_rx * 1.5 + renderer.stroke_width) as _,
                         (top + renderer.note_ry * (note.index as f64 - 1.)) as _,

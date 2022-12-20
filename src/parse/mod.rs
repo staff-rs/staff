@@ -1,7 +1,7 @@
 //! LilyPond format parsing
 
 use crate::{
-    duration::DurationKind,
+    duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
     render::{
@@ -30,13 +30,11 @@ pub enum Command {
 pub enum MeasureItem {
     Note {
         note: Note,
-        duration: DurationKind,
-        is_dotted: bool,
+        duration: Duration,
     },
     Chord {
         notes: Vec<Note>,
-        duration: DurationKind,
-        is_dotted: bool,
+        duration: Duration,
     },
 }
 
@@ -69,18 +67,12 @@ impl<'a> Parser<'a> {
                     let chords = items
                         .iter()
                         .map(|item| match item {
-                            MeasureItem::Chord {
-                                notes,
-                                duration,
-                                is_dotted,
-                            } => {
-                                measure::MeasureItem::chord(*duration, *is_dotted, notes, renderer)
+                            MeasureItem::Chord { notes, duration } => {
+                                measure::MeasureItem::chord(*duration, notes, renderer)
                             }
-                            MeasureItem::Note {
-                                note,
-                                duration,
-                                is_dotted,
-                            } => measure::MeasureItem::note(*duration, *is_dotted, *note, renderer),
+                            MeasureItem::Note { note, duration } => {
+                                measure::MeasureItem::note(*duration, *note, renderer)
+                            }
                         })
                         .collect();
 
@@ -141,8 +133,7 @@ impl<'a> Iterator for Parser<'a> {
 
                     let chord = MeasureItem::Chord {
                         notes,
-                        duration: current_duration,
-                        is_dotted,
+                        duration: Duration::new(current_duration, is_dotted),
                     };
                     if let Some(measure) = &mut current_measure {
                         measure.push(chord);
@@ -158,8 +149,7 @@ impl<'a> Iterator for Parser<'a> {
 
                     let item = MeasureItem::Note {
                         note,
-                        duration: current_duration,
-                        is_dotted,
+                        duration: Duration::new(current_duration, is_dotted),
                     };
                     if let Some(measure) = &mut current_measure {
                         measure.push(item);

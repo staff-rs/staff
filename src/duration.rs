@@ -7,11 +7,15 @@ pub enum DurationKind {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Duration {
-    kind: DurationKind,
-    is_dotted: bool,
+    pub kind: DurationKind,
+    pub is_dotted: bool,
 }
 
 impl Duration {
+    pub fn new(kind: DurationKind, is_dotted: bool) -> Self {
+        Self { kind, is_dotted }
+    }
+
     pub fn beats(self, unit: u8) -> f64 {
         let mut n = match self.kind {
             DurationKind::Quarter => 4.,
