@@ -400,14 +400,19 @@ impl<'r> MeasureItem<'r> {
                 is_upside_down,
                 has_ledger_line,
                 has_stem,
-                accidental: _,
+                accidental,
             } => {
                 let note_line_extra = renderer.note_rx / 2.;
-                let note_x = if *has_ledger_line {
+                let mut note_x = if *has_ledger_line {
                     x + note_line_extra
                 } else {
                     x
                 };
+
+                if let Some(accidental) = accidental {
+                    note_x += accidental.svg(x, y, renderer, node) as f64;
+                    note_x += renderer.note_rx / 3.;
+                }
 
                 note.draw(note_x, y, *duration, renderer, node);
 
