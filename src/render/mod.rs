@@ -16,6 +16,10 @@ pub use measure::{Clef, Measure};
 mod note;
 pub use note::Note;
 
+pub trait Draw {
+    fn draw(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node);
+}
+
 pub struct Renderer {
     pub document_padding: f64,
     pub note_rx: f64,

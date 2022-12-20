@@ -3,7 +3,7 @@ use crate::{
     duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
-    render::{note::note_index, Note, Renderer},
+    render::{note::note_index, Draw, Note, Renderer},
     Key, Natural,
 };
 use svg::Node;
@@ -13,6 +13,27 @@ pub struct LedgerLine {
     pub note: i64,
     pub is_left: bool,
     pub is_double: bool,
+}
+
+impl Draw for LedgerLine {
+    fn draw(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
+        let note_line_extra = renderer.note_rx / 2.;
+
+        let x1 = if self.is_left {
+            x
+        } else {
+            renderer.note_rx + x
+        };
+
+        let x2 = if self.is_double {
+            x1 + (note_line_extra + renderer.note_rx + renderer.stroke_width) * 2.
+        } else {
+            x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
+        };
+
+        let y = y + renderer.note_ry * self.note as f64;
+        renderer.draw_line(node, x1, y, x2, y)
+    }
 }
 
 pub struct ChordAccidental<'a> {
@@ -212,10 +233,7 @@ impl<'r> MeasureItem<'r> {
                     low_right = low_right.min(note.index);
                 }
 
-                NoteHead {
-                    index: note.index,
-                    x,
-                }
+                NoteHead::new(note.index, x)
             })
             .collect();
 
@@ -422,10 +440,10 @@ impl<'r> MeasureItem<'r> {
                 }
             }
             MeasureItemKind::Clef(clef) => {
-                clef.svg(x, y, renderer, node);
+                clef.draw(x, y, renderer, node);
             }
             MeasureItemKind::KeySignature(key_signature) => {
-                key_signature.svg(x, y, renderer, node);
+                key_signature.draw(x, y, renderer, node);
             }
         }
     }

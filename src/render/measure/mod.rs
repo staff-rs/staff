@@ -4,14 +4,13 @@ use svg::Node;
 mod clef;
 pub use clef::Clef;
 
-pub mod item;
-pub use self::item::MeasureItem;
+mod item;
+pub use self::item::{ChordAccidental, LedgerLine, MeasureItem, MeasureItemKind};
 
 mod key_signature;
 pub use key_signature::KeySignature;
 
 mod note_head;
-use self::item::MeasureItemKind;
 pub use self::note_head::NoteHead;
 
 mod stem;

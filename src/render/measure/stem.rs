@@ -1,6 +1,5 @@
-use svg::Node;
-
 use crate::render::Renderer;
+use svg::Node;
 
 pub struct Stem {
     pub low: i64,

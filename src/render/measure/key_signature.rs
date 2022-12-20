@@ -1,11 +1,11 @@
+use super::NoteHead;
 use crate::{
     midi::Octave,
-    render::{note::note_index, Renderer},
+    render::{note::note_index, Draw, Renderer},
     Key,
 };
 use svg::Node;
 use text_svg::Glpyh;
-use super::NoteHead;
 
 pub struct KeySignature<'r> {
     pub glyph: Glpyh<'r>,
@@ -37,8 +37,10 @@ impl<'r> KeySignature<'r> {
 
         (me, width + renderer.padding)
     }
+}
 
-    pub fn svg(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
+impl Draw for KeySignature<'_> {
+    fn draw(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
         for note_head in &self.accidentals {
             node.append(self.glyph.path(
                 (x + note_head.x) as _,
