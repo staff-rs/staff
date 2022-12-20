@@ -39,7 +39,7 @@ impl<'r> Measure<'r> {
         index: usize,
         renderer: &'r Renderer,
         node: &mut impl Node,
-    ) {
+    ) -> f64 {
         let mut top = y;
         for item in &self.items {
             match &item.kind {
@@ -99,14 +99,13 @@ impl<'r> Measure<'r> {
             }
         }
 
-        let width = item_x - x;
         for line in 0..5 {
             let y = top + (line * 2) as f64 * renderer.note_ry;
             renderer.draw_line(
                 node,
                 x,
                 y,
-                x + width + renderer.stroke_width + renderer.padding,
+                item_x + renderer.stroke_width + renderer.padding,
                 y,
             );
         }
@@ -121,8 +120,7 @@ impl<'r> Measure<'r> {
             );
         }
 
-        let line_x =
-            x + (width + renderer.stroke_width + renderer.padding) + renderer.stroke_width / 2.;
+        let line_x = item_x + renderer.stroke_width + renderer.padding + renderer.stroke_width / 2.;
         renderer.draw_line(
             node,
             line_x,
@@ -130,5 +128,7 @@ impl<'r> Measure<'r> {
             line_x,
             top + renderer.note_ry * 8. + renderer.stroke_width / 2.,
         );
+
+        line_x as f64 + renderer.stroke_width
     }
 }

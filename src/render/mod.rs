@@ -63,7 +63,7 @@ impl Default for Renderer {
             width: 500.,
             height: 200.,
             font,
-            min_spacing: 20.,
+            min_spacing: 18.,
         }
     }
 }
@@ -96,9 +96,7 @@ impl Renderer {
             let measure_exta = remaining / row.measures.len() as f64;
 
             for (index, measure) in row.measures.iter().enumerate() {
-                measure.svg(x, y, measure_exta, index, self, &mut document);
-
-                x += measure.width + measure_exta;
+                x = measure.svg(x, y, measure_exta, index, self, &mut document);
             }
 
             y += 100.;
