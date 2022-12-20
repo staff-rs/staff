@@ -41,8 +41,7 @@ impl<'r> KeySignature<'r> {
         for (index, accidental_x) in &self.accidentals {
             node.append(self.accidental_glyph.path(
                 (x + *accidental_x) as _,
-                (y + renderer.note_ry * (*index as f64)) as f32
-                    - self.accidental_glyph.bounding_box.height() / 2.,
+                (y + renderer.note_ry * (*index as f64)) as f32 - renderer.note_ry as f32 / 2.,
             ));
         }
     }

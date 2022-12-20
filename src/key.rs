@@ -66,6 +66,7 @@ impl IntoIterator for Key {
     type IntoIter = Iter;
 
     fn into_iter(self) -> Self::IntoIter {
+        dbg!(self.flats());
         let (natural, remaining, step) = if self.sharps <= 6 {
             (Natural::F, self.sharps, 4)
         } else {
