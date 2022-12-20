@@ -6,6 +6,12 @@ use text_svg::Glpyh;
 pub mod item;
 pub use self::item::MeasureItem;
 
+mod note_head;
+pub use self::note_head::NoteHead;
+
+mod stem;
+pub use stem::Stem;
+
 pub struct KeySignature<'r> {
     clef_glyph: Glpyh<'r>,
     accidental_glyph: Glpyh<'r>,
