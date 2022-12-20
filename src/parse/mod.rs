@@ -4,7 +4,6 @@ use crate::{
     midi::Octave,
     note::Accidental,
     render::{
-        self,
         measure::{self, item::Duration},
         KeySignature, Measure, Note, Renderer, Staff,
     },

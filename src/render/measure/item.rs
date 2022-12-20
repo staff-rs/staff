@@ -14,9 +14,15 @@ pub enum Duration {
     Whole,
 }
 
-pub struct RenderNote {
+pub struct NoteHead {
     pub index: i64,
     pub x: f64,
+}
+
+impl NoteHead {
+    pub fn new(index: i64, x: f64) -> Self {
+        Self { index, x }
+    }
 }
 
 pub struct LedgerLine {
@@ -72,14 +78,14 @@ impl<'a> ChordAccidental<'a> {
 pub enum MeasureItemKind<'r> {
     Rest,
     Note {
-        note: RenderNote,
+        note: NoteHead,
         is_upside_down: bool,
-        ledger_line: Option<LedgerLine>,
-        stem: Option<ChordStem>,
+        has_ledger_line: bool,
+        has_stem: bool,
         accidental: Option<ChordAccidental<'r>>,
     },
     Chord {
-        notes: Vec<RenderNote>,
+        notes: Vec<NoteHead>,
         is_upside_down: bool,
         ledger_lines: Vec<LedgerLine>,
         stem: Option<ChordStem>,
@@ -112,24 +118,17 @@ impl<'r> MeasureItem<'r> {
         } else {
             0.
         };
-
         let is_upside_down = note.index < note_index(Natural::B, Octave::FIVE);
 
-        let mut accidental_width = 0f64;
-
-        let accidental = note.accidental.map(|accidental| {
+        let (accidental, accidental_width) = if let Some(accidental) = note.accidental {
             let chord_accidental = ChordAccidental::new(accidental, note.index, renderer);
-            accidental_width = chord_accidental.glyph.bounding_box.width() as _;
-            chord_accidental
-        });
-
-        let x = 0.;
-
-        let render_note = RenderNote {
-            index: note.index,
-            x,
+            let accidental_width = chord_accidental.glyph.bounding_box.width() as _;
+            (Some(chord_accidental), accidental_width)
+        } else {
+            (None, 0.)
         };
 
+        let render_note = NoteHead::new(note.index, 0.);
         let mut width = renderer.note_rx * 2.;
 
         let mut duration_spacing = match duration {
@@ -142,11 +141,10 @@ impl<'r> MeasureItem<'r> {
         }
 
         width += renderer.min_spacing / duration_spacing;
-
         width += accidental_width;
 
-        let ledger_line = None;
-        if ledger_line.is_some() {
+        let has_ledger_line = note.index < -2 || note.index > 10;
+        if has_ledger_line {
             width += renderer.note_rx;
         }
 
@@ -154,19 +152,11 @@ impl<'r> MeasureItem<'r> {
             width += renderer.note_rx * 2.;
         }
 
-        let stem = if duration != Duration::Whole {
-            Some(ChordStem {
-                low: note.index,
-                high: note.index,
-            })
-        } else {
-            None
-        };
-
+        let has_stem = duration != Duration::Whole;
         let kind = MeasureItemKind::Note {
             note: render_note,
-            ledger_line,
-            stem,
+            has_ledger_line,
+            has_stem,
             accidental,
             is_upside_down,
         };
@@ -245,7 +235,7 @@ impl<'r> MeasureItem<'r> {
                     low_right = low_right.min(note.index);
                 }
 
-                RenderNote {
+                NoteHead {
                     index: note.index,
                     x,
                 }
@@ -466,11 +456,11 @@ impl<'r> MeasureItem<'r> {
                 }
             }
             MeasureItemKind::Note {
-                note,
-                is_upside_down,
-                ledger_line,
-                stem,
-                accidental,
+                note: _,
+                is_upside_down: _,
+                has_ledger_line: _,
+                has_stem: _,
+                accidental: _,
             } => todo!(),
         }
     }
