@@ -39,6 +39,8 @@
 pub mod chord;
 pub use chord::Chord;
 
+pub mod duration;
+
 pub mod fmt;
 pub use fmt::Format;
 

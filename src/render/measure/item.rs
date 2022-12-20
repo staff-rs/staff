@@ -1,4 +1,5 @@
 use crate::{
+    duration::DurationKind,
     midi::Octave,
     note::Accidental,
     render::{note::note_index, Note, Renderer},
@@ -6,13 +7,6 @@ use crate::{
 };
 use svg::Node;
 use text_svg::Glpyh;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Duration {
-    Quarter,
-    Half,
-    Whole,
-}
 
 pub struct NoteHead {
     pub index: i64,
@@ -95,14 +89,14 @@ pub enum MeasureItemKind<'r> {
 
 pub struct MeasureItem<'r> {
     pub kind: MeasureItemKind<'r>,
-    pub duration: Duration,
+    pub duration: DurationKind,
     pub width: f64,
     pub top: f64,
     pub is_dotted: bool,
 }
 
 impl<'r> MeasureItem<'r> {
-    pub fn rest(duration: Duration, is_dotted: bool, renderer: &Renderer) -> Self {
+    pub fn rest(duration: DurationKind, is_dotted: bool, renderer: &Renderer) -> Self {
         Self {
             kind: MeasureItemKind::Rest,
             duration,
@@ -112,7 +106,12 @@ impl<'r> MeasureItem<'r> {
         }
     }
 
-    pub fn note(duration: Duration, is_dotted: bool, note: Note, renderer: &'r Renderer) -> Self {
+    pub fn note(
+        duration: DurationKind,
+        is_dotted: bool,
+        note: Note,
+        renderer: &'r Renderer,
+    ) -> Self {
         let top = if note.index < note_index(Natural::F, Octave::FIVE) {
             -note.index as f64 * renderer.note_ry + renderer.note_ry / 2.
         } else {
@@ -132,9 +131,9 @@ impl<'r> MeasureItem<'r> {
         let mut width = renderer.note_rx * 2.;
 
         let mut duration_spacing = match duration {
-            Duration::Quarter => 4.,
-            Duration::Half => 2.,
-            Duration::Whole => 1.,
+            DurationKind::Quarter => 4.,
+            DurationKind::Half => 2.,
+            DurationKind::Whole => 1.,
         };
         if is_dotted {
             duration_spacing /= 2.;
@@ -152,7 +151,7 @@ impl<'r> MeasureItem<'r> {
             width += renderer.note_rx * 2.;
         }
 
-        let has_stem = duration != Duration::Whole;
+        let has_stem = duration != DurationKind::Whole;
         let kind = MeasureItemKind::Note {
             note: render_note,
             has_ledger_line,
@@ -170,7 +169,7 @@ impl<'r> MeasureItem<'r> {
     }
 
     pub fn chord(
-        duration: Duration,
+        duration: DurationKind,
         is_dotted: bool,
         notes: &[Note],
         renderer: &'r Renderer,
@@ -311,9 +310,9 @@ impl<'r> MeasureItem<'r> {
         };
 
         let mut duration_spacing = match duration {
-            Duration::Quarter => 4.,
-            Duration::Half => 2.,
-            Duration::Whole => 1.,
+            DurationKind::Quarter => 4.,
+            DurationKind::Half => 2.,
+            DurationKind::Whole => 1.,
         };
         if is_dotted {
             duration_spacing /= 2.;
@@ -331,7 +330,7 @@ impl<'r> MeasureItem<'r> {
             width += renderer.note_rx * 2.;
         }
 
-        let stem = if duration != Duration::Whole {
+        let stem = if duration != DurationKind::Whole {
             Some(ChordStem { low, high })
         } else {
             None
@@ -356,14 +355,14 @@ impl<'r> MeasureItem<'r> {
     pub fn svg(&self, mut x: f64, renderer: &Renderer, node: &mut impl Node) {
         match &self.kind {
             MeasureItemKind::Rest => match self.duration {
-                Duration::Quarter => {
+                DurationKind::Quarter => {
                     node.append(Glpyh::new(&renderer.font, '𝄽', 75.).path(
                         (x + renderer.note_rx) as _,
                         (self.top + renderer.note_ry * 3.) as _,
                     ));
                 }
-                Duration::Half => todo!(),
-                Duration::Whole => todo!(),
+                DurationKind::Half => todo!(),
+                DurationKind::Whole => todo!(),
             },
             MeasureItemKind::Chord {
                 notes,
@@ -390,9 +389,9 @@ impl<'r> MeasureItem<'r> {
 
                 // Render note heads
                 let c = match self.duration {
-                    Duration::Quarter => '𝅘',
-                    Duration::Half => '𝅗',
-                    Duration::Whole => '𝅝',
+                    DurationKind::Quarter => '𝅘',
+                    DurationKind::Half => '𝅗',
+                    DurationKind::Whole => '𝅝',
                 };
                 let glyph = Glpyh::new(&renderer.font, c, 75.);
 

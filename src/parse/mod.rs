@@ -1,10 +1,11 @@
 //! LilyPond format parsing
 
 use crate::{
+    duration::DurationKind,
     midi::Octave,
     note::Accidental,
     render::{
-        measure::{self, item::Duration},
+        measure::{self},
         KeySignature, Measure, Note, Renderer, Staff,
     },
     Key, Natural, Pitch,
@@ -29,12 +30,12 @@ pub enum Command {
 pub enum MeasureItem {
     Note {
         note: Note,
-        duration: Duration,
+        duration: DurationKind,
         is_dotted: bool,
     },
     Chord {
         notes: Vec<Note>,
-        duration: Duration,
+        duration: DurationKind,
         is_dotted: bool,
     },
 }
@@ -102,7 +103,7 @@ impl<'a> Iterator for Parser<'a> {
     type Item = Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut current_duration = Duration::Whole;
+        let mut current_duration = DurationKind::Whole;
         let mut current_measure: Option<Vec<MeasureItem>> = None;
         loop {
             match self.tokens.next() {
@@ -199,7 +200,7 @@ impl<'a> From<&'a str> for Parser<'a> {
 fn parse_note(
     c: char,
     chars: &mut Peekable<Chars>,
-    duration: &mut Duration,
+    duration: &mut DurationKind,
     is_dotted: &mut bool,
 ) -> Note {
     let natural = Natural::try_from(c).unwrap();
@@ -256,14 +257,14 @@ fn parse_note(
     Note::new(natural, Octave::new_unchecked(i + 3), accidental)
 }
 
-fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut Duration) {
+fn parse_duration(chars: &mut Peekable<Chars>, duration: &mut DurationKind) {
     if let Some(c) = chars.peek() {
         if let Some(n) = c.to_digit(10) {
             chars.next();
             *duration = match n {
-                4 => Duration::Quarter,
-                2 => Duration::Half,
-                1 => Duration::Whole,
+                4 => DurationKind::Quarter,
+                2 => DurationKind::Half,
+                1 => DurationKind::Whole,
                 _ => todo!(),
             };
         }

@@ -1,10 +1,9 @@
 use super::{note::note_index, Renderer};
-use crate::{midi::Octave, Key};
+use crate::{duration::DurationKind, midi::Octave, Key};
 use svg::Node;
 use text_svg::Glpyh;
 
 pub mod item;
-use self::item::Duration;
 pub use self::item::MeasureItem;
 
 pub struct KeySignature<'r> {
@@ -107,9 +106,9 @@ impl<'r> Measure<'r> {
             chord.svg(chord_x, renderer, node);
 
             let mut duration_spacing = match chord.duration {
-                Duration::Quarter => 4.,
-                Duration::Half => 2.,
-                Duration::Whole => 1.,
+                DurationKind::Quarter => 4.,
+                DurationKind::Half => 2.,
+                DurationKind::Whole => 1.,
             };
             if chord.is_dotted {
                 duration_spacing /= 2.;
