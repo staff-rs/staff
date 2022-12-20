@@ -11,7 +11,7 @@ use svg::{
 };
 
 pub mod measure;
-pub use measure::{KeySignature, Measure};
+pub use measure::{Clef, Measure};
 
 mod note;
 pub use note::Note;

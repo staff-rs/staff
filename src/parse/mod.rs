@@ -6,7 +6,7 @@ use crate::{
     note::Accidental,
     render::{
         measure::{self},
-        KeySignature, Measure, Note, Renderer, Staff,
+        Clef, Measure, Note, Renderer, Staff,
     },
     Key, Natural, Pitch,
 };
@@ -58,7 +58,7 @@ impl<'a> Parser<'a> {
                 Item::Command(cmd) => match cmd {
                     Command::Clef { kind } => match kind {
                         ClefKind::Treble => {
-                            key_signature = Some(KeySignature::new(Key::major(Pitch::C), renderer));
+                            key_signature = Some(Clef::new(Key::major(Pitch::C), renderer));
                         }
                         _ => todo!(),
                     },
@@ -76,7 +76,7 @@ impl<'a> Parser<'a> {
                         })
                         .collect();
 
-                    let measure = Measure::new(chords, key_signature.take(), renderer);
+                    let measure = Measure::new(chords, renderer);
                     staff.push(renderer, measure);
                 }
             }

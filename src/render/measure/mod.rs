@@ -1,89 +1,31 @@
-use super::{note::note_index, Renderer};
-use crate::{midi::Octave, Key};
+use super::Renderer;
 use svg::Node;
-use text_svg::Glpyh;
+
+mod clef;
+pub use clef::Clef;
 
 pub mod item;
 pub use self::item::MeasureItem;
 
 mod note_head;
+use self::item::MeasureItemKind;
 pub use self::note_head::NoteHead;
 
 mod stem;
 pub use stem::Stem;
 
-pub struct KeySignature<'r> {
-    clef_glyph: Glpyh<'r>,
-    accidental_glyph: Glpyh<'r>,
-    width: f64,
-    accidentals: Vec<(i64, f64)>,
-}
-
-impl<'r> KeySignature<'r> {
-    pub fn new(key: Key, renderer: &'r Renderer) -> Self {
-        let clef_glyph = Glpyh::new(&renderer.font, '𝄞', (renderer.note_ry * 10.) as _);
-        let mut width = clef_glyph.bounding_box.width() as f64 + renderer.padding;
-
-        // TODO
-        let spacing = 1.;
-        let c = if key.is_sharp() { '♯' } else { '♭' };
-        let accidental_glyph = Glpyh::new(&renderer.font, c, (renderer.accidental_size) as _);
-
-        let accidentals = key
-            .into_iter()
-            .map(|natural| {
-                let x = width;
-                width += accidental_glyph.bounding_box.width() as f64 + spacing;
-                (note_index(natural, Octave::FIVE), x)
-            })
-            .collect();
-
-        Self {
-            clef_glyph,
-            accidental_glyph,
-            width: width + renderer.padding,
-            accidentals,
-        }
-    }
-
-    pub fn svg(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
-        node.append(self.clef_glyph.path(x as _, (y - renderer.note_ry) as _));
-
-        for (index, accidental_x) in &self.accidentals {
-            node.append(self.accidental_glyph.path(
-                (x + *accidental_x) as _,
-                (y + renderer.note_ry * (*index as f64)) as f32
-                    - self.accidental_glyph.bounding_box.height() / 2.,
-            ));
-        }
-    }
-}
-
 pub struct Measure<'r> {
     chords: Vec<MeasureItem<'r>>,
-    key_signature: Option<KeySignature<'r>>,
     pub width: f64,
 }
 
 impl<'r> Measure<'r> {
-    pub fn new(
-        chords: Vec<MeasureItem<'r>>,
-        key_signature: Option<KeySignature<'r>>,
-        renderer: &'r Renderer,
-    ) -> Self {
-        let width: f64 = key_signature
-            .as_ref()
-            .map(|key_signature| key_signature.width)
-            .unwrap_or(0.)
-            + chords.iter().map(|chord| chord.width).sum::<f64>()
+    pub fn new(chords: Vec<MeasureItem<'r>>, renderer: &'r Renderer) -> Self {
+        let width: f64 = chords.iter().map(|chord| chord.width).sum::<f64>()
             + renderer.padding * 2.
             + renderer.stroke_width * 2.;
 
-        Self {
-            chords,
-            key_signature,
-            width,
-        }
+        Self { chords, width }
     }
 
     pub fn svg(
@@ -96,23 +38,66 @@ impl<'r> Measure<'r> {
         node: &mut impl Node,
     ) {
         let mut top = y;
-        for chord in &self.chords {
-            top = top.max(chord.top);
+        for item in &self.chords {
+            match &item.kind {
+                MeasureItemKind::Chord {
+                    top: chord_top,
+                    duration: _,
+                    notes: _,
+                    is_upside_down: _,
+                    ledger_lines: _,
+                    stem: _,
+                    accidentals: _,
+                } => {
+                    top = top.max(*chord_top);
+                }
+                MeasureItemKind::Note {
+                    top: note_top,
+                    duration: _,
+                    note: _,
+                    is_upside_down: _,
+                    has_ledger_line: _,
+                    has_stem: _,
+                    accidental: _,
+                } => {
+                    top = top.max(*note_top);
+                }
+                _ => {}
+            }
         }
         top += renderer.document_padding;
 
         let mut chord_x = x + renderer.padding;
 
-        if let Some(key_signature) = &self.key_signature {
-            key_signature.svg(chord_x, top, renderer, node);
-            chord_x += key_signature.width;
-        }
-
         for chord in &self.chords {
             chord.svg(chord_x, top, renderer, node);
 
-            let beats = chord.duration.beats(4);
-            chord_x += extra_width / beats + chord.width;
+            let duration = match &chord.kind {
+                MeasureItemKind::Chord {
+                    top,
+                    duration,
+                    notes,
+                    is_upside_down,
+                    ledger_lines,
+                    stem,
+                    accidentals,
+                } => Some(duration),
+                MeasureItemKind::Note {
+                    top,
+                    duration,
+                    note,
+                    is_upside_down,
+                    has_ledger_line,
+                    has_stem,
+                    accidental,
+                } => Some(duration),
+                MeasureItemKind::Rest { duration } => Some(duration),
+                _ => None,
+            };
+            if let Some(duration) = duration {
+                chord_x += extra_width / duration.beats(4);
+            }
+            chord_x += chord.width;
         }
 
         let width = chord_x - x;

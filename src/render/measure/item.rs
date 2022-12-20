@@ -1,4 +1,4 @@
-use super::{NoteHead, Stem};
+use super::{Clef, NoteHead, Stem};
 use crate::{
     duration::{Duration, DurationKind},
     midi::Octave,
@@ -55,8 +55,12 @@ impl<'a> ChordAccidental<'a> {
 }
 
 pub enum MeasureItemKind<'r> {
-    Rest,
+    Rest {
+        duration: Duration,
+    },
     Note {
+        top: f64,
+        duration: Duration,
         note: NoteHead,
         is_upside_down: bool,
         has_ledger_line: bool,
@@ -64,27 +68,26 @@ pub enum MeasureItemKind<'r> {
         accidental: Option<ChordAccidental<'r>>,
     },
     Chord {
+        top: f64,
+        duration: Duration,
         notes: Vec<NoteHead>,
         is_upside_down: bool,
         ledger_lines: Vec<LedgerLine>,
         stem: Option<Stem>,
         accidentals: Vec<ChordAccidental<'r>>,
     },
+    Clef(Clef<'r>),
 }
 
 pub struct MeasureItem<'r> {
     pub kind: MeasureItemKind<'r>,
-    pub duration: Duration,
     pub width: f64,
-    pub top: f64,
 }
 
 impl<'r> MeasureItem<'r> {
-    pub fn rest(duration: Duration, _is_dotted: bool, renderer: &Renderer) -> Self {
+    pub fn rest(duration: Duration, renderer: &Renderer) -> Self {
         Self {
-            kind: MeasureItemKind::Rest,
-            duration,
-            top: 0.,
+            kind: MeasureItemKind::Rest { duration },
             width: renderer.note_rx * 2.,
         }
     }
@@ -124,18 +127,15 @@ impl<'r> MeasureItem<'r> {
 
         let has_stem = duration.kind != DurationKind::Whole;
         let kind = MeasureItemKind::Note {
+            top,
+            duration,
             note: render_note,
             has_ledger_line,
             has_stem,
             accidental,
             is_upside_down,
         };
-        Self {
-            kind,
-            top,
-            width,
-            duration,
-        }
+        Self { kind, width }
     }
 
     pub fn chord(duration: Duration, notes: &[Note], renderer: &'r Renderer) -> Self {
@@ -294,43 +294,42 @@ impl<'r> MeasureItem<'r> {
         };
 
         let kind = MeasureItemKind::Chord {
+            duration,
             notes,
             ledger_lines,
             stem,
             is_upside_down,
             accidentals,
-        };
-        Self {
-            kind,
             top,
-            width,
-            duration,
-        }
+        };
+        Self { kind, width }
     }
 
-    pub fn svg(&self, mut x: f64, top: f64, renderer: &Renderer, node: &mut impl Node) {
+    pub fn svg(&self, mut x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {
         match &self.kind {
-            MeasureItemKind::Rest => match self.duration.kind {
+            MeasureItemKind::Rest { duration } => match duration.kind {
                 DurationKind::Quarter => {
-                    node.append(Glpyh::new(&renderer.font, '𝄽', 75.).path(
-                        (x + renderer.note_rx) as _,
-                        (self.top + renderer.note_ry * 3.) as _,
-                    ));
+                    node.append(
+                        Glpyh::new(&renderer.font, '𝄽', 75.)
+                            .path((x + renderer.note_rx) as _, renderer.note_ry as f32 * 3.),
+                    );
                 }
                 DurationKind::Half => todo!(),
                 DurationKind::Whole => todo!(),
             },
             MeasureItemKind::Chord {
+                top: _,
                 notes,
                 ledger_lines,
                 stem,
                 is_upside_down,
                 accidentals,
+                duration,
             } => {
                 let mut accidentals_width = 0.;
                 if !accidentals.is_empty() {
                     for chord_accidental in accidentals {
-                        let width = chord_accidental.svg(x, top, &renderer, node);
+                        let width = chord_accidental.svg(x, y, &renderer, node);
                         accidentals_width = width as f64;
                     }
                     x += accidentals_width + renderer.note_rx / 2.;
@@ -344,20 +343,20 @@ impl<'r> MeasureItem<'r> {
                 };
 
                 // Render note heads
-                let c = match self.duration.kind {
+                let c = match duration.kind {
                     DurationKind::Quarter => '𝅘',
                     DurationKind::Half => '𝅗',
                     DurationKind::Whole => '𝅝',
                 };
                 let glyph = Glpyh::new(&renderer.font, c, 75.);
-                let dot_glyph = if self.duration.is_dotted {
+                let dot_glyph = if duration.is_dotted {
                     Some(Glpyh::new(&renderer.font, '.', 75.))
                 } else {
                     None
                 };
 
                 for note in notes {
-                    note.draw_with_glyph(note_x, top, &glyph, dot_glyph.as_ref(), renderer, node)
+                    note.draw_with_glyph(note_x, y, &glyph, dot_glyph.as_ref(), renderer, node)
                 }
 
                 for line in ledger_lines {
@@ -373,15 +372,17 @@ impl<'r> MeasureItem<'r> {
                         x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
                     };
 
-                    let y = top + renderer.note_ry * line.note as f64;
+                    let y = y + renderer.note_ry * line.note as f64;
                     renderer.draw_line(node, x1, y, x2, y)
                 }
 
                 if let Some(stem) = &stem {
-                    stem.svg(note_x, top, *is_upside_down, renderer, node);
+                    stem.svg(note_x, y, *is_upside_down, renderer, node);
                 }
             }
             MeasureItemKind::Note {
+                duration,
+                top: _,
                 note,
                 is_upside_down,
                 has_ledger_line,
@@ -395,13 +396,14 @@ impl<'r> MeasureItem<'r> {
                     x
                 };
 
-                note.draw(note_x, top, self.duration, renderer, node);
+                note.draw(note_x, y, *duration, renderer, node);
 
                 if *has_stem {
                     let stem = Stem::new(note.index, note.index);
-                    stem.svg(note_x, top, *is_upside_down, renderer, node);
+                    stem.svg(note_x, y, *is_upside_down, renderer, node);
                 }
             }
+            MeasureItemKind::Clef(clef) => todo!(),
         }
     }
 }
