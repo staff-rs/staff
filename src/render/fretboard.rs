@@ -24,7 +24,7 @@ impl Draw for Fretboard {
         let width = renderer.width - padding * 2.;
         let height = renderer.height - padding * 2.;
         let fret_width = width / 5.;
-        let fret_height = height / 6.;
+        let fret_height = height / 7.;
 
         // TODO
         let x = x + padding;
@@ -32,29 +32,49 @@ impl Draw for Fretboard {
 
         for idx in 0..6 {
             let line_x = x + fret_width * idx as f64;
-            renderer.draw_line(node, line_x, y, line_x, height);
+            renderer.draw_line(node, line_x, y + fret_height, line_x, height);
         }
 
         for idx in 0..6 {
-            let line_y = y + fret_height * idx as f64;
+            let line_y = y + fret_height * idx as f64 + fret_height;
             renderer.draw_line(node, x, line_y, width + padding, line_y);
         }
 
         for fret in &self.frets {
-            let circle_height = fret_height / 1.5;
-            let rect = Rectangle::new()
-                .set(
-                    "x",
-                    x + fret_width * fret.strings.start as f64 - circle_height / 2.,
-                )
-                .set("y", fret.pos as f64 * fret_height + y + circle_height / 4.)
-                .set(
-                    "width",
-                    fret_width * (fret.strings.end - fret.strings.start) as f64 + circle_height,
-                )
-                .set("height", circle_height)
-                .set("rx", circle_height / 2.);
-            node.append(rect);
+            let draw_height = fret_height / 1.5;
+
+            if fret.strings.start >= fret.strings.end {
+                let x = x + fret_width * fret.strings.start as f64 + fret_width / 4.;
+                renderer.draw_line(
+                    node,
+                    x,
+                    y + fret_height / 4.,
+                    x + fret_width / 2.,
+                    y + fret_height * 0.75,
+                );
+                renderer.draw_line(
+                    node,
+                    x + fret_width / 2.,
+                    y + fret_height / 4.,
+                    x,
+                    y + fret_height * 0.75,
+                );
+            } else {
+                let rect = Rectangle::new()
+                    .set(
+                        "x",
+                        x + fret_width * fret.strings.start as f64 - draw_height / 2.,
+                    )
+                    .set("y", fret.pos as f64 * fret_height + y + draw_height / 4.)
+                    .set(
+                        "width",
+                        fret_width * (fret.strings.end - 1 - fret.strings.start) as f64
+                            + draw_height,
+                    )
+                    .set("height", draw_height)
+                    .set("rx", draw_height / 2.);
+                node.append(rect);
+            }
         }
     }
 }
@@ -66,7 +86,7 @@ mod tests {
 
     #[test]
     fn f() {
-        let frets = vec![Fret::new(0, 1..5), Fret::new(2, 0..2), Fret::new(3, 1..1)];
+        let frets = vec![Fret::new(0, 3..3), Fret::new(0, 0..1), Fret::new(3, 1..2)];
         let fretboard = Fretboard { frets };
 
         let mut renderer = Renderer::default();
