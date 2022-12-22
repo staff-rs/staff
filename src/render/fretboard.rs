@@ -4,19 +4,40 @@ use svg::node::element::Rectangle;
 use text_svg::Glpyh;
 
 pub struct Fret {
-    pos: usize,
+    pos: u8,
     strings: Range<u8>,
 }
 
 impl Fret {
-    pub fn new(pos: usize, strings: Range<u8>) -> Self {
+    pub fn new(pos: u8, strings: Range<u8>) -> Self {
         Self { pos, strings }
+    }
+
+    pub fn point(pos: u8, string: u8) -> Self {
+        Self::new(pos, string..string + 1)
     }
 }
 
+#[derive(Default)]
 pub struct Fretboard {
     starting_fret: u8,
     frets: Vec<Fret>,
+}
+
+impl Fretboard {
+    pub fn push(&mut self, fret: Fret) -> Result<(), Fret> {
+        let is_intersection =
+            self.frets.iter().filter(|f| f.pos == fret.pos).any(|f| {
+                f.strings.start <= fret.strings.end && fret.strings.start <= f.strings.end
+            });
+
+        if !is_intersection {
+            self.frets.push(fret);
+            Ok(())
+        } else {
+            Err(fret)
+        }
+    }
 }
 
 impl Draw for Fretboard {
