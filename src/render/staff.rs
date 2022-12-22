@@ -48,7 +48,5 @@ impl Draw for Staff<'_> {
 
             y += 100.;
         }
-
-     
     }
 }

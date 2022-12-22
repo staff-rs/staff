@@ -1,5 +1,4 @@
 //! Sheet music engraving
-
 use font_kit::{
     family_name::FamilyName, handle::Handle, properties::Properties, source::SystemSource,
 };
@@ -10,13 +9,15 @@ use svg::{
     Document, Node,
 };
 
+pub mod fretboard;
+
 pub mod measure;
 
 mod note;
-pub use note::Note;
+pub use self::note::Note;
 
 pub mod staff;
-pub use staff::Staff;
+pub use self::staff::Staff;
 
 pub trait Draw {
     fn draw(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node);
