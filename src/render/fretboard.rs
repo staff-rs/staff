@@ -34,7 +34,7 @@ impl Draw for Fretboard {
 
         // TODO
         let mut x = x + padding;
-        let y = y + padding;
+        let mut y = y + padding;
 
         if self.starting_fret > 0 {
             x += (font_size + letter_spacing) * 2.;
@@ -57,9 +57,26 @@ impl Draw for Fretboard {
             renderer.draw_line(node, line_x, y + fret_height, line_x, height);
         }
 
-        for idx in 0..6 {
-            let line_y = y + fret_height * idx as f64 + fret_height;
-            renderer.draw_line(node, x, line_y, x + fret_width * 5., line_y);
+        let line_y = y + fret_height;
+        renderer.draw_line_with_stroke_width(
+            node,
+            x - renderer.stroke_width / 2.,
+            line_y,
+            x + fret_width * 5. + renderer.stroke_width / 2.,
+            line_y,
+            renderer.stroke_width * 2.,
+        );
+        y += renderer.stroke_width;
+
+        for idx in 1..6 {
+            let line_y = line_y + fret_height * idx as f64;
+            renderer.draw_line(
+                node,
+                x - renderer.stroke_width / 2.,
+                line_y,
+                x + fret_width * 5. + renderer.stroke_width / 2.,
+                line_y,
+            );
         }
 
         for fret in &self.frets {
@@ -121,7 +138,7 @@ mod tests {
 
         let mut renderer = Renderer::default();
         renderer.width = 400.;
-        renderer.height = 300.;
+        renderer.height = 250.;
         let svg = renderer.render(&fretboard);
         svg::save("./fretboard.svg", &svg).unwrap();
     }

@@ -96,10 +96,22 @@ impl Renderer {
     }
 
     fn draw_line<T: Node>(&self, node: &mut T, x1: f64, y1: f64, x2: f64, y2: f64) {
+        self.draw_line_with_stroke_width(node, x1, y1, x2, y2, self.stroke_width)
+    }
+
+    fn draw_line_with_stroke_width<T: Node>(
+        &self,
+        node: &mut T,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
+        stroke_width: f64,
+    ) {
         node.append(
             Line::new()
                 .set("stroke", "#000")
-                .set("stroke-width", self.stroke_width)
+                .set("stroke-width", stroke_width)
                 .set("x1", x1)
                 .set("y1", y1)
                 .set("x2", x2)
