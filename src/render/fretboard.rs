@@ -1,8 +1,9 @@
 use super::Draw;
-use std::ops::Range;
+use std::{mem, ops::Range};
 use svg::node::element::Rectangle;
 use text_svg::Glpyh;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Fret {
     pos: u8,
     strings: Range<u8>,
@@ -44,6 +45,14 @@ impl Default for Fretboard {
 
 impl Fretboard {
     pub fn push(&mut self, fret: Fret) -> Result<(), Fret> {
+        if fret.pos >= self.strings {
+            return Err(fret);
+        }
+
+        if fret.strings.start >= self.fret_count || fret.strings.end >= self.fret_count {
+            return Err(fret);
+        }
+
         let is_intersection =
             self.frets.iter().filter(|f| f.pos == fret.pos).any(|f| {
                 f.strings.start <= fret.strings.end && fret.strings.start <= f.strings.end
@@ -55,6 +64,14 @@ impl Fretboard {
         } else {
             Err(fret)
         }
+    }
+
+    pub fn set_strings(&mut self, strings: u8) {
+        self.strings = strings;
+
+        let frets = mem::replace(&mut self.frets, Vec::new());
+        let iter = frets.into_iter().filter(|fret| fret.pos < strings);
+        self.frets.extend(iter);
     }
 }
 
@@ -165,9 +182,9 @@ mod tests {
     #[test]
     fn f() {
         let mut fretboard = Fretboard::default();
-        fretboard.push(Fret::new(0, 3..3));
-        fretboard.push(Fret::new(2, 0..1));
-        fretboard.push(Fret::new(1, 0..3));
+        fretboard.push(Fret::new(0, 3..3)).unwrap();
+        fretboard.push(Fret::new(2, 0..1)).unwrap();
+        fretboard.push(Fret::new(1, 0..3)).unwrap();
 
         let mut renderer = Renderer::default();
         renderer.width = 400.;
