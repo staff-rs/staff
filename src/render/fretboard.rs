@@ -1,6 +1,6 @@
 use super::Draw;
 use std::ops::Range;
-use svg::node::element::Rectangle;
+use svg::node::element::{Element, Rectangle};
 
 pub struct Fret {
     pos: usize,
@@ -60,7 +60,7 @@ impl Draw for Fretboard {
                     y + fret_height * 0.75,
                 );
             } else {
-                let rect = Rectangle::new()
+                let mut rect = Rectangle::new()
                     .set(
                         "x",
                         x + fret_width * fret.strings.start as f64 - draw_height / 2.,
@@ -73,6 +73,11 @@ impl Draw for Fretboard {
                     )
                     .set("height", draw_height)
                     .set("rx", draw_height / 2.);
+
+                if fret.pos == 0 {
+                    rect = rect.set("stroke", "#000").set("fill", "transparent")
+                }
+
                 node.append(rect);
             }
         }
