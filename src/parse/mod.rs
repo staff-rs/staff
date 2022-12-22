@@ -5,8 +5,8 @@ use crate::{
     midi::Octave,
     note::Accidental,
     render::{
-        measure::{self},
-        Measure, Note, Renderer, Staff,
+        measure::{self, Measure},
+        Note, Renderer, Staff,
     },
     Key, Natural,
 };

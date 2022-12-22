@@ -11,10 +11,12 @@ use svg::{
 };
 
 pub mod measure;
-pub use measure::{Clef, Measure};
 
 mod note;
 pub use note::Note;
+
+pub mod staff;
+pub use staff::Staff;
 
 pub trait Draw {
     fn draw(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node);
@@ -73,7 +75,7 @@ impl Default for Renderer {
 }
 
 impl Renderer {
-    pub fn render(&self, staff: &Staff) -> Document {
+    pub fn render(&self, draw: &impl Draw) -> Document {
         let mut document = svg::Document::new()
             .set("width", self.width)
             .set("height", self.height);
@@ -87,24 +89,7 @@ impl Renderer {
                 .set("height", self.height),
         );
 
-        let mut y = 0.;
-        for row in &staff.rows {
-            let mut x = self.stroke_width + self.document_padding;
-
-            let measures_width = row
-                .measures
-                .iter()
-                .map(|measure| measure.width)
-                .sum::<f64>();
-            let remaining = self.width - measures_width - self.document_padding * 2.;
-            let measure_exta = remaining / row.measures.len() as f64;
-
-            for (index, measure) in row.measures.iter().enumerate() {
-                x = measure.svg(x, y, measure_exta, index, self, &mut document);
-            }
-
-            y += 100.;
-        }
+        draw.draw(0., 0., self, &mut document);
 
         document
     }
@@ -119,34 +104,5 @@ impl Renderer {
                 .set("x2", x2)
                 .set("y2", y2),
         )
-    }
-}
-
-pub struct Row<'r> {
-    measures: Vec<Measure<'r>>,
-    width: f64,
-}
-
-#[derive(Default)]
-pub struct Staff<'r> {
-    rows: Vec<Row<'r>>,
-}
-
-impl<'r> Staff<'r> {
-    pub fn push(&mut self, renderer: &Renderer, measure: Measure<'r>) {
-        if let Some(row) = self.rows.last_mut() {
-            let width = row.width + measure.width;
-            if width < renderer.width {
-                row.measures.push(measure);
-                row.width = width;
-                return;
-            }
-        }
-
-        let row = Row {
-            width: measure.width,
-            measures: vec![measure],
-        };
-        self.rows.push(row);
     }
 }
