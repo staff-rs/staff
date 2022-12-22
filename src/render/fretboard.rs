@@ -18,10 +18,28 @@ impl Fret {
     }
 }
 
-#[derive(Default)]
 pub struct Fretboard {
-    starting_fret: u8,
     frets: Vec<Fret>,
+    starting_fret: u8,
+    fret_count: u8,
+    strings: u8,
+    font_size: f64,
+    letter_spacing: f64,
+    padding: f64,
+}
+
+impl Default for Fretboard {
+    fn default() -> Self {
+        Self {
+            frets: Vec::new(),
+            starting_fret: 12,
+            fret_count: 5,
+            strings: 6,
+            font_size: 48.,
+            letter_spacing: 2.,
+            padding: 10.,
+        }
+    }
 }
 
 impl Fretboard {
@@ -42,40 +60,35 @@ impl Fretboard {
 
 impl Draw for Fretboard {
     fn draw(&self, x: f64, y: f64, renderer: &super::Renderer, node: &mut impl svg::Node) {
-        let font_size = 48.;
-        let letter_spacing = 2.;
-
-        let padding = 10.;
-        let margin = (padding + (font_size + letter_spacing) * 2.) * 2.;
+        let margin = (self.padding + (self.font_size + self.letter_spacing) * 2.) * 2.;
 
         let width = renderer.width - margin;
-        let height = renderer.height - padding * 2.;
-        let fret_width = width / 6.;
-        let fret_height = height / 7.;
+        let height = renderer.height - self.padding * 2.;
+        let fret_width = width / (self.strings) as f64;
+        let fret_height = height / (self.fret_count + 1) as f64;
 
-        // TODO
-        let mut x = x + padding;
-        let mut y = y + padding;
+        let mut x = x + self.padding;
+        let mut y = y + self.padding;
 
+        x += (self.font_size + self.letter_spacing) * 2.;
         if self.starting_fret > 0 {
-            x += (font_size + letter_spacing) * 2.;
             let mut glyph_x = x;
 
             let glyph_y = y + fret_height;
             let s = self.starting_fret.to_string();
 
             for c in s.chars().rev() {
-                let glyph = Glpyh::new(&renderer.font, c, font_size as _);
-                glyph_x -= glyph.bounding_box.width() as f64 + letter_spacing;
+                let glyph = Glpyh::new(&renderer.font, c, self.font_size as _);
+                glyph_x -= glyph.bounding_box.width() as f64 + self.letter_spacing;
                 node.append(glyph.path(glyph_x as _, glyph_y as _));
             }
         }
 
         x += fret_width / 2.;
 
-        for idx in 0..6 {
+        for idx in 0..self.strings {
             let line_x = x + fret_width * idx as f64;
-            renderer.draw_line(node, line_x, y + fret_height, line_x, height);
+            renderer.draw_line(node, line_x, y + fret_height, line_x, height - self.padding);
         }
 
         let line_y = y + fret_height;
@@ -83,19 +96,19 @@ impl Draw for Fretboard {
             node,
             x - renderer.stroke_width / 2.,
             line_y,
-            x + fret_width * 5. + renderer.stroke_width / 2.,
+            x + (fret_width * (self.strings - 1) as f64) + renderer.stroke_width / 2.,
             line_y,
             renderer.stroke_width * 2.,
         );
         y += renderer.stroke_width;
 
-        for idx in 1..6 {
+        for idx in 1..self.fret_count {
             let line_y = line_y + fret_height * idx as f64;
             renderer.draw_line(
                 node,
                 x - renderer.stroke_width / 2.,
                 line_y,
-                x + fret_width * 5. + renderer.stroke_width / 2.,
+                x + fret_width * (self.strings - 1) as f64 + renderer.stroke_width / 2.,
                 line_y,
             );
         }
@@ -151,11 +164,10 @@ mod tests {
 
     #[test]
     fn f() {
-        let frets = vec![Fret::new(0, 3..3), Fret::new(0, 0..1), Fret::new(3, 1..2)];
-        let fretboard = Fretboard {
-            starting_fret: 12,
-            frets,
-        };
+        let mut fretboard = Fretboard::default();
+        fretboard.push(Fret::new(0, 3..3));
+        fretboard.push(Fret::new(2, 0..1));
+        fretboard.push(Fret::new(1, 0..3));
 
         let mut renderer = Renderer::default();
         renderer.width = 400.;
