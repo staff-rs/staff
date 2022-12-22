@@ -1,6 +1,6 @@
 use super::Draw;
 use std::ops::Range;
-use svg::node::element::{Element, Rectangle};
+use svg::node::element::Rectangle;
 
 pub struct Fret {
     pos: usize,
@@ -44,7 +44,7 @@ impl Draw for Fretboard {
             let draw_height = fret_height / 1.5;
 
             if fret.strings.start >= fret.strings.end {
-                let x = x + fret_width * fret.strings.start as f64 + fret_width / 4.;
+                let x = x + fret_width * fret.strings.start as f64 - fret_width / 4.;
                 renderer.draw_line(
                     node,
                     x,
