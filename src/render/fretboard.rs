@@ -1,7 +1,11 @@
+use crate::{fretboard::STANDARD, midi::MidiNote};
+
 use super::{Draw, Renderer};
 use std::{mem, ops::Range};
 use svg::node::element::Rectangle;
 use text_svg::Glpyh;
+
+pub type Iter = crate::fretboard::Fretboard<[MidiNote; 6], Vec<Option<u8>>>;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Fret {
@@ -127,6 +131,22 @@ impl Fretboard {
         } else {
             None
         }
+    }
+
+    pub fn midi_notes(&self) -> Iter {
+        let mut frets: Vec<Option<u8>> = vec![None; self.builder.strings as _];
+        for fret in &self.frets {
+            let pos = fret.pos + self.builder.starting_fret;
+            for idx in fret.strings.clone() {
+                if let Some(last) = &mut frets[idx as usize] {
+                    *last = (*last).max(pos);
+                } else {
+                    frets[idx as usize] = Some(pos);
+                }
+            }
+        }
+
+        Iter::new(STANDARD, frets)
     }
 }
 
