@@ -1,6 +1,7 @@
 use super::Draw;
 use std::ops::Range;
 use svg::node::element::Rectangle;
+use text_svg::Glpyh;
 
 pub struct Fret {
     pos: usize,
@@ -14,21 +15,42 @@ impl Fret {
 }
 
 pub struct Fretboard {
+    starting_fret: u8,
     frets: Vec<Fret>,
 }
 
 impl Draw for Fretboard {
     fn draw(&self, x: f64, y: f64, renderer: &super::Renderer, node: &mut impl svg::Node) {
-        let padding = 20.;
+        let font_size = 48.;
+        let letter_spacing = 2.;
 
-        let width = renderer.width - padding * 2.;
+        let padding = 10.;
+        let margin = (padding + (font_size + letter_spacing) * 2.) * 2.;
+
+        let width = renderer.width - margin;
         let height = renderer.height - padding * 2.;
-        let fret_width = width / 5.;
+        let fret_width = width / 6.;
         let fret_height = height / 7.;
 
         // TODO
-        let x = x + padding;
+        let mut x = x + padding;
         let y = y + padding;
+
+        if self.starting_fret > 0 {
+            x += (font_size + letter_spacing) * 2.;
+            let mut glyph_x = x;
+
+            let glyph_y = y + fret_height;
+            let s = self.starting_fret.to_string();
+
+            for c in s.chars().rev() {
+                let glyph = Glpyh::new(&renderer.font, c, font_size as _);
+                glyph_x -= glyph.bounding_box.width() as f64 + letter_spacing;
+                node.append(glyph.path(glyph_x as _, glyph_y as _));
+            }
+        }
+
+        x += fret_width / 2.;
 
         for idx in 0..6 {
             let line_x = x + fret_width * idx as f64;
@@ -37,7 +59,7 @@ impl Draw for Fretboard {
 
         for idx in 0..6 {
             let line_y = y + fret_height * idx as f64 + fret_height;
-            renderer.draw_line(node, x, line_y, width + padding, line_y);
+            renderer.draw_line(node, x, line_y, x + fret_width * 5., line_y);
         }
 
         for fret in &self.frets {
@@ -92,11 +114,14 @@ mod tests {
     #[test]
     fn f() {
         let frets = vec![Fret::new(0, 3..3), Fret::new(0, 0..1), Fret::new(3, 1..2)];
-        let fretboard = Fretboard { frets };
+        let fretboard = Fretboard {
+            starting_fret: 12,
+            frets,
+        };
 
         let mut renderer = Renderer::default();
-        renderer.width = 200.;
-        renderer.height = 250.;
+        renderer.width = 400.;
+        renderer.height = 300.;
         let svg = renderer.render(&fretboard);
         svg::save("./fretboard.svg", &svg).unwrap();
     }
