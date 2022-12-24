@@ -8,10 +8,11 @@ repository = "https://github.com/staff-rs/staff"
 homepage = "https://staff-rs.github.io"
 
 [features]
-cli = ["anyhow", "clap", "render"]
-render = ["dep:font-kit", "dep:rusttype", "dep:svg", "dep:text-svg"]
+cli = ["anyhow", "clap", "svg"]
+render = []
+svg = ["dep:font-kit", "dep:rusttype", "dep:svg", "dep:text-svg"]
 serde = ["dep:serde"]
-default = ["cli"]
+default = ["render", "svg"]
 
 [lib]
 name = "staff"
@@ -28,6 +29,7 @@ font-kit = { version = "0.11.0", optional = true }
 rusttype = { version = "0.9.3", optional = true }
 svg = { version = "0.12.1", optional = true }
 text-svg = { version = "0.1.2", optional = true }
+wasm-bindgen = { version = "0.2.83", optional = true }
 
 [dependencies.clap]
 version = "4.0.18"

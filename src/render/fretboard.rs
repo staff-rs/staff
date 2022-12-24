@@ -1,15 +1,19 @@
 use crate::{fretboard::STANDARD, midi::MidiNote};
-
-use super::{Draw, Renderer};
 use std::{mem, ops::Range};
-use svg::node::element::Rectangle;
-use text_svg::Glpyh;
+
+#[cfg(feature = "svg")]
+use svg::node::{element, Node};
+
+#[cfg(feature = "wasm-bindgen")]
+use wasm_bindgen::prelude::wasm_bindgen;
 
 pub type Iter = crate::fretboard::Fretboard<[MidiNote; 6], Vec<Option<u8>>>;
 
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Fret {
-    pos: u8,
+    pub pos: u8,
+
     strings: Range<u8>,
 }
 
@@ -20,6 +24,16 @@ impl Fret {
 
     pub fn point(pos: u8, string: u8) -> Self {
         Self::new(pos, string..string + 1)
+    }
+
+    pub fn is_intersection(&self, other: &Self) -> bool {
+        self.pos == other.pos
+            && self.strings.start < other.strings.end
+            && self.strings.end > other.strings.start
+    }
+
+    pub fn strings(&self) -> Range<u8> {
+        self.strings.clone()
     }
 }
 
@@ -46,15 +60,12 @@ impl Default for Builder {
 }
 
 impl Builder {
-    pub fn build(self, renderer: &Renderer) -> Fretboard {
-        let margin = (self.padding + (self.font_size + self.letter_spacing) * 2.) * 2.;
-        let width = renderer.width - margin;
-        let height = renderer.height - self.padding * 2.;
-        let fret_width = width / (self.strings) as f64;
+    pub fn build(self, width: f64, height: f64) -> Fretboard {
+        let height = height - self.padding * 2.;
+        let fret_width = fret_width(width, self.strings);
         let fret_height = height / (self.fret_count + 1) as f64;
 
         Fretboard {
-            margin,
             width,
             height,
             fret_width,
@@ -65,10 +76,71 @@ impl Builder {
     }
 }
 
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Line {
+    pub x1: f64,
+    pub y1: f64,
+    pub x2: f64,
+    pub y2: f64,
+    pub stroke_width: f64,
+}
+
+impl Line {
+    pub fn new(x1: f64, y1: f64, x2: f64, y2: f64, stroke_width: f64) -> Self {
+        Self {
+            x1,
+            y1,
+            x2,
+            y2,
+            stroke_width,
+        }
+    }
+
+    #[cfg(feature = "svg")]
+    pub fn svg<T: Node>(&self, node: &mut T) {
+        node.append(
+            element::Line::new()
+                .set("stroke", "#000")
+                .set("stroke-width", self.stroke_width)
+                .set("x1", self.x1)
+                .set("y1", self.y1)
+                .set("x2", self.x2)
+                .set("y2", self.y2),
+        )
+    }
+}
+
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Rectangle {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+    pub stroke_width: f64,
+}
+
+impl Rectangle {
+    pub fn new(x: f64, y: f64, width: f64, height: f64, stroke_width: f64) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+            stroke_width,
+        }
+    }
+}
+
+pub enum Fretted {
+    Rectangle(Rectangle),
+    Cross { lines: [Line; 2] },
+}
+
 pub struct Fretboard {
     pub builder: Builder,
     pub frets: Vec<Fret>,
-    pub margin: f64,
     pub width: f64,
     pub height: f64,
     pub fret_width: f64,
@@ -80,32 +152,25 @@ impl Fretboard {
         Builder::default()
     }
 
-    pub fn push(&mut self, fret: Fret) -> Result<(), Fret> {
-        if fret.pos >= self.builder.strings {
-            return Err(fret);
-        }
-
-        if fret.strings.start >= self.builder.fret_count
-            || fret.strings.end >= self.builder.fret_count
+    pub fn push(&mut self, fret: Fret) -> Option<usize> {
+        if fret.pos >= self.builder.fret_count
+            || fret.strings.start > self.builder.strings
+            || fret.strings.end > self.builder.strings
         {
-            return Err(fret);
+            return None;
         }
 
-        let is_intersection =
-            self.frets.iter().filter(|f| f.pos == fret.pos).any(|f| {
-                f.strings.start <= fret.strings.end && fret.strings.start <= f.strings.end
-            });
-
-        if !is_intersection {
-            self.frets.push(fret);
-            Ok(())
+        if let Some(idx) = self.intersection(&fret) {
+            Some(idx)
         } else {
-            Err(fret)
+            self.frets.push(fret);
+            None
         }
     }
 
     pub fn shrink_strings(&mut self, strings: u8) {
         self.builder.strings = strings;
+        self.fret_width = fret_width(self.width, strings);
 
         let frets = mem::replace(&mut self.frets, Vec::new());
         let iter = frets.into_iter().filter(|fret| fret.pos < strings);
@@ -124,13 +189,14 @@ impl Fretboard {
     }
 
     pub fn pos(&self, x: f64, y: f64) -> Option<(u8, u8)> {
-        if x > self.margin && y > self.builder.padding {
-            let string = (x - self.margin) / self.fret_width;
-            let fret = (y - self.builder.padding) / self.fret_height;
-            Some((string.round() as _, fret.round() as _))
-        } else {
-            None
-        }
+        let x = x - self.fret_width / 2.;
+        let string = x / self.fret_width;
+        let fret = (y - self.builder.padding) / self.fret_height;
+        Some((string.round() as _, fret.round() as _))
+    }
+
+    pub fn intersection(&self, fret: &Fret) -> Option<usize> {
+        self.frets.iter().position(|f| f.is_intersection(fret))
     }
 
     pub fn midi_notes(&self) -> Iter {
@@ -148,10 +214,112 @@ impl Fretboard {
 
         Iter::new(STANDARD, frets)
     }
-}
 
-impl Draw for Fretboard {
-    fn draw(&self, x: f64, y: f64, renderer: &super::Renderer, node: &mut impl svg::Node) {
+    pub fn render_grid(&self, mut draw_line: impl FnMut(Line)) {
+        let x = self.fret_width / 2.;
+        let mut y = 0.;
+        let stroke_width = 2.;
+        for idx in 0..self.builder.strings {
+            let line_x = x + self.fret_width * idx as f64;
+            draw_line(Line::new(
+                line_x,
+                y + self.fret_height,
+                line_x,
+                self.height - self.builder.padding,
+                stroke_width,
+            ));
+        }
+
+        let line_y = y + self.fret_height;
+        draw_line(Line::new(
+            x - stroke_width / 2.,
+            line_y,
+            x + (self.fret_width * (self.builder.strings - 1) as f64) + stroke_width / 2.,
+            line_y,
+            stroke_width * 2.,
+        ));
+        y += stroke_width;
+
+        for idx in 1..self.builder.fret_count {
+            let line_y = line_y + self.fret_height * idx as f64;
+            draw_line(Line::new(
+                x - stroke_width / 2.,
+                line_y,
+                x + self.fret_width * (self.builder.strings - 1) as f64 + stroke_width / 2.,
+                line_y,
+                stroke_width,
+            ));
+        }
+    }
+
+    pub fn render_single_fretted(
+        &self,
+        x: f64,
+        y: f64,
+        stroke_width: f64,
+        fret: &Fret,
+        mut draw_fretted: impl FnMut(Fretted),
+    ) {
+        let x = x + self.fret_width / 2.;
+        let draw_height = self.fret_height / 1.5;
+
+        if fret.strings.start >= fret.strings.end {
+            let x = x + self.fret_width * fret.strings.start as f64 - self.fret_width / 4.;
+            let lines = [
+                Line::new(
+                    x,
+                    y + self.fret_height / 4.,
+                    x + self.fret_width / 2.,
+                    y + self.fret_height * 0.75,
+                    stroke_width,
+                ),
+                Line::new(
+                    x + self.fret_width / 2.,
+                    y + self.fret_height / 4.,
+                    x,
+                    y + self.fret_height * 0.75,
+                    stroke_width,
+                ),
+            ];
+            draw_fretted(Fretted::Cross { lines })
+        } else {
+            let mut rect = Rectangle::new(
+                x + self.fret_width * fret.strings.start as f64 - draw_height / 2.,
+                fret.pos as f64 * self.fret_height + y + draw_height / 4.,
+                self.fret_width * (fret.strings.end - 1 - fret.strings.start) as f64 + draw_height,
+                draw_height,
+                draw_height / 2.,
+            );
+
+            if fret.pos == 0 {
+                //rect = rect.set("stroke", "#000").set("fill", "transparent")
+            }
+
+            draw_fretted(Fretted::Rectangle(rect))
+        }
+    }
+
+    pub fn render_fretted(
+        &self,
+        x: f64,
+        y: f64,
+        stroke_width: f64,
+        mut draw_fretted: impl FnMut(Fretted),
+    ) {
+        for fret in &self.frets {
+            self.render_single_fretted(x, y, stroke_width, fret, &mut draw_fretted)
+        }
+    }
+
+    #[cfg(feature = "svg")]
+    pub fn svg(&self, x: f64, y: f64, font: &rusttype::Font) -> svg::Document {
+        use font_kit::font::Font;
+        use svg::{node::element, Node};
+
+        let mut document = svg::Document::new()
+            .set("width", self.width)
+            .set("height", self.height);
+
         let mut x = x + self.builder.padding;
         let mut y = y + self.builder.padding;
 
@@ -163,111 +331,18 @@ impl Draw for Fretboard {
             let s = self.builder.starting_fret.to_string();
 
             for c in s.chars().rev() {
-                let glyph = Glpyh::new(&renderer.font, c, self.builder.font_size as _);
+                let glyph = text_svg::Glpyh::new(font, c, self.builder.font_size as _);
                 glyph_x -= glyph.bounding_box.width() as f64 + self.builder.letter_spacing;
-                node.append(glyph.path(glyph_x as _, glyph_y as _));
+                document.append(glyph.path(glyph_x as _, glyph_y as _));
             }
         }
 
-        x += self.fret_width / 2.;
+        self.render_grid(|line| line.svg(&mut document));
 
-        for idx in 0..self.builder.strings {
-            let line_x = x + self.fret_width * idx as f64;
-            renderer.draw_line(
-                node,
-                line_x,
-                y + self.fret_height,
-                line_x,
-                self.height - self.builder.padding,
-            );
-        }
-
-        let line_y = y + self.fret_height;
-        renderer.draw_line_with_stroke_width(
-            node,
-            x - renderer.stroke_width / 2.,
-            line_y,
-            x + (self.fret_width * (self.builder.strings - 1) as f64) + renderer.stroke_width / 2.,
-            line_y,
-            renderer.stroke_width * 2.,
-        );
-        y += renderer.stroke_width;
-
-        for idx in 1..self.builder.fret_count {
-            let line_y = line_y + self.fret_height * idx as f64;
-            renderer.draw_line(
-                node,
-                x - renderer.stroke_width / 2.,
-                line_y,
-                x + self.fret_width * (self.builder.strings - 1) as f64
-                    + renderer.stroke_width / 2.,
-                line_y,
-            );
-        }
-
-        for fret in &self.frets {
-            let draw_height = self.fret_height / 1.5;
-
-            if fret.strings.start >= fret.strings.end {
-                let x = x + self.fret_width * fret.strings.start as f64 - self.fret_width / 4.;
-                renderer.draw_line(
-                    node,
-                    x,
-                    y + self.fret_height / 4.,
-                    x + self.fret_width / 2.,
-                    y + self.fret_height * 0.75,
-                );
-                renderer.draw_line(
-                    node,
-                    x + self.fret_width / 2.,
-                    y + self.fret_height / 4.,
-                    x,
-                    y + self.fret_height * 0.75,
-                );
-            } else {
-                let mut rect = Rectangle::new()
-                    .set(
-                        "x",
-                        x + self.fret_width * fret.strings.start as f64 - draw_height / 2.,
-                    )
-                    .set(
-                        "y",
-                        fret.pos as f64 * self.fret_height + y + draw_height / 4.,
-                    )
-                    .set(
-                        "width",
-                        self.fret_width * (fret.strings.end - 1 - fret.strings.start) as f64
-                            + draw_height,
-                    )
-                    .set("height", draw_height)
-                    .set("rx", draw_height / 2.);
-
-                if fret.pos == 0 {
-                    rect = rect.set("stroke", "#000").set("fill", "transparent")
-                }
-
-                node.append(rect);
-            }
-        }
+        document
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{Fret, Fretboard};
-    use crate::render::Renderer;
-
-    #[test]
-    fn f() {
-        let mut renderer = Renderer::default();
-        let mut fretboard = Fretboard::builder().build(&renderer);
-        fretboard.push(Fret::new(0, 3..3)).unwrap();
-        fretboard.push(Fret::new(2, 0..1)).unwrap();
-        fretboard.push(Fret::new(1, 0..3)).unwrap();
-
-        renderer.width = 400.;
-        renderer.height = 250.;
-        let svg = renderer.render(&fretboard);
-        svg::save("./fretboard.svg", &svg).unwrap();
-    }
+fn fret_width(width: f64, strings: u8) -> f64 {
+    width / strings as f64
 }

@@ -52,6 +52,7 @@ pub use interval::Interval;
 mod key;
 pub use crate::key::Key;
 
+#[cfg(feature = "svg")]
 pub mod parse;
 
 mod natural;
