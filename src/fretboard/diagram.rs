@@ -25,8 +25,16 @@ impl Fretted {
         Self { pos, strings }
     }
 
+    pub fn barre(pos: u8, start: u8, end: u8) -> Self {
+        Self::new(pos, StringRange::new(start, end))
+    }
+
     pub fn point(pos: u8, string: u8) -> Self {
-        Self::new(pos, StringRange::new(string, string + 1))
+        Self::barre(pos, string, string + 1)
+    }
+
+    pub fn muted(pos: u8, string: u8) -> Self {
+        Self::barre(pos, string, string)
     }
 
     pub fn is_intersection(&self, other: &Self) -> bool {

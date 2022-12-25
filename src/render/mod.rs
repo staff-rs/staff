@@ -1,7 +1,5 @@
 //! Sheet music engraving
 
-pub mod fretboard;
-
 #[cfg(feature = "svg")]
 pub mod staff;
 #[cfg(feature = "svg")]

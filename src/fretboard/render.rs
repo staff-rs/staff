@@ -1,5 +1,7 @@
-use super::{Line, Rectangle};
-use crate::fretboard::diagram::{Diagram, Fretted};
+use crate::{
+    fretboard::diagram::{Diagram, Fretted},
+    render::{Line, Rectangle},
+};
 use std::mem;
 
 #[cfg(feature = "svg")]
@@ -13,7 +15,7 @@ pub enum Marker {
     Cross { lines: [Line; 2] },
 }
 
-pub struct Fretboard {
+pub struct Renderer {
     pub diagram: Diagram,
     pub width: f64,
     pub height: f64,
@@ -21,7 +23,7 @@ pub struct Fretboard {
     pub fret_height: f64,
 }
 
-impl Fretboard {
+impl Renderer {
     pub fn new(diagram: Diagram, width: f64, height: f64) -> Self {
         let fret_width = fret_width(width, diagram.strings);
         let fret_height = height / (diagram.frets + 1) as f64;

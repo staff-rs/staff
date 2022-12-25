@@ -7,7 +7,13 @@ use crate::{
 };
 use core::iter::Zip;
 
-pub mod diagram;
+ mod diagram;
+ pub use diagram::{Diagram, Fretted, StringRange};
+
+#[cfg(feature = "render")]
+pub mod render;
+#[cfg(feature = "render")]
+pub use render::Renderer;
 
 pub const STANDARD: [MidiNote; 6] = [
     MidiNote::new(Pitch::E, Octave::FOUR),
