@@ -75,11 +75,11 @@ impl Rectangle {
     }
 
     #[cfg(feature = "svg")]
-    pub fn svg(&self, _x: f64, node: &mut impl svg::Node) {
+    pub fn svg(&self, node: &mut impl svg::Node) {
         use svg::node::element;
 
         let element = element::Rectangle::new()
-            .set("fill", "#000")
+            .set("stroke", "#000")
             .set("stroke-width", self.stroke_width)
             .set("x", self.x)
             .set("y", self.y)

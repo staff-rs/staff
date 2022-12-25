@@ -1,7 +1,5 @@
-use crate::{
-    fretboard::diagram::{Diagram, Fretted},
-    midi::MidiNote,
-};
+use super::{Line, Rectangle};
+use crate::fretboard::diagram::{Diagram, Fretted};
 use std::mem;
 
 #[cfg(feature = "svg")]
@@ -9,10 +7,6 @@ use svg::node::{element, Node};
 
 #[cfg(feature = "wasm-bindgen")]
 use wasm_bindgen::prelude::wasm_bindgen;
-
-use super::{Line, Rectangle};
-
-pub type Iter = crate::fretboard::Fretboard<[MidiNote; 6], Vec<Option<u8>>>;
 
 pub enum Marker {
     Rectangle(Rectangle),
@@ -126,17 +120,18 @@ impl Fretboard {
             ];
             draw_fretted(Marker::Cross { lines })
         } else {
-            let rect = Rectangle::new(
+            let mut rect = Rectangle::new(
                 x + self.fret_width * fret.strings.start as f64 - draw_height / 2.,
                 fret.pos as f64 * self.fret_height + y + draw_height / 4.,
                 self.fret_width * (fret.strings.end - 1 - fret.strings.start) as f64 + draw_height,
                 draw_height,
-                draw_height / 2.,
+                0.,
                 true,
             );
 
             if fret.pos == 0 {
-                //rect = rect.set("stroke", "#000").set("fill", "transparent")
+                rect.stroke_width = 2.;
+                rect.is_filled = false;
             }
 
             draw_fretted(Marker::Rectangle(rect))
@@ -167,7 +162,7 @@ impl Fretboard {
     ) -> svg::Document {
         let glyphs_width = (font_size + letter_spacing) * 2.;
         let mut document = svg::Document::new()
-            .set("width", self.width + glyphs_width)
+            .set("width", self.width + glyphs_width + self.fret_width / 2.)
             .set("height", self.height);
 
         document.append(
@@ -175,7 +170,7 @@ impl Fretboard {
                 .set("fill", "#fff")
                 .set("x", 0)
                 .set("y", 0)
-                .set("width", self.width + glyphs_width)
+                .set("width", self.width + glyphs_width + self.fret_width / 2.)
                 .set("height", self.height),
         );
 
@@ -206,7 +201,7 @@ impl Fretboard {
                 }
             }
             Marker::Rectangle(rect) => {
-                rect.svg(0., &mut document);
+                rect.svg(&mut document);
             }
         });
 
