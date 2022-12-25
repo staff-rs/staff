@@ -1,15 +1,16 @@
-use staff::render::{
-    font,
-    fretboard::{Fretboard, Fretted},
+use staff::{
+    fretboard::diagram::{Diagram, Fretted, StringRange},
+    render::{font, fretboard::Fretboard},
 };
 
 fn main() {
-    let mut fretboard = Fretboard::builder().build(150., 200.);
-    fretboard.insert(Fretted::new(0, 3..3));
-    fretboard.insert(Fretted::new(2, 0..1));
-    fretboard.insert(Fretted::new(1, 0..3));
+    let mut diagram = Diagram::default();
+    diagram.insert(Fretted::point(0, 3));
+    diagram.insert(Fretted::new(1, StringRange::new(0, 3)));
+
+    let fretboard = Fretboard::new(diagram, 150., 200.);
 
     let font = font();
-    let svg = fretboard.svg(0., 0., &font);
+    let svg = fretboard.svg(0., 0., 10., 2., 72., &font);
     svg::save("./fretboard.svg", &svg).unwrap();
 }

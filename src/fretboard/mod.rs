@@ -1,12 +1,13 @@
 //! Fretboard iterator for guitar and other instruments
 
-use core::iter::Zip;
-
 use crate::{
     chord::{self, Chords},
     midi::{MidiNote, Octave},
     Interval, Pitch,
 };
+use core::iter::Zip;
+
+pub mod diagram;
 
 pub const STANDARD: [MidiNote; 6] = [
     MidiNote::new(Pitch::E, Octave::FOUR),
