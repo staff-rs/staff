@@ -26,7 +26,7 @@ pub struct Renderer {
 impl Renderer {
     pub fn new(diagram: Diagram, width: f64, height: f64) -> Self {
         let fret_width = fret_width(width, diagram.strings());
-        let fret_height = height / (diagram.frets() + 1) as f64;
+        let fret_height = fret_height(height, diagram.frets());
         Self {
             diagram,
             width,
@@ -36,6 +36,15 @@ impl Renderer {
         }
     }
 
+    pub fn set_strings(&mut self, strings: u8) {
+        self.diagram.set_strings(strings);
+        self.fret_width = fret_width(self.width, strings);
+    }
+
+    pub fn set_frets(&mut self, frets: u8) {
+        self.diagram.set_frets(frets);
+        self.fret_height = fret_height(self.height, frets);
+    }
 
     pub fn render_grid(&self, padding: f64, mut draw_line: impl FnMut(Line)) {
         let x = self.fret_width / 2.;
@@ -195,4 +204,8 @@ impl Renderer {
 
 fn fret_width(width: f64, strings: u8) -> f64 {
     width / strings as f64
+}
+
+fn fret_height(height: f64, frets: u8) -> f64 {
+    height / (frets + 1) as f64
 }
