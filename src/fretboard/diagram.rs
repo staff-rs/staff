@@ -45,15 +45,16 @@ impl Default for Diagram {
 }
 
 impl Diagram {
-    pub fn insert(&mut self, fret: Fretted) -> Option<usize> {
-        if fret.fret >= self.frets || fret.start > self.strings || fret.end > self.strings {
+    pub fn insert(&mut self, fretted: Fretted) -> Option<usize> {
+        if fretted.fret >= self.frets || fretted.start > self.strings || fretted.end > self.strings
+        {
             return None;
         }
 
-        if let Some(idx) = self.intersection(&fret) {
+        if let Some(idx) = self.intersection(&fretted) {
             Some(idx)
         } else {
-            self.fretted.push(fret);
+            self.fretted.push(fretted);
             None
         }
     }
@@ -79,5 +80,17 @@ impl Diagram {
         }
 
         Fretboard::new(tuning, frets)
+    }
+}
+
+impl FromIterator<Fretted> for Diagram {
+    fn from_iter<T: IntoIterator<Item = Fretted>>(iter: T) -> Self {
+        let mut diagram = Self::default();
+
+        for fretted in iter {
+            diagram.insert(fretted);
+        }
+
+        diagram
     }
 }
