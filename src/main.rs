@@ -1,5 +1,6 @@
 use clap::Parser as ClapParser;
-use staff::{parse::Parser, render::Renderer};
+use staff::{parse::Parser, render::staff::renderer::Renderer};
+
 use std::{
     fs::File,
     io::{self, Read, Write},
