@@ -11,13 +11,13 @@ pub type Iter = crate::fretboard::Fretboard<[MidiNote; 6], Vec<Option<u8>>>;
 
 #[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Fret {
+pub struct Fretted {
     pub pos: u8,
 
     strings: Range<u8>,
 }
 
-impl Fret {
+impl Fretted {
     pub fn new(pos: u8, strings: Range<u8>) -> Self {
         Self { pos, strings }
     }
@@ -32,6 +32,7 @@ impl Fret {
             && self.strings.end > other.strings.start
     }
 
+    // TODO for wasm-bindgen
     pub fn strings(&self) -> Range<u8> {
         self.strings.clone()
     }
@@ -162,14 +163,14 @@ impl Rectangle {
     }
 }
 
-pub enum Fretted {
+pub enum Marker {
     Rectangle(Rectangle),
     Cross { lines: [Line; 2] },
 }
 
 pub struct Fretboard {
     pub builder: Builder,
-    pub frets: Vec<Fret>,
+    pub frets: Vec<Fretted>,
     pub width: f64,
     pub height: f64,
     pub fret_width: f64,
@@ -181,7 +182,7 @@ impl Fretboard {
         Builder::default()
     }
 
-    pub fn push(&mut self, fret: Fret) -> Option<usize> {
+    pub fn insert(&mut self, fret: Fretted) -> Option<usize> {
         if fret.pos >= self.builder.fret_count
             || fret.strings.start > self.builder.strings
             || fret.strings.end > self.builder.strings
@@ -224,7 +225,7 @@ impl Fretboard {
         Some((string.round() as _, fret.round() as _))
     }
 
-    pub fn intersection(&self, fret: &Fret) -> Option<usize> {
+    pub fn intersection(&self, fret: &Fretted) -> Option<usize> {
         self.frets.iter().position(|f| f.is_intersection(fret))
     }
 
@@ -286,8 +287,8 @@ impl Fretboard {
         x: f64,
         y: f64,
         stroke_width: f64,
-        fret: &Fret,
-        mut draw_fretted: impl FnMut(Fretted),
+        fret: &Fretted,
+        mut draw_fretted: impl FnMut(Marker),
     ) {
         let x = x + self.fret_width / 2.;
         let draw_height = self.fret_height / 1.5;
@@ -310,7 +311,7 @@ impl Fretboard {
                     stroke_width,
                 ),
             ];
-            draw_fretted(Fretted::Cross { lines })
+            draw_fretted(Marker::Cross { lines })
         } else {
             let rect = Rectangle::new(
                 x + self.fret_width * fret.strings.start as f64 - draw_height / 2.,
@@ -325,7 +326,7 @@ impl Fretboard {
                 //rect = rect.set("stroke", "#000").set("fill", "transparent")
             }
 
-            draw_fretted(Fretted::Rectangle(rect))
+            draw_fretted(Marker::Rectangle(rect))
         }
     }
 
@@ -334,7 +335,7 @@ impl Fretboard {
         x: f64,
         y: f64,
         stroke_width: f64,
-        mut draw_fretted: impl FnMut(Fretted),
+        mut draw_fretted: impl FnMut(Marker),
     ) {
         for fret in &self.frets {
             self.render_single_fretted(x, y, stroke_width, fret, &mut draw_fretted)
@@ -380,12 +381,12 @@ impl Fretboard {
         self.render_grid(|line| line.svg(x, &mut document));
 
         self.render_fretted(x, 0., 2., |fretted| match fretted {
-            Fretted::Cross { lines } => {
+            Marker::Cross { lines } => {
                 for line in lines {
                     line.svg(0., &mut document)
                 }
             }
-            Fretted::Rectangle(rect) => {
+            Marker::Rectangle(rect) => {
                 rect.svg(0., &mut document);
             }
         });
