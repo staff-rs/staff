@@ -7,8 +7,8 @@ use crate::{
 };
 use core::iter::Zip;
 
- mod diagram;
- pub use diagram::{Diagram, Fretted, StringRange};
+mod diagram;
+pub use diagram::{Diagram, Fretted};
 
 #[cfg(feature = "render")]
 pub mod render;

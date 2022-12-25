@@ -7,7 +7,7 @@ fn main() {
     let mut diagram = Diagram::default();
     diagram.starting_fret = 3;
     diagram.insert(Fretted::muted(0, 0));
-    diagram.insert(Fretted::barre(1, 1, 6));
+    diagram.insert(Fretted::new(1, 1, 6));
     diagram.insert(Fretted::point(2, 3));
     diagram.insert(Fretted::point(3, 2));
     diagram.insert(Fretted::point(3, 4));

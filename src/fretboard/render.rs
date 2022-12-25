@@ -41,7 +41,7 @@ impl Renderer {
         self.fret_width = fret_width(self.width, strings);
 
         let frets = mem::replace(&mut self.diagram.fretted, Vec::new());
-        let iter = frets.into_iter().filter(|fret| fret.pos < strings);
+        let iter = frets.into_iter().filter(|fret| fret.fret < strings);
         self.diagram.fretted.extend(iter);
     }
 
@@ -49,9 +49,9 @@ impl Renderer {
         self.diagram.frets = strings;
 
         let frets = mem::replace(&mut self.diagram.fretted, Vec::new());
-        let iter = frets.into_iter().filter(|fret| {
-            fret.strings.start >= self.diagram.frets || fret.strings.end >= self.diagram.frets
-        });
+        let iter = frets
+            .into_iter()
+            .filter(|fret| fret.start >= self.diagram.frets || fret.end >= self.diagram.frets);
         self.diagram.fretted.extend(iter);
     }
 
@@ -102,8 +102,8 @@ impl Renderer {
         let x = x + self.fret_width / 2.;
         let draw_height = self.fret_height / 1.5;
 
-        if fret.strings.start >= fret.strings.end {
-            let x = x + self.fret_width * fret.strings.start as f64 - self.fret_width / 4.;
+        if fret.start >= fret.end {
+            let x = x + self.fret_width * fret.start as f64 - self.fret_width / 4.;
             let lines = [
                 Line::new(
                     x,
@@ -123,15 +123,15 @@ impl Renderer {
             draw_fretted(Marker::Cross { lines })
         } else {
             let mut rect = Rectangle::new(
-                x + self.fret_width * fret.strings.start as f64 - draw_height / 2.,
-                fret.pos as f64 * self.fret_height + y + draw_height / 4.,
-                self.fret_width * (fret.strings.end - 1 - fret.strings.start) as f64 + draw_height,
+                x + self.fret_width * fret.start as f64 - draw_height / 2.,
+                fret.fret as f64 * self.fret_height + y + draw_height / 4.,
+                self.fret_width * (fret.end - 1 - fret.start) as f64 + draw_height,
                 draw_height,
                 0.,
                 true,
             );
 
-            if fret.pos == 0 {
+            if fret.fret == 0 {
                 rect.stroke_width = 2.;
                 rect.is_filled = false;
             }

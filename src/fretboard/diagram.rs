@@ -1,46 +1,28 @@
 use super::Fretboard;
 use crate::midi::MidiNote;
 
-#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct StringRange {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Fretted {
+    pub fret: u8,
     pub start: u8,
     pub end: u8,
 }
 
-impl StringRange {
-    pub fn new(start: u8, end: u8) -> Self {
-        Self { start, end }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Fretted {
-    pub pos: u8,
-    pub strings: StringRange,
-}
-
 impl Fretted {
-    pub fn new(pos: u8, strings: StringRange) -> Self {
-        Self { pos, strings }
+    pub fn new(fret: u8, start: u8, end: u8) -> Self {
+        Self { fret, start, end }
     }
 
-    pub fn barre(pos: u8, start: u8, end: u8) -> Self {
-        Self::new(pos, StringRange::new(start, end))
+    pub fn point(fret: u8, string: u8) -> Self {
+        Self::new(fret, string, string + 1)
     }
 
-    pub fn point(pos: u8, string: u8) -> Self {
-        Self::barre(pos, string, string + 1)
-    }
-
-    pub fn muted(pos: u8, string: u8) -> Self {
-        Self::barre(pos, string, string)
+    pub fn muted(fret: u8, string: u8) -> Self {
+        Self::new(fret, string, string)
     }
 
     pub fn is_intersection(&self, other: &Self) -> bool {
-        self.pos == other.pos
-            && self.strings.start < other.strings.end
-            && self.strings.end > other.strings.start
+        self.fret == other.fret && self.start < other.end && self.end > other.start
     }
 }
 
@@ -64,10 +46,7 @@ impl Default for Diagram {
 
 impl Diagram {
     pub fn insert(&mut self, fret: Fretted) -> Option<usize> {
-        if fret.pos >= self.frets
-            || fret.strings.start > self.strings
-            || fret.strings.end > self.strings
-        {
+        if fret.fret >= self.frets || fret.start > self.strings || fret.end > self.strings {
             return None;
         }
 
@@ -89,8 +68,8 @@ impl Diagram {
     ) -> Fretboard<I, Vec<Option<u8>>> {
         let mut frets: Vec<Option<u8>> = vec![None; self.strings as _];
         for fretted in &self.fretted {
-            let pos = fretted.pos + self.starting_fret;
-            for idx in fretted.strings.start..fretted.strings.end {
+            let pos = fretted.fret + self.starting_fret;
+            for idx in fretted.start..fretted.end {
                 if let Some(last) = &mut frets[idx as usize] {
                     *last = (*last).max(pos);
                 } else {
