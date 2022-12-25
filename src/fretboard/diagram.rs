@@ -119,14 +119,18 @@ impl Diagram {
     }
 }
 
+impl Extend<Range> for Diagram {
+    fn extend<T: IntoIterator<Item = Range>>(&mut self, iter: T) {
+        for fretted in iter {
+            self.insert(fretted);
+        }
+    }
+}
+
 impl FromIterator<Range> for Diagram {
     fn from_iter<T: IntoIterator<Item = Range>>(iter: T) -> Self {
         let mut diagram = Self::default();
-
-        for fretted in iter {
-            diagram.insert(fretted);
-        }
-
+        diagram.extend(iter);
         diagram
     }
 }
