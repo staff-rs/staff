@@ -1,6 +1,7 @@
-use crate::render::{Draw, Renderer};
 use svg::Node;
 use text_svg::Glpyh;
+
+use crate::render::staff::renderer::{Draw, Renderer};
 
 pub struct Clef<'r> {
     pub glyph: Glpyh<'r>,

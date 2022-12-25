@@ -1,7 +1,10 @@
 use super::NoteHead;
 use crate::{
     midi::Octave,
-    render::{note::note_index, Draw, Renderer},
+    render::staff::{
+        note::note_index,
+        renderer::{Draw, Renderer},
+    },
     Key,
 };
 use svg::Node;

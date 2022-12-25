@@ -1,4 +1,10 @@
-use super::{measure::Measure, Draw, Renderer};
+pub mod measure;
+use self::measure::Measure;
+
+pub mod renderer;
+use self::renderer::{Draw, Renderer};
+
+pub mod note;
 
 pub struct Row<'r> {
     pub measures: Vec<Measure<'r>>,

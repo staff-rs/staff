@@ -1,7 +1,6 @@
+use crate::render::{font, Line};
 use rusttype::Font;
 use svg::{node::element::Rectangle, Document, Node};
-
-use super::{font, fretboard::Line};
 
 pub trait Draw {
     fn draw(&self, x: f64, y: f64, renderer: &Renderer, node: &mut impl Node);

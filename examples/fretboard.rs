@@ -1,6 +1,6 @@
 use staff::render::{
     font,
-    fretboard::{Fretted, Fretboard},
+    fretboard::{Fretboard, Fretted},
 };
 
 fn main() {

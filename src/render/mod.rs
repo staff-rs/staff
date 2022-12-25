@@ -3,22 +3,99 @@
 pub mod fretboard;
 
 #[cfg(feature = "svg")]
-pub mod measure;
-
-#[cfg(feature = "svg")]
-mod note;
-#[cfg(feature = "svg")]
-pub use self::note::Note;
-
-#[cfg(feature = "svg")]
 pub mod staff;
 #[cfg(feature = "svg")]
 pub use self::staff::Staff;
 
-#[cfg(feature = "svg")]
-pub mod renderer;
-#[cfg(feature = "svg")]
-pub use renderer::{Draw, Renderer};
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Line {
+    pub x1: f64,
+    pub y1: f64,
+    pub x2: f64,
+    pub y2: f64,
+    pub stroke_width: f64,
+}
+
+impl Line {
+    pub fn new(x1: f64, y1: f64, x2: f64, y2: f64, stroke_width: f64) -> Self {
+        Self {
+            x1,
+            y1,
+            x2,
+            y2,
+            stroke_width,
+        }
+    }
+
+    #[cfg(feature = "svg")]
+    pub fn svg<T: svg::Node>(&self, x: f64, node: &mut T) {
+        use svg::node::element;
+
+        node.append(
+            element::Line::new()
+                .set("stroke", "#000")
+                .set("stroke-width", self.stroke_width)
+                .set("x1", x + self.x1)
+                .set("y1", self.y1)
+                .set("x2", x + self.x2)
+                .set("y2", self.y2),
+        )
+    }
+}
+
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Rectangle {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+    pub stroke_width: f64,
+    pub is_filled: bool,
+}
+
+impl Rectangle {
+    pub fn new(
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        stroke_width: f64,
+        is_filled: bool,
+    ) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+            stroke_width,
+            is_filled,
+        }
+    }
+
+    #[cfg(feature = "svg")]
+    pub fn svg(&self, _x: f64, node: &mut impl svg::Node) {
+        use svg::node::element;
+
+        let element = element::Rectangle::new()
+            .set("fill", "#000")
+            .set("stroke-width", self.stroke_width)
+            .set("x", self.x)
+            .set("y", self.y)
+            .set("width", self.width)
+            .set("height", self.height)
+            .set("rx", self.height / 2.);
+
+        let styled = if self.is_filled {
+            element.set("fill", "#000")
+        } else {
+            element
+        };
+
+        node.append(styled)
+    }
+}
 
 #[cfg(feature = "svg")]
 pub fn font() -> rusttype::Font<'static> {

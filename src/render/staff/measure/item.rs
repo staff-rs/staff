@@ -3,7 +3,10 @@ use crate::{
     duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
-    render::{note::note_index, Draw, Note, Renderer},
+    render::staff::{
+        note::{note_index, Note},
+        renderer::{Draw, Renderer},
+    },
     Key, Natural,
 };
 use svg::Node;
