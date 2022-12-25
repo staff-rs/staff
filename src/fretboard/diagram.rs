@@ -1,3 +1,5 @@
+use std::{iter::Enumerate, slice};
+
 use super::Fretboard;
 use crate::midi::MidiNote;
 
@@ -51,7 +53,7 @@ impl Diagram {
             return None;
         }
 
-        if let Some(idx) = self.intersection(&fretted) {
+        if let Some(idx) = self.intersections(&fretted).next() {
             Some(idx)
         } else {
             self.fretted.push(fretted);
@@ -59,8 +61,11 @@ impl Diagram {
         }
     }
 
-    pub fn intersection(&self, fret: &Fretted) -> Option<usize> {
-        self.fretted.iter().position(|f| f.is_intersection(fret))
+    pub fn intersections<'d, 'f>(&'d self, fretted: &'f Fretted) -> Intersections<'d, 'f> {
+        Intersections {
+            iter: self.fretted.iter().enumerate(),
+            fretted,
+        }
     }
 
     pub fn midi_notes<I: IntoIterator<Item = MidiNote>>(
@@ -92,5 +97,24 @@ impl FromIterator<Fretted> for Diagram {
         }
 
         diagram
+    }
+}
+
+pub struct Intersections<'d, 'f> {
+    iter: Enumerate<slice::Iter<'d, Fretted>>,
+    fretted: &'f Fretted,
+}
+
+impl Iterator for Intersections<'_, '_> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for (pos, f) in &mut self.iter {
+            if f.is_intersection(self.fretted) {
+                return Some(pos);
+            }
+        }
+
+        None
     }
 }
