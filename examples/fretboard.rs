@@ -1,15 +1,15 @@
 use staff::{
-    fretboard::{Diagram, Fretted, Renderer},
+    fretboard::{Diagram, Range, Renderer},
     render::font,
 };
 
 fn main() {
     let fretted = [
-        Fretted::muted(0, 0),
-        Fretted::new(1, 1, 6),
-        Fretted::point(2, 3),
-        Fretted::point(3, 2),
-        Fretted::point(3, 4),
+        Range::muted(0, 0),
+        Range::new(1, 1, 6),
+        Range::point(2, 3),
+        Range::point(3, 2),
+        Range::point(3, 4),
     ];
 
     let mut diagram: Diagram = fretted.into_iter().collect();

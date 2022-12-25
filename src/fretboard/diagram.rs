@@ -3,14 +3,15 @@ use std::{iter::Enumerate, slice};
 use super::Fretboard;
 use crate::midi::MidiNote;
 
+#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Fretted {
+pub struct Range {
     pub fret: u8,
     pub start: u8,
     pub end: u8,
 }
 
-impl Fretted {
+impl Range {
     pub fn new(fret: u8, start: u8, end: u8) -> Self {
         Self { fret, start, end }
     }
@@ -28,11 +29,12 @@ impl Fretted {
     }
 }
 
+/// Fretted instrument chord diagram
 pub struct Diagram {
     pub strings: u8,
     pub frets: u8,
     pub starting_fret: u8,
-    pub fretted: Vec<Fretted>,
+    pub fretted: Vec<Range>,
 }
 
 impl Default for Diagram {
@@ -47,21 +49,35 @@ impl Default for Diagram {
 }
 
 impl Diagram {
-    pub fn insert(&mut self, fretted: Fretted) -> Option<usize> {
+    /// Insert a [`Range`] into the diagram, combining any intersecting ranges.
+    /// If the range is out of bounds for the given diagram, this will return `Some`.
+    pub fn insert(&mut self, fretted: Range) -> Option<Range> {
         if fretted.fret >= self.frets || fretted.start > self.strings || fretted.end > self.strings
         {
-            return None;
+            return Some(fretted);
         }
 
-        if let Some(idx) = self.intersections(&fretted).next() {
-            Some(idx)
-        } else {
-            self.fretted.push(fretted);
-            None
+        let mut start = fretted.start;
+        let mut end = fretted.end;
+        let mut pos = 0;
+
+        while pos < self.fretted.len() {
+            let f = &self.fretted[pos];
+            if f.is_intersection(&fretted) {
+                start = start.min(f.start);
+                end = end.max(f.end);
+
+                self.fretted.remove(pos);
+            } else {
+                pos += 1;
+            }
         }
+
+        self.fretted.push(Range::new(fretted.fret, start, end));
+        None
     }
 
-    pub fn intersections<'d, 'f>(&'d self, fretted: &'f Fretted) -> Intersections<'d, 'f> {
+    pub fn intersections<'d, 'f>(&'d self, fretted: &'f Range) -> Intersections<'d, 'f> {
         Intersections {
             iter: self.fretted.iter().enumerate(),
             fretted,
@@ -88,8 +104,8 @@ impl Diagram {
     }
 }
 
-impl FromIterator<Fretted> for Diagram {
-    fn from_iter<T: IntoIterator<Item = Fretted>>(iter: T) -> Self {
+impl FromIterator<Range> for Diagram {
+    fn from_iter<T: IntoIterator<Item = Range>>(iter: T) -> Self {
         let mut diagram = Self::default();
 
         for fretted in iter {
@@ -101,8 +117,8 @@ impl FromIterator<Fretted> for Diagram {
 }
 
 pub struct Intersections<'d, 'f> {
-    iter: Enumerate<slice::Iter<'d, Fretted>>,
-    fretted: &'f Fretted,
+    iter: Enumerate<slice::Iter<'d, Range>>,
+    fretted: &'f Range,
 }
 
 impl Iterator for Intersections<'_, '_> {

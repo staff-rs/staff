@@ -12,7 +12,7 @@ cli = ["anyhow", "clap", "svg"]
 render = []
 svg = ["dep:font-kit", "dep:rusttype", "dep:svg", "dep:text-svg"]
 serde = ["dep:serde"]
-default = ["render", "svg"]
+default = ["render", "svg", "serde"]
 
 [lib]
 name = "staff"

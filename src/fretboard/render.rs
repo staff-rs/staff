@@ -1,5 +1,5 @@
 use crate::{
-    fretboard::diagram::{Diagram, Fretted},
+    fretboard::diagram::{Diagram, Range},
     render::{Line, Rectangle},
 };
 use std::mem;
@@ -96,7 +96,7 @@ impl Renderer {
         x: f64,
         y: f64,
         stroke_width: f64,
-        fret: &Fretted,
+        fret: &Range,
         mut draw_fretted: impl FnMut(Marker),
     ) {
         let x = x + self.fret_width / 2.;
