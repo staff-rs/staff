@@ -65,6 +65,6 @@ impl Renderer {
     }
 
     pub fn draw_line<T: Node>(&self, node: &mut T, x1: f64, y1: f64, x2: f64, y2: f64) {
-        Line::new(x1, y1, x2, y2, self.stroke_width).svg(node)
+        Line::new(x1, y1, x2, y2, self.stroke_width).svg(0., node)
     }
 }

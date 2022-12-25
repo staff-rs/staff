@@ -52,7 +52,7 @@ impl Default for Builder {
             starting_fret: 12,
             fret_count: 5,
             strings: 6,
-            font_size: 48.,
+            font_size: 72.,
             letter_spacing: 2.,
             padding: 10.,
         }
@@ -98,14 +98,14 @@ impl Line {
     }
 
     #[cfg(feature = "svg")]
-    pub fn svg<T: Node>(&self, node: &mut T) {
+    pub fn svg<T: Node>(&self, x: f64, node: &mut T) {
         node.append(
             element::Line::new()
                 .set("stroke", "#000")
                 .set("stroke-width", self.stroke_width)
-                .set("x1", self.x1)
+                .set("x1", x + self.x1)
                 .set("y1", self.y1)
-                .set("x2", self.x2)
+                .set("x2", x + self.x2)
                 .set("y2", self.y2),
         )
     }
@@ -119,17 +119,46 @@ pub struct Rectangle {
     pub width: f64,
     pub height: f64,
     pub stroke_width: f64,
+    pub is_filled: bool,
 }
 
 impl Rectangle {
-    pub fn new(x: f64, y: f64, width: f64, height: f64, stroke_width: f64) -> Self {
+    pub fn new(
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        stroke_width: f64,
+        is_filled: bool,
+    ) -> Self {
         Self {
             x,
             y,
             width,
             height,
             stroke_width,
+            is_filled,
         }
+    }
+
+    #[cfg(feature = "svg")]
+    pub fn svg(&self, x: f64, node: &mut impl svg::Node) {
+        let mut element = element::Rectangle::new()
+            .set("fill", "#000")
+            .set("stroke-width", self.stroke_width)
+            .set("x", self.x)
+            .set("y", self.y)
+            .set("width", self.width)
+            .set("height", self.height)
+            .set("rx", self.height / 2.);
+
+        let styled = if self.is_filled {
+            element.set("fill", "#000")
+        } else {
+            element
+        };
+
+        node.append(styled)
     }
 }
 
@@ -289,6 +318,7 @@ impl Fretboard {
                 self.fret_width * (fret.strings.end - 1 - fret.strings.start) as f64 + draw_height,
                 draw_height,
                 draw_height / 2.,
+                true,
             );
 
             if fret.pos == 0 {
@@ -316,14 +346,16 @@ impl Fretboard {
         use font_kit::font::Font;
         use svg::{node::element, Node};
 
+        let glyphs_width = (self.builder.font_size + self.builder.letter_spacing) * 2.;
         let mut document = svg::Document::new()
-            .set("width", self.width)
+            .set("width", self.width + glyphs_width)
             .set("height", self.height);
 
         let mut x = x + self.builder.padding;
         let mut y = y + self.builder.padding;
 
-        x += (self.builder.font_size + self.builder.letter_spacing) * 2.;
+        x += glyphs_width;
+
         if self.builder.starting_fret > 0 {
             let mut glyph_x = x;
 
@@ -337,7 +369,18 @@ impl Fretboard {
             }
         }
 
-        self.render_grid(|line| line.svg(&mut document));
+        self.render_grid(|line| line.svg(x, &mut document));
+
+        self.render_fretted(x, 0., 2., |fretted| match fretted {
+            Fretted::Cross { lines } => {
+                for line in lines {
+                    line.svg(0., &mut document)
+                }
+            }
+            Fretted::Rectangle(rect) => {
+                rect.svg(0., &mut document);
+            }
+        });
 
         document
     }
