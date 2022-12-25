@@ -25,8 +25,8 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(diagram: Diagram, width: f64, height: f64) -> Self {
-        let fret_width = fret_width(width, diagram.strings);
-        let fret_height = height / (diagram.frets + 1) as f64;
+        let fret_width = fret_width(width, diagram.strings());
+        let fret_height = height / (diagram.frets() + 1) as f64;
         Self {
             diagram,
             width,
@@ -36,30 +36,12 @@ impl Renderer {
         }
     }
 
-    pub fn shrink_strings(&mut self, strings: u8) {
-        self.diagram.strings = strings;
-        self.fret_width = fret_width(self.width, strings);
-
-        let frets = mem::replace(&mut self.diagram.fretted, Vec::new());
-        let iter = frets.into_iter().filter(|fret| fret.fret < strings);
-        self.diagram.fretted.extend(iter);
-    }
-
-    pub fn shrink_fret_count(&mut self, strings: u8) {
-        self.diagram.frets = strings;
-
-        let frets = mem::replace(&mut self.diagram.fretted, Vec::new());
-        let iter = frets
-            .into_iter()
-            .filter(|fret| fret.start >= self.diagram.frets || fret.end >= self.diagram.frets);
-        self.diagram.fretted.extend(iter);
-    }
 
     pub fn render_grid(&self, padding: f64, mut draw_line: impl FnMut(Line)) {
         let x = self.fret_width / 2.;
         let y = 0.;
         let stroke_width = 2.;
-        for idx in 0..self.diagram.strings {
+        for idx in 0..self.diagram.strings() {
             let line_x = x + self.fret_width * idx as f64;
             draw_line(Line::new(
                 line_x,
@@ -74,17 +56,17 @@ impl Renderer {
         draw_line(Line::new(
             x - stroke_width / 2.,
             line_y,
-            x + (self.fret_width * (self.diagram.strings - 1) as f64) + stroke_width / 2.,
+            x + (self.fret_width * (self.diagram.strings() - 1) as f64) + stroke_width / 2.,
             line_y,
             stroke_width * 2.,
         ));
 
-        for idx in 1..self.diagram.frets {
+        for idx in 1..self.diagram.frets() {
             let line_y = line_y + self.fret_height * idx as f64;
             draw_line(Line::new(
                 x - stroke_width / 2.,
                 line_y,
-                x + self.fret_width * (self.diagram.strings - 1) as f64 + stroke_width / 2.,
+                x + self.fret_width * (self.diagram.strings() - 1) as f64 + stroke_width / 2.,
                 line_y,
                 stroke_width,
             ));
@@ -147,7 +129,7 @@ impl Renderer {
         stroke_width: f64,
         mut draw_fretted: impl FnMut(Marker),
     ) {
-        for fret in &self.diagram.fretted {
+        for fret in self.diagram.ranges() {
             self.render_single_fretted(x, y, stroke_width, fret, &mut draw_fretted)
         }
     }
