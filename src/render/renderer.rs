@@ -1,8 +1,3 @@
-use std::{fs::File, io::Read};
-
-use font_kit::{
-    family_name::FamilyName, handle::Handle, properties::Properties, source::SystemSource,
-};
 use rusttype::Font;
 use svg::{node::element::Rectangle, Document, Node};
 

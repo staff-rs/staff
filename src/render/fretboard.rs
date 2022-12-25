@@ -142,8 +142,8 @@ impl Rectangle {
     }
 
     #[cfg(feature = "svg")]
-    pub fn svg(&self, x: f64, node: &mut impl svg::Node) {
-        let mut element = element::Rectangle::new()
+    pub fn svg(&self, _x: f64, node: &mut impl svg::Node) {
+        let element = element::Rectangle::new()
             .set("fill", "#000")
             .set("stroke-width", self.stroke_width)
             .set("x", self.x)
@@ -312,7 +312,7 @@ impl Fretboard {
             ];
             draw_fretted(Fretted::Cross { lines })
         } else {
-            let mut rect = Rectangle::new(
+            let rect = Rectangle::new(
                 x + self.fret_width * fret.strings.start as f64 - draw_height / 2.,
                 fret.pos as f64 * self.fret_height + y + draw_height / 4.,
                 self.fret_width * (fret.strings.end - 1 - fret.strings.start) as f64 + draw_height,
@@ -343,16 +343,24 @@ impl Fretboard {
 
     #[cfg(feature = "svg")]
     pub fn svg(&self, x: f64, y: f64, font: &rusttype::Font) -> svg::Document {
-        use font_kit::font::Font;
-        use svg::{node::element, Node};
+        use svg::Node;
 
         let glyphs_width = (self.builder.font_size + self.builder.letter_spacing) * 2.;
         let mut document = svg::Document::new()
             .set("width", self.width + glyphs_width)
             .set("height", self.height);
 
+        document.append(
+            element::Rectangle::new()
+                .set("fill", "#fff")
+                .set("x", 0)
+                .set("y", 0)
+                .set("width", self.width + glyphs_width)
+                .set("height", self.height),
+        );
+
         let mut x = x + self.builder.padding;
-        let mut y = y + self.builder.padding;
+        let y = y + self.builder.padding;
 
         x += glyphs_width;
 
