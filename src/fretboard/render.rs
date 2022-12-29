@@ -46,6 +46,13 @@ impl Renderer {
         self.fret_height = fret_height(self.height, frets);
     }
 
+    pub fn pos(&self, x: f64, y: f64) -> (u8, u8) {
+        // TODO result
+        let fret = ((y - self.fret_height / 2.) / self.fret_height).round() as u8;
+        let string = ((x - self.fret_width / 2.) / self.fret_width).round() as u8;
+        (fret, string)
+    }
+
     pub fn render_grid(&self, padding: f64, mut draw_line: impl FnMut(Line)) {
         let x = self.fret_width / 2.;
         let y = 0.;

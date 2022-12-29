@@ -5,6 +5,9 @@ pub mod staff;
 #[cfg(feature = "svg")]
 pub use self::staff::Staff;
 
+#[cfg(feature = "wasm-bindgen")]
+use wasm_bindgen::prelude::wasm_bindgen;
+
 #[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line {

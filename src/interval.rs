@@ -83,7 +83,11 @@ impl fmt::Display for Interval {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Interval::UNISON => f.write_char('1'),
+            Interval::MINOR_SECOND => f.write_str("maj2"),
+            Interval::MAJOR_SECOND => f.write_char('2'),
+            Interval::MINOR_THIRD => f.write_str("b3"),
             Interval::MAJOR_THIRD => f.write_char('3'),
+            Interval::PERFECT_FOURTH => f.write_char('4'),
             Interval::PERFECT_FIFTH => f.write_char('5'),
             Interval::MINOR_SEVENTH => f.write_str("m7"),
             Interval::MAJOR_SEVENTH => f.write_str("maj7"),
@@ -92,7 +96,7 @@ impl fmt::Display for Interval {
             Interval::MAJOR_ELEVENTH => f.write_str("maj11"),
             Interval::MINOR_THIRTEENTH => f.write_str("11"),
             Interval::MAJOR_THIRTEENTH => f.write_str("maj13"),
-            _ => todo!(),
+            i => panic!("{:?}", i),
         }
     }
 }

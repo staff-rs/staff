@@ -3,8 +3,9 @@ use std::{iter::Enumerate, slice};
 use super::Fretboard;
 use crate::midi::MidiNote;
 
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen::prelude::wasm_bindgen)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Range {
     pub fret: u8,
     pub start: u8,
@@ -24,8 +25,16 @@ impl Range {
         Self::new(fret, string, string)
     }
 
-    pub fn is_intersection(&self, other: &Self) -> bool {
+    pub fn is_intersection(self, other: &Self) -> bool {
         self.fret == other.fret && self.start < other.end && self.end > other.start
+    }
+
+    pub fn into_point(self) -> Option<u8> {
+        if self.start + 1 == self.end {
+            Some(self.start)
+        } else {
+            None
+        }
     }
 }
 
@@ -115,6 +124,23 @@ impl Diagram {
 
         self.ranges.push(Range::new(range.fret, start, end));
         None
+    }
+
+    pub fn remove(&mut self, index: usize) {
+        self.ranges.remove(index);
+    }
+
+    pub fn remove_range(&mut self, range: Range) {
+        let mut pos = 0;
+
+        while pos < self.ranges.len() {
+            let f = &self.ranges[pos];
+            if f.is_intersection(&range) {
+                self.ranges.remove(pos);
+            } else {
+                pos += 1;
+            }
+        }
     }
 
     pub fn intersections<'d, 'f>(&'d self, fretted: &'f Range) -> Intersections<'d, 'f> {
