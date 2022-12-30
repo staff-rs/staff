@@ -74,6 +74,7 @@ pub use scale::Scale;
 
 pub mod set;
 
+#[cfg(feature = "synth")]
 pub mod synth;
 
 /// ```

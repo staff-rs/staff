@@ -12,8 +12,9 @@ std = []
 cli = ["anyhow", "clap", "svg"]
 render = []
 svg = ["dep:font-kit", "dep:rusttype", "dep:svg", "dep:text-svg"]
+synth = ["dep:rodio", "dep:rand"]
 serde = ["dep:serde"]
-default = ["render", "std", "svg", "serde", "rodio", "rand"]
+default = ["render", "std", "svg", "serde"]
 
 [lib]
 name = "staff"
@@ -21,6 +22,10 @@ name = "staff"
 [[bin]]
 name = "staff"
 required-features = ["cli"]
+
+[[example]]
+name = "synth"
+required-features = ["synth"]
 
 [dependencies]
 num-traits = "0.2.14"
