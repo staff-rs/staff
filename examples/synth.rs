@@ -1,4 +1,4 @@
-use staff::{synth::chord, Chord, midi};
+use staff::{midi, synth::chord, Chord};
 
 fn main() {
     chord(Chord::major(midi!(C, 4)));

@@ -2,7 +2,7 @@ use crate::{
     fretboard::diagram::{Diagram, Range},
     render::{Line, Rectangle},
 };
-use std::mem;
+
 
 #[cfg(feature = "svg")]
 use svg::node::{element, Node};
