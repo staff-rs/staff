@@ -1,6 +1,63 @@
 use crate::midi::MidiNote;
+use rand::{thread_rng, Rng};
 use rodio::{source::SineWave, OutputStream, Sink, Source};
 use std::time::Duration;
+
+pub struct Guitar {
+    sample_rate: u32,
+    signal: Box<[f32]>,
+    pos: usize,
+}
+
+impl Guitar {
+    pub fn new(freq: f32, sample_rate: u32) -> Self {
+        let period = (sample_rate as f32 / freq).round() as usize;
+        let mut rng = thread_rng();
+        let signal = std::iter::repeat_with(|| rng.gen_range(-1.0..1.0))
+            .take(period)
+            .collect();
+
+        Self {
+            sample_rate,
+            signal,
+            pos: 0,
+        }
+    }
+}
+
+impl Iterator for Guitar {
+    type Item = f32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let output = (self.signal[self.pos] + self.signal[(self.pos + 1) % self.signal.len()]) / 2.;
+        self.signal[self.pos] = output;
+
+        self.pos += 1;
+        if self.pos >= self.signal.len() {
+            self.pos = 0;
+        }
+
+        Some(output)
+    }
+}
+
+impl Source for Guitar {
+    fn current_frame_len(&self) -> Option<usize> {
+        None
+    }
+
+    fn channels(&self) -> u16 {
+        1
+    }
+
+    fn sample_rate(&self) -> u32 {
+        self.sample_rate
+    }
+
+    fn total_duration(&self) -> Option<Duration> {
+        None
+    }
+}
 
 pub struct Chord {
     sine_waves: Vec<SineWave>,
@@ -78,7 +135,7 @@ pub fn chord(midi_notes: impl IntoIterator<Item = MidiNote>) {
     .take_duration(Duration::from_secs_f32(2.))
     .amplify(0.20);
 
-    sink.append(source);
+    sink.append(Guitar::new(440., 48_000));
 
     // The sound plays in a separate thread. This call will block the current thread until the sink
     // has finished playing all its queued sounds.
