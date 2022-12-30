@@ -74,6 +74,8 @@ pub use scale::Scale;
 
 pub mod set;
 
+pub mod synth;
+
 /// ```
 /// use staff::{midi, Pitch};
 /// use staff::midi::Octave;
