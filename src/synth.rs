@@ -1,6 +1,5 @@
-use crate::midi::MidiNote;
 use rand::{thread_rng, Rng};
-use rodio::{OutputStream, Sink, Source};
+use rodio::Source;
 use std::time::Duration;
 
 struct String {
@@ -20,7 +19,7 @@ impl GuitarChord {
     pub fn new(sample_rate: u32, spacing_duration: Duration) -> Self {
         let spacing_nanos = spacing_duration.as_secs() as u32 * 1_000_000_000
             + spacing_duration.subsec_nanos() as u32;
-        let num_spacing_samples = spacing_nanos / 1_000 * sample_rate;
+        let num_spacing_samples = spacing_nanos / 1_000_000 * (sample_rate / 1_000);
 
         Self {
             frequencies: Vec::new(),
@@ -106,27 +105,4 @@ impl Source for GuitarChord {
         // TODO
         None
     }
-}
-
-pub fn chord(midi_notes: impl IntoIterator<Item = MidiNote>) {
-    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let sink = Sink::try_new(&stream_handle).unwrap();
-
-    let mut source = GuitarChord::new(48_000, Duration::from_millis(200));
-
-    source.set_frequencies(
-        midi_notes
-            .into_iter()
-            .map(|midi_note| midi_note.frequency() as _),
-    );
-
-    sink.append(
-        source
-            .take_duration(Duration::from_secs_f32(3.))
-            .amplify(0.20),
-    );
-
-    // The sound plays in a separate thread. This call will block the current thread until the sink
-    // has finished playing all its queued sounds.
-    sink.sleep_until_end();
 }

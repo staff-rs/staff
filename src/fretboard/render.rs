@@ -3,7 +3,6 @@ use crate::{
     render::{Line, Rectangle},
 };
 
-
 #[cfg(feature = "svg")]
 use svg::node::{element, Node};
 
