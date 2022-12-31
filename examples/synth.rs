@@ -1,5 +1,9 @@
 use rodio::{OutputStream, Sink, Source};
-use staff::{midi, synth::GuitarChord, Chord};
+use staff::{
+    midi,
+    synth::{self, GuitarChord},
+    Chord,
+};
 use std::time::Duration;
 
 fn main() {
@@ -11,8 +15,10 @@ fn main() {
         .into_iter()
         .map(|midi_note| midi_note.frequency() as _);
 
-    let mut source = GuitarChord::new(48_000, Duration::from_millis(200));
-    source.set_frequencies(frequencies);
+    let mut guitar_chord = GuitarChord::new();
+    guitar_chord.set_frequencies(48_000, frequencies);
+
+    let source = synth::Chord::new(48_000, Duration::from_millis(200), guitar_chord);
 
     sink.append(
         source
