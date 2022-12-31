@@ -1,15 +1,71 @@
 use rand::{thread_rng, Rng};
 use rodio::Source;
-use std::time::Duration;
+use std::{borrow::BorrowMut, time::Duration};
 
-struct String {
+pub struct GuitarString<T> {
+    frequencies: T,
+    index: Index,
+}
+
+impl<T> GuitarString<T>
+where
+    T: AsMut<[f32]>,
+{
+    pub fn new(frequencies: T, index: Index) -> Self {
+        Self { frequencies, index }
+    }
+}
+
+impl<T> Iterator for GuitarString<T>
+where
+    T: AsMut<[f32]>,
+{
+    type Item = f32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let frequencies = self.frequencies.as_mut();
+        let output = (frequencies[self.index.pos]
+            + frequencies[(self.index.pos + 1) % frequencies.len()])
+            / 2.;
+        frequencies[self.index.pos] = output;
+
+        self.index.pos += 1;
+        if self.index.pos >= frequencies.len() {
+            self.index.pos = 0;
+        }
+
+        Some(output)
+    }
+}
+
+pub struct Chord<T> {
+    iter: T,
+    num_sample: usize,
+    num_spacing_samples: usize,
+}
+
+impl<T: Iterator<Item = f32>> Iterator for Chord<T> {
+    type Item = f32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let count = self
+            .num_sample
+            .checked_div(self.num_spacing_samples)
+            .unwrap_or_default();
+        self.num_sample += 1;
+
+        Some(self.iter.borrow_mut().take(count).sum())
+    }
+}
+#[derive(Clone)]
+pub struct Index {
     pos: usize,
     len: usize,
 }
 
 pub struct GuitarChord {
     frequencies: Vec<f32>,
-    strings: Vec<String>,
+    strings: Vec<Index>,
     sample_rate: u32,
     num_sample: usize,
     num_spacing_samples: usize,
@@ -35,7 +91,7 @@ impl GuitarChord {
 
         for freq in freqs {
             let period = (self.sample_rate as f32 / freq).round() as usize;
-            self.strings.push(String {
+            self.strings.push(Index {
                 pos: 0,
                 len: period,
             });
@@ -64,19 +120,13 @@ impl Iterator for GuitarChord {
             .strings
             .iter_mut()
             .take(count)
-            .map(|string| {
-                let frequencies = &mut self.frequencies[start..start + string.len];
-                let output = (frequencies[string.pos]
-                    + frequencies[(string.pos + 1) % frequencies.len()])
-                    / 2.;
-                frequencies[string.pos] = output;
+            .map(|index| {
+                let frequencies = &mut self.frequencies[start..start + index.len];
+                start += index.len;
 
-                start += string.len;
-                string.pos += 1;
-                if string.pos >= frequencies.len() {
-                    string.pos = 0;
-                }
-
+                let mut guitar_string = GuitarString::new(frequencies, index.clone());
+                let output = guitar_string.next().unwrap();
+                index.pos = guitar_string.index.pos;
                 output
             })
             .sum();

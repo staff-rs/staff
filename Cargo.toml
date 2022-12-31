@@ -14,7 +14,7 @@ render = []
 svg = ["dep:font-kit", "dep:rusttype", "dep:svg", "dep:text-svg"]
 synth = ["dep:rodio", "dep:rand"]
 serde = ["dep:serde"]
-default = ["render", "std", "svg", "serde"]
+default = ["render", "std", "svg", "serde", "synth"]
 
 [lib]
 name = "staff"
