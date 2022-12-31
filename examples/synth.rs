@@ -15,11 +15,11 @@ fn main() {
         .into_iter()
         .map(|midi_note| midi_note.frequency() as _);
 
+    let sample_rate = 48_000;
     let mut guitar_chord = GuitarChord::new();
-    guitar_chord.set_frequencies(48_000, frequencies);
+    guitar_chord.set_frequencies(sample_rate, frequencies);
 
-    let source = synth::Chord::new(48_000, Duration::from_millis(200), guitar_chord);
-
+    let source = synth::Chord::new(sample_rate, Duration::from_millis(200), guitar_chord);
     sink.append(
         source
             .take_duration(Duration::from_secs_f32(3.))
