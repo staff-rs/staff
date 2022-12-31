@@ -11,10 +11,10 @@ fn main() {
         .into_iter()
         .map(|midi_note| midi_note.frequency() as _);
 
-    let sample_rate = 48_000;
-    let spacing_duration = Duration::from_millis(200);
-    let source = ChordSource::guitar(sample_rate, spacing_duration, frequencies);
-    
+    let source = ChordSource::builder()
+        .spacing_duration(Duration::from_millis(200))
+        .build_guitar(frequencies);
+
     sink.append(
         source
             .take_duration(Duration::from_secs_f32(3.))

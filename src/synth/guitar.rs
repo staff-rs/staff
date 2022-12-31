@@ -1,13 +1,10 @@
-
-
-
 #[derive(Clone, Debug)]
 pub struct Index {
     pub pos: usize,
     pub len: usize,
 }
 
-/// A sound [`Source`] to play a guitar note.
+/// A sound [`Source`](rodio::Source) to play a guitar note.
 pub struct GuitarSource<T> {
     pub frequencies: T,
     pub index: Index,
@@ -43,4 +40,3 @@ where
         Some(output)
     }
 }
-

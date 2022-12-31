@@ -1,7 +1,7 @@
-use std::slice;
-use rand::{thread_rng, Rng};
-use crate::synth::{guitar::Index, GuitarSource};
 use super::Frequencies;
+use crate::synth::{guitar::Index, GuitarSource};
+use rand::{thread_rng, Rng};
+use std::slice;
 
 #[derive(Clone, Debug, Default)]
 pub struct GuitarChord {
@@ -10,8 +10,6 @@ pub struct GuitarChord {
 }
 
 impl GuitarChord {
-
-
     pub fn set_frequencies(&mut self, sample_rate: u32, freqs: impl IntoIterator<Item = f32>) {
         self.strings.clear();
 

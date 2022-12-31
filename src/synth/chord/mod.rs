@@ -1,8 +1,5 @@
-
-
-
 use rodio::Source;
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
 pub mod guitar;
 pub use guitar::GuitarChord;
@@ -26,7 +23,10 @@ pub struct ChordSource<T> {
     num_spacing_samples: u32,
 }
 
-impl<T> ChordSource<T> {
+impl<T> ChordSource<T>
+where
+    T: Frequencies,
+{
     /// Create a new `ChordSource`.
     /// * `sample_rate`: the sample rate to play the chord (in hz)
     /// * `spacing_duration`: the duration between notes in order to arpeggiate them
@@ -42,6 +42,10 @@ impl<T> ChordSource<T> {
             num_sample: 0,
             num_spacing_samples: num_spacing_samples as _,
         }
+    }
+
+    pub fn builder() -> Builder<T> {
+        Builder::default()
     }
 }
 
@@ -111,5 +115,71 @@ where
 
     fn total_duration(&self) -> Option<Duration> {
         None
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Builder<T> {
+    sample_rate: u32,
+    spacing_duration: Duration,
+    _marker: PhantomData<T>,
+}
+
+impl<T> Default for Builder<T>
+where
+    T: Frequencies,
+{
+    fn default() -> Self {
+        Self {
+            sample_rate: 48_000,
+            spacing_duration: Duration::ZERO,
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<T> Builder<T>
+where
+    T: Frequencies,
+{
+    pub fn sample_rate(mut self, sample_rate: u32) -> Self {
+        self.sample_rate = sample_rate;
+        self
+    }
+
+    pub fn spacing_duration(mut self, spacing_duration: Duration) -> Self {
+        self.spacing_duration = spacing_duration;
+        self
+    }
+
+    /// Build a new `ChordSource`.
+    /// * `frequencies`: an [`Iterator`] of output frequencies
+    pub fn build(self, frequencies: T) -> ChordSource<T> {
+        ChordSource::new(self.sample_rate, self.spacing_duration, frequencies)
+    }
+}
+
+impl Builder<GuitarChord> {
+    /// Build a new guitar `ChordSource`.
+    /// * `frequencies`: an [`Iterator`] of note frequencies
+    pub fn build_guitar(
+        self,
+        frequencies: impl IntoIterator<Item = f32>,
+    ) -> ChordSource<GuitarChord> {
+        let mut guitar_chord = GuitarChord::default();
+        guitar_chord.set_frequencies(self.sample_rate, frequencies);
+        self.build(guitar_chord)
+    }
+}
+
+impl Builder<SineWaveChord> {
+    /// Build a new sine wave `ChordSource`.
+    /// * `frequencies`: an [`Iterator`] of note frequencies
+    pub fn build_sine_waves(
+        self,
+        frequencies: impl IntoIterator<Item = f32>,
+    ) -> ChordSource<SineWaveChord> {
+        let sine_wave_chord = SineWaveChord::from_iter(frequencies);
+        self.build(sine_wave_chord)
     }
 }
