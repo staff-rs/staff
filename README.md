@@ -11,9 +11,6 @@ Music theory and score rendering library with midi, notes, chords, scales, and m
 
 ## Installation
 This crate currently uses the [Noto Music](https://fonts.google.com/noto/specimen/Noto+Music) font by default.
-```
-cargo install staff
-```
 
 ## Usage
 `example.ly`
@@ -41,3 +38,9 @@ assert_eq!(chord.to_string(), "C/E");
 let pitches = [Pitch::E, Pitch::G, Pitch::C];
 assert!(chord.into_iter().eq(pitches));
 ```
+
+## Features
+* `render`: Enable `render` module
+    * `svg`: Enable rendering to SVG
+* `synth`: Enable `synth` module for 
+* `serde`: Impl Deserialize and Serialize for many crate types
