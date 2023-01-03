@@ -1,6 +1,6 @@
 use crate::{
-    duration::{Duration, DurationKind},
     render::staff::renderer::Renderer,
+    time::{Duration, DurationKind},
 };
 use svg::Node;
 use text_svg::Glpyh;

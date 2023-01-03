@@ -1,7 +1,6 @@
 //! LilyPond format parsing
 
 use crate::{
-    duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
     render::{
@@ -12,6 +11,7 @@ use crate::{
         },
         Staff,
     },
+    time::{Duration, DurationKind},
     Key, Natural,
 };
 use std::iter::Peekable;

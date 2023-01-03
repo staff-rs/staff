@@ -1,12 +1,12 @@
 use super::{Clef, KeySignature, NoteHead, Stem};
 use crate::{
-    duration::{Duration, DurationKind},
     midi::Octave,
     note::Accidental,
     render::staff::{
         note::{note_index, Note},
         renderer::{Draw, Renderer},
     },
+    time::{Duration, DurationKind},
     Key, Natural,
 };
 use svg::Node;

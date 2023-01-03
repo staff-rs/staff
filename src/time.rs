@@ -29,3 +29,14 @@ impl Duration {
         unit as f64 / n
     }
 }
+
+pub struct TimeSignature {
+    unit: DurationKind,
+    beats: u8,
+}
+
+impl TimeSignature {
+    pub fn new(unit: DurationKind, beats: u8) -> Self {
+        Self { unit, beats }
+    }
+}
