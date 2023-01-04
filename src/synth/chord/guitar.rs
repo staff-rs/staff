@@ -1,7 +1,13 @@
 use super::Frequencies;
-use crate::synth::{guitar::Index, GuitarSource};
+use crate::synth::GuitarSource;
 use rand::{thread_rng, Rng};
 use std::slice;
+
+#[derive(Clone, Debug)]
+struct Index {
+    pub pos: usize,
+    pub len: usize,
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct GuitarChord {
@@ -43,9 +49,9 @@ impl Iterator for GuitarChordFrequencies<'_> {
             let frequencies = &mut self.frequencies[self.start..self.start + index.len];
             self.start += index.len;
 
-            let mut guitar_string = GuitarSource::new(frequencies, index.clone());
+            let mut guitar_string = GuitarSource::new(frequencies, index.pos);
             let output = guitar_string.next().unwrap();
-            index.pos = guitar_string.index.pos;
+            index.pos = guitar_string.pos;
             Some(output)
         } else {
             None

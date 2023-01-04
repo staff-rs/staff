@@ -1,21 +1,15 @@
-#[derive(Clone, Debug)]
-pub struct Index {
-    pub pos: usize,
-    pub len: usize,
-}
-
 /// A sound [`Source`](rodio::Source) to play a guitar note.
 pub struct GuitarSource<T> {
     pub frequencies: T,
-    pub index: Index,
+    pub pos: usize,
 }
 
 impl<T> GuitarSource<T>
 where
     T: AsMut<[f32]>,
 {
-    pub fn new(frequencies: T, index: Index) -> Self {
-        Self { frequencies, index }
+    pub fn new(frequencies: T, pos: usize) -> Self {
+        Self { frequencies, pos }
     }
 }
 
@@ -27,14 +21,12 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         let frequencies = self.frequencies.as_mut();
-        let output = (frequencies[self.index.pos]
-            + frequencies[(self.index.pos + 1) % frequencies.len()])
-            / 2.;
-        frequencies[self.index.pos] = output;
+        let output = (frequencies[self.pos] + frequencies[(self.pos + 1) % frequencies.len()]) / 2.;
+        frequencies[self.pos] = output;
 
-        self.index.pos += 1;
-        if self.index.pos >= frequencies.len() {
-            self.index.pos = 0;
+        self.pos += 1;
+        if self.pos >= frequencies.len() {
+            self.pos = 0;
         }
 
         Some(output)
