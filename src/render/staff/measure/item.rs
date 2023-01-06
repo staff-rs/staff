@@ -2,9 +2,12 @@ use super::{Clef, KeySignature, NoteHead, Stem};
 use crate::{
     midi::Octave,
     note::Accidental,
-    render::staff::{
-        note::{note_index, Note},
-        renderer::{Draw, Renderer},
+    render::{
+        staff::{
+            note::{note_index, Note},
+            renderer::{Draw, Renderer},
+        },
+        Item, Line,
     },
     time::{Duration, DurationKind},
     Key, Natural,
@@ -73,6 +76,27 @@ impl<'a> ChordAccidental<'a> {
                 - self.glyph.bounding_box.height() / 2.
         };
         node.append(self.glyph.path((x + self.x) as _, y));
+
+        self.glyph.bounding_box.width()
+    }
+
+    pub fn draw(
+        &self,
+        x: f64,
+        y: f64,
+        renderer: &'a Renderer,
+        mut draw_path: impl FnMut(String),
+    ) -> f32 {
+        let y = if self.is_flat {
+            (y + renderer.note_ry * (self.index as f64 + 1.)) as f32
+                - self.glyph.bounding_box.height()
+        } else {
+            (y + renderer.note_ry * (self.index as f64)) as f32
+                - self.glyph.bounding_box.height() / 2.
+        };
+        let mut path = String::new();
+        self.glyph.write_path((x + self.x) as _, y, &mut path);
+        draw_path(path);
 
         self.glyph.bounding_box.width()
     }
@@ -337,6 +361,137 @@ impl<'r> MeasureItem<'r> {
             top,
         };
         Self { kind, width }
+    }
+
+    pub fn draw(&self, mut x: f64, y: f64, renderer: &Renderer, mut draw_item: impl FnMut(Item)) {
+        match &self.kind {
+            MeasureItemKind::Rest { duration } => match duration.kind {
+                DurationKind::Quarter => {
+                    let mut path = String::new();
+                    Glpyh::new(&renderer.font, '𝄽', 75.).write_path(
+                        (x + renderer.note_rx) as _,
+                        renderer.note_ry as f32 * 3.,
+                        &mut path,
+                    );
+                    draw_item(Item::Path(path))
+                }
+                DurationKind::Half => todo!(),
+                DurationKind::Whole => todo!(),
+            },
+            MeasureItemKind::Note {
+                duration,
+                top: _,
+                note,
+                is_upside_down,
+                has_ledger_line,
+                has_stem,
+                accidental,
+            } => {
+                let note_line_extra = renderer.note_rx / 2.;
+                let mut note_x = if *has_ledger_line {
+                    x + note_line_extra
+                } else {
+                    x
+                };
+
+                if let Some(accidental) = accidental {
+                    note_x +=
+                        accidental.draw(x, y, renderer, |path| draw_item(Item::Path(path))) as f64;
+                    note_x += renderer.note_rx / 3.;
+                }
+
+                note.draw_path(note_x, y, *duration, renderer, |path| {
+                    draw_item(Item::Path(path))
+                });
+
+                if *has_stem {
+                    let stem = Stem::new(note.index, note.index);
+                    stem.draw(note_x, y, *is_upside_down, renderer, |line| {
+                        draw_item(Item::Line(line))
+                    });
+                }
+            }
+            MeasureItemKind::Clef(clef) => {
+                let path = clef.path(x, y, renderer);
+                draw_item(Item::Path(path))
+            }
+            MeasureItemKind::Chord {
+                top: _,
+                notes,
+                ledger_lines,
+                stem,
+                is_upside_down,
+                accidentals,
+                duration,
+            } => {
+                let mut accidentals_width = 0.;
+                if !accidentals.is_empty() {
+                    for chord_accidental in accidentals {
+                        let width = chord_accidental
+                            .draw(x, y, &renderer, |path| draw_item(Item::Path(path)));
+                        accidentals_width = width as f64;
+                    }
+                    x += accidentals_width + renderer.note_rx / 2.;
+                }
+
+                let note_line_extra = renderer.note_rx / 2.;
+                let note_x = if !ledger_lines.is_empty() {
+                    x + note_line_extra
+                } else {
+                    x
+                };
+
+                // Render note heads
+                let c = match duration.kind {
+                    DurationKind::Quarter => '𝅘',
+                    DurationKind::Half => '𝅗',
+                    DurationKind::Whole => '𝅝',
+                };
+                let glyph = Glpyh::new(&renderer.font, c, 75.);
+                let dot_glyph = if duration.is_dotted {
+                    Some(Glpyh::new(&renderer.font, '.', 75.))
+                } else {
+                    None
+                };
+
+                for note in notes {
+                    note.draw_path_with_glyph(
+                        note_x,
+                        y,
+                        &glyph,
+                        dot_glyph.as_ref(),
+                        renderer,
+                        |path| draw_item(Item::Path(path)),
+                    )
+                }
+
+                for line in ledger_lines {
+                    let x1 = if line.is_left {
+                        x
+                    } else {
+                        renderer.note_rx + x
+                    };
+
+                    let x2 = if line.is_double {
+                        x1 + (note_line_extra + renderer.note_rx + renderer.stroke_width) * 2.
+                    } else {
+                        x1 + (note_line_extra * 2.) + renderer.note_rx + renderer.stroke_width
+                    };
+
+                    let y = y + renderer.note_ry * line.note as f64;
+                    draw_item(Item::Line(Line::new(x1, y, x2, y, renderer.stroke_width)));
+                }
+
+                if let Some(stem) = &stem {
+                    stem.draw(note_x, y, *is_upside_down, renderer, |line| {
+                        draw_item(Item::Line(line))
+                    });
+                }
+            }
+            MeasureItemKind::KeySignature(key_signature) => {
+                key_signature.draw_paths(x, y, renderer, |path| draw_item(Item::Path(path)));
+            }
+        }
     }
 
     pub fn svg(&self, mut x: f64, y: f64, renderer: &Renderer, node: &mut impl Node) {

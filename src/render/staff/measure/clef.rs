@@ -14,6 +14,13 @@ impl<'r> Clef<'r> {
         let me = Self { glyph: clef_glyph };
         (me, width)
     }
+
+    pub fn path(&self, x: f64, y: f64, renderer: &Renderer) -> String {
+        let mut path = String::new();
+        self.glyph
+            .write_path(x as _, (y - renderer.note_ry) as _, &mut path);
+        path
+    }
 }
 
 impl Draw for Clef<'_> {

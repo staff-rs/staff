@@ -40,6 +40,25 @@ impl<'r> KeySignature<'r> {
 
         (me, width + renderer.padding)
     }
+
+    pub fn draw_paths(
+        &self,
+        x: f64,
+        y: f64,
+        renderer: &Renderer,
+        mut draw_path: impl FnMut(String),
+    ) {
+        for note_head in &self.accidentals {
+            let mut path = String::new();
+            self.glyph.write_path(
+                (x + note_head.x) as _,
+                (y + renderer.note_ry * (note_head.index as f64)) as f32
+                    - renderer.note_ry as f32 / 2.,
+                &mut path,
+            );
+            draw_path(path);
+        }
+    }
 }
 
 impl Draw for KeySignature<'_> {

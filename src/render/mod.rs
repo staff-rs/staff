@@ -9,6 +9,19 @@ pub use self::staff::Staff;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(
+    feature = "serde",
+    serde(tag = "kind", content = "element", rename_all = "kebab-case")
+)]
+#[derive(Clone, Debug, PartialEq)]
+pub enum Item {
+    Line(Line),
+    Path(String),
+}
+
+#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line {
     pub x1: f64,
@@ -46,6 +59,7 @@ impl Line {
 }
 
 #[cfg_attr(feature = "wasm-bindgen", wasm_bindgen)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Rectangle {
     pub x: f64,
