@@ -5,5 +5,3 @@ pub use chord::ChordSource;
 
 pub mod guitar;
 pub use guitar::GuitarSource;
-
-use rodio::Source;

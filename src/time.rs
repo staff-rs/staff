@@ -31,8 +31,8 @@ impl Duration {
 }
 
 pub struct TimeSignature {
-    unit: DurationKind,
-    beats: u8,
+    pub unit: DurationKind,
+    pub beats: u8,
 }
 
 impl TimeSignature {

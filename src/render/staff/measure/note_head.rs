@@ -66,7 +66,7 @@ impl NoteHead {
         top: f64,
         duration: Duration,
         renderer: &Renderer,
-        mut draw_path: impl FnMut(String),
+        draw_path: impl FnMut(String),
     ) {
         let c = match duration.kind {
             DurationKind::Quarter => '𝅘',
