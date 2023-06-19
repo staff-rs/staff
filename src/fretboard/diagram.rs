@@ -1,9 +1,7 @@
 use std::{iter::Enumerate, slice};
-
 use super::Fretboard;
 use crate::midi::MidiNote;
 
-#[cfg_attr(feature = "wasm-bindgen", wasm_bindgen::prelude::wasm_bindgen)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Range {

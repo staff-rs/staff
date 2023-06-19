@@ -6,9 +6,6 @@ use crate::{
 #[cfg(feature = "svg")]
 use svg::node::{element, Node};
 
-#[cfg(feature = "wasm-bindgen")]
-use wasm_bindgen::prelude::wasm_bindgen;
-
 pub enum Marker {
     Rectangle(Rectangle),
     Cross { lines: [Line; 2] },

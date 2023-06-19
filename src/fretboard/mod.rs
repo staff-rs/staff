@@ -7,9 +7,6 @@ use crate::{
 };
 use core::iter::Zip;
 
-#[cfg(feature = "wasm-bindgen")]
-use wasm_bindgen::prelude::wasm_bindgen;
-
 mod diagram;
 pub use diagram::{Diagram, Range};
 

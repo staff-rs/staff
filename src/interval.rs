@@ -1,6 +1,5 @@
 use core::fmt::{self, Write};
-use core::ops::Add;
-use std::ops::Sub;
+use core::ops::{Add, Sub};
 
 /// Music interval in semitones.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]

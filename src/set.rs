@@ -18,9 +18,9 @@ impl IntervalSet {
 }
 
 /// An ordered set of intervals or pitches stored in a single integer.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Set<T, U> {
     pub bits: U,
     #[cfg_attr(feature = "serde", serde(skip))]

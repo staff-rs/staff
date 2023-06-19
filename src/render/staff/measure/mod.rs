@@ -1,5 +1,4 @@
 use crate::render::{Item, Line};
-
 use super::Renderer;
 use svg::Node;
 

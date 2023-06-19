@@ -1,5 +1,25 @@
 //! Music theory library with midi, notes, chords, scales, and more
 //!
+//! ## Feature flags
+//!
+//! Staff uses a set of [feature flags] to reduce the amount of compiled code. It
+//! is possible to just enable certain features over others. By default, staff
+//! does not enable any features but allows one to enable a subset for their use
+//! case. Below is a list of the available feature flags. You may also notice
+//! above each function, struct and trait there is listed one or more feature flags
+//! that are required for that item to be used. If you are new to staff it is
+//! recommended that you use the `full` feature flag which will enable all public APIs.
+//! Beware though that this will pull in many extra dependencies that you may not
+//! need.
+//!
+//! [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
+//!
+//! - `full`: Enables all features listed below.
+//! - `std`: Enables std, otherwise this crate will use `#![no_std]`
+//! - `parse` Enables the `staff::parse` module.
+//! - `fretboard` Enables the `staff::fretboard` module.
+//! - `render` Enables the `staff::render` module.
+//! 
 //! # Examples
 //!
 //! Create a C Major (1st inversion) chord and iterate over its notes.
@@ -33,8 +53,8 @@
 //! ]));
 //! ```
 
-// TODO alloc
-//#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub mod chord;
 pub use chord::Chord;
@@ -44,6 +64,8 @@ pub mod time;
 pub mod fmt;
 pub use fmt::Format;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "fretboard")))]
+#[cfg(feature = "fretboard")]
 pub mod fretboard;
 
 mod interval;
@@ -52,7 +74,7 @@ pub use interval::Interval;
 mod key;
 pub use crate::key::Key;
 
-#[cfg(feature = "svg")]
+#[cfg(feature = "parse")]
 pub mod parse;
 
 mod natural;
@@ -66,6 +88,7 @@ pub use note::Note;
 mod pitch;
 pub use pitch::Pitch;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "render")))]
 #[cfg(feature = "render")]
 pub mod render;
 
@@ -73,7 +96,9 @@ pub mod scale;
 pub use scale::Scale;
 
 pub mod set;
+pub use set::Set;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "synth")))]
 #[cfg(feature = "synth")]
 pub mod synth;
 
