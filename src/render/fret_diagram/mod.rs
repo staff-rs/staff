@@ -1,6 +1,9 @@
-use std::{iter::Enumerate, slice};
-use super::Fretboard;
+use crate::fretboard::Fretboard;
 use crate::midi::MidiNote;
+use std::{iter::Enumerate, slice};
+
+mod render;
+pub use render::Renderer;
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

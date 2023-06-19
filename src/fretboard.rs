@@ -7,13 +7,6 @@ use crate::{
 };
 use core::iter::Zip;
 
-mod diagram;
-pub use diagram::{Diagram, Range};
-
-#[cfg(feature = "render")]
-pub mod render;
-#[cfg(feature = "render")]
-pub use render::Renderer;
 
 pub const STANDARD: [MidiNote; 6] = [
     MidiNote::new(Pitch::E, Octave::FOUR),

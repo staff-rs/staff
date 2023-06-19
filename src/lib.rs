@@ -74,6 +74,7 @@ pub use interval::Interval;
 mod key;
 pub use crate::key::Key;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "parse")))]
 #[cfg(feature = "parse")]
 pub mod parse;
 

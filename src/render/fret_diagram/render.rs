@@ -1,7 +1,5 @@
-use crate::{
-    fretboard::diagram::{Diagram, Range},
-    render::{Line, Rectangle},
-};
+use super::{Diagram, Range};
+use crate::render::{Line, Rectangle};
 
 #[cfg(feature = "svg")]
 use svg::node::{element, Node};

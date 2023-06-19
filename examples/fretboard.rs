@@ -1,6 +1,6 @@
-use staff::{
-    fretboard::{Diagram, Range, Renderer},
-    render::font,
+use staff::render::{
+    font,
+    fret_diagram::{Diagram, Range, Renderer},
 };
 
 fn main() {

@@ -27,6 +27,10 @@ name = "staff"
 required-features = ["cli"]
 
 [[example]]
+name = "fretboard"
+required-features = ["fretboard", "render"]
+
+[[example]]
 name = "synth"
 required-features = ["synth"]
 

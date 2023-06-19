@@ -1,5 +1,8 @@
 //! Sheet music engraving
 
+pub mod fret_diagram;
+pub use fret_diagram::Diagram;
+
 #[cfg(feature = "svg")]
 pub mod staff;
 #[cfg(feature = "svg")]
