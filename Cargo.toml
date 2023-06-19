@@ -9,7 +9,7 @@ homepage = "https://staff-rs.github.io"
 
 [features]
 std = []
-cli = ["anyhow", "clap", "parse", "svg"]
+app = ["clap", "concoct", "full", "tokio"]
 fretboard = ["std"]
 parse = ["std"]
 render = ["std"]
@@ -24,7 +24,7 @@ name = "staff"
 
 [[bin]]
 name = "staff"
-required-features = ["cli"]
+required-features = ["app"]
 
 [[example]]
 name = "fretboard"
@@ -36,7 +36,6 @@ required-features = ["synth"]
 
 [dependencies]
 num-traits = "0.2.14"
-anyhow = { version = "1.0.61", optional = true }
 font-kit = { version = "0.11.0", optional = true }
 rusttype = { version = "0.9.3", optional = true }
 svg = { version = "0.12.1", optional = true }
@@ -44,6 +43,9 @@ text-svg = { version = "0.1.2", optional = true }
 wasm-bindgen = { version = "0.2.83", optional = true }
 rodio = { version = "0.16.0", optional = true }
 rand = { version = "0.8.5", optional = true }
+
+concoct = { path = "../concoct", optional = true }
+tokio = { version = "1.28.2", optional = true, features = ["full"] }
 
 [dependencies.clap]
 version = "4.0.18"
