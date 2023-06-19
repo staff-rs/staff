@@ -19,7 +19,7 @@
 //! - `parse` Enables the `staff::parse` module.
 //! - `fretboard` Enables the `staff::fretboard` module.
 //! - `render` Enables the `staff::render` module.
-//! 
+//!
 //! # Examples
 //!
 //! Create a C Major (1st inversion) chord and iterate over its notes.
@@ -102,6 +102,10 @@ pub use set::Set;
 #[cfg_attr(docsrs, doc(cfg(feature = "synth")))]
 #[cfg(feature = "synth")]
 pub mod synth;
+
+#[cfg_attr(docsrs, doc(cfg(feature = "ui")))]
+#[cfg(feature = "ui")]
+pub mod ui;
 
 /// ```
 /// use staff::{midi, Pitch};

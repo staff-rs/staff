@@ -7,7 +7,6 @@ use crate::{
 };
 use core::iter::Zip;
 
-
 pub const STANDARD: [MidiNote; 6] = [
     MidiNote::new(Pitch::E, Octave::FOUR),
     MidiNote::new(Pitch::A, Octave::FOUR),

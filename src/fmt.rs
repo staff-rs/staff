@@ -1,8 +1,8 @@
 //! Format trait to adjust `fmt::Display` output
 
+use crate::{midi::MidiNote, set::IntervalSet, Chord, Interval};
 use core::fmt;
 use core::fmt::{Display, Write};
-use crate::{midi::MidiNote, set::IntervalSet, Chord, Interval};
 
 /// ```
 /// use staff::{midi, Chord, Format};
