@@ -2,12 +2,8 @@ use crate::render::Diagram;
 use concoct::composable::Container;
 use concoct::dimension::{DevicePixels, Dimension, Size};
 use concoct::skia_safe::{colors, Paint, Point};
-use concoct::taffy::style::{JustifyContent};
-use concoct::{
-    composable::{Text},
-    modify::ModifyExt,
-    Modifier, View,
-};
+use concoct::taffy::style::JustifyContent;
+use concoct::{composable::Text, modify::ModifyExt, Modifier, View};
 
 pub struct FretDiagram {
     diagram: Diagram,
@@ -38,7 +34,7 @@ impl View for FretDiagram {
                     Modifier
                         .background_color(colors::RED)
                         .draw(move |layout, canvas| {
-                            let width = layout.size.width / (string_count + 1) as f32;
+                            let width = layout.size.width / string_count as f32;
                             let gap = width / 2.;
                             let start = layout.location.x + gap;
 
@@ -48,7 +44,7 @@ impl View for FretDiagram {
                             paint.set_stroke(true);
                             paint.set_stroke_width(stroke_width);
 
-                            for i in 0..=string_count {
+                            for i in 0..string_count {
                                 let p1 = Point::new(start + (width * i as f32), layout.location.y);
                                 let p2 = Point::new(
                                     start + (width * i as f32),
