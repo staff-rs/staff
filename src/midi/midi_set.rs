@@ -9,7 +9,7 @@ pub struct MidiSet {
 }
 
 impl MidiSet {
-    pub fn contains(&mut self, midi: MidiNote) -> bool {
+    pub fn contains(& self, midi: MidiNote) -> bool {
         with_midi(self.low, self.high, midi, |set, midi| set.contains(midi))
     }
 

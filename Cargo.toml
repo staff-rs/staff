@@ -34,7 +34,7 @@ required-features = ["synth"]
 
 [dependencies]
 num-traits = "0.2.14"
-concoct = { version = "0.6.8", features = ["web"], optional = true }
+concoct = { version = "0.6.8", path = "../concoct", features = ["web"], optional = true }
 
 [dependencies.serde]
 version = "1.0"
