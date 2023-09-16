@@ -1,29 +1,48 @@
 use concoct::{
-    composable::{state, Container, TextField},
-    taffy::style::{AlignItems, JustifyContent},
-    View,
+    view::{once, View},
+    web::{on, Html, Web},
 };
-use staff::{render::Diagram, ui::FretDiagram};
 
-fn app() {
-    Container::build_column(|| {
-        let string_count = state(|| 4);
-
-        let diagram = Diagram::new(string_count.cloned(), 5, 3);
-        FretDiagram::new(diagram).view();
-
-        TextField::build(string_count.cloned().to_string(), move |value| {
-            string_count.set(value.parse().unwrap_or_default());
-        })
-        .view();
-    })
-    .align_items(AlignItems::Center)
-    .justify_content(JustifyContent::Center)
-    .flex_grow(1.)
-    .view();
+enum Instrument {
+    Piano,
+    Strings,
 }
 
-#[tokio::main]
-async fn main() {
-    concoct::render::run(app)
+struct State {
+    instrument: Instrument,
+}
+
+enum Event {
+    Instrument(Instrument),
+}
+
+fn counter(state: &State) -> impl View<Web<Event>> {
+    let label = match state.instrument {
+        Instrument::Piano => "Piano",
+        Instrument::Strings => "Strings",
+    };
+
+    (
+        Html::h1((), label),
+        once(Html::button(
+            on("click", |_| Event::Instrument(Instrument::Piano)),
+            "Piano",
+        )),
+        once(Html::button(
+            on("click", |_| Event::Instrument(Instrument::Strings)),
+            "Strings",
+        )),
+    )
+}
+
+fn main() {
+    concoct::web::run(
+        State {
+            instrument: Instrument::Piano,
+        },
+        |state, event| match event {
+            Event::Instrument(instrument) => state.instrument = instrument,
+        },
+        counter,
+    );
 }
