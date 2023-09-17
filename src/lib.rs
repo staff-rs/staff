@@ -74,7 +74,6 @@ pub use interval::Interval;
 mod key;
 pub use crate::key::Key;
 
-
 mod natural;
 pub use natural::Natural;
 

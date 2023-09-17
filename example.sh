@@ -1,1 +1,0 @@
-cargo run -- example.ly > example.svg
