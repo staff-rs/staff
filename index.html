@@ -1,29 +1,61 @@
 <html>
-    <head>
-        <style>
-            .keys {
-                display: flex;
-                list-style: none;
-            }
+  <head>
+    <style>
+      html {
+        font-family: sans-serif;
+        background: #000;
+      }
 
-            .key {
-                width: 50px;
-                height: 200px;
-                border: 2px solid #000;
-            }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 50px;
+      }
 
-            .key.black {
-                width: 40px;
-                height: 160px;
-                margin: -2px -15px;
-                border: 2px solid #fff;
-                background: #000;
-            }
+      .chords {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+        align-items: center;
+        list-style: none;
+      }
 
-            .key.selected {
-                background: blue;
-            }
-        </style>
-    </head>
-    <body></body>
+      .chords li {
+        color: #fff;
+        padding: 20px 40px;
+        font-size: 1.5em;
+        margin: 20px;
+        border-radius: 10px;
+        background: #292929;
+      }
+
+      .keys {
+        display: flex;
+        height: 200px;
+        list-style: none;
+        background: #fff;
+        padding: 0;
+      }
+
+      .key {
+        width: 50px;
+        border: 2px solid #000;
+      }
+
+      .key.black {
+        width: 40px;
+        height: 160px;
+        margin: 0 -20px;
+        border: none;
+        background: #000;
+        z-index: 9;
+      }
+
+      .key.selected {
+        background: #2d68ff;
+      }
+    </style>
+  </head>
+  <body></body>
 </html>
