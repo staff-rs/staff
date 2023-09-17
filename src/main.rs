@@ -1,3 +1,5 @@
+use std::panic;
+
 use concoct::{
     view::{once, View},
     web::{class, on, Html, Web},
@@ -52,6 +54,9 @@ fn app(state: &State) -> impl View<Web<Event>> {
 }
 
 fn main() {
+    panic::set_hook(Box::new(console_error_panic_hook::hook));
+
+    
     concoct::web::run(
         State {
             keys: MidiSet::default(),

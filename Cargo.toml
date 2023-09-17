@@ -25,16 +25,13 @@ name = "staff"
 required-features = ["ui"]
 
 [[example]]
-name = "fretboard"
-required-features = ["fretboard", "render"]
-
-[[example]]
 name = "synth"
 required-features = ["synth"]
 
 [dependencies]
 num-traits = "0.2.14"
 concoct = { version = "0.6.8", path = "../concoct", features = ["web"], optional = true }
+console_error_panic_hook = "0.1.7"
 
 [dependencies.serde]
 version = "1.0"

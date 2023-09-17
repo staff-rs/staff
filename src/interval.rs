@@ -88,6 +88,8 @@ impl fmt::Display for Interval {
             Interval::MAJOR_THIRD => f.write_char('3'),
             Interval::PERFECT_FOURTH => f.write_char('4'),
             Interval::PERFECT_FIFTH => f.write_char('5'),
+            Interval::MINOR_SIXTH => f.write_str("b6"),
+            Interval::MAJOR_SIXTH => f.write_char('6'),
             Interval::MINOR_SEVENTH => f.write_str("m7"),
             Interval::MAJOR_SEVENTH => f.write_str("maj7"),
             Interval::MAJOR_NINTH => f.write_char('9'),
