@@ -1,4 +1,3 @@
-use std::panic;
 use concoct::{
     view::{self, View},
     web::{Html, Web},
@@ -6,8 +5,9 @@ use concoct::{
 use staff::{
     chord::chords,
     midi::{MidiNote, MidiSet},
-    ui::piano
+    ui::Piano,
 };
+use std::panic;
 
 struct State {
     keys: MidiSet,
@@ -17,11 +17,11 @@ enum Event {
     Key(MidiNote, bool),
 }
 
-
 fn app(state: &State) -> impl View<Web<Event>> {
-    let chords = chords(state.keys.clone().into_iter().collect::<Vec<_>>())
+    let chords: Vec<_> = chords(state.keys.clone().into_iter().collect::<Vec<_>>())
         .map(|chord| ((), Html::li().view(chord.to_string())))
-        .collect::<Vec<_>>();
+        .collect();
+
     (
         view::once(
             Html::header().view((
@@ -38,9 +38,11 @@ fn app(state: &State) -> impl View<Web<Event>> {
                 )),
             )),
         ),
-        piano(state.keys.clone(), 29, |midi, contains_midi| {
+        Piano::new(state.keys.clone(), |midi, contains_midi| {
             Event::Key(midi, contains_midi)
-        }),
+        })
+        .with_keys_len(29)
+        .view(),
         Html::ul().class("chords").view(chords),
     )
 }
@@ -58,7 +60,6 @@ fn main() {
                     state.keys.remove(midi);
                 } else {
                     state.keys.push(midi);
-                   
                 }
             }
         },
