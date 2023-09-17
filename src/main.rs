@@ -27,11 +27,11 @@ fn app(state: &State) -> impl View<Web<Event>> {
             Html::header().view((
                 Html::h1().view("Chord Analyzer"),
                 Html::div().view((
-                    "Build with ",
+                    Html::span().view("Build with "),
                     Html::a()
                         .attr("href", "https://github.com/matthunz/staff")
                         .view("Staff"),
-                    " and ",
+                    Html::span().view(" and "),
                     Html::a()
                         .attr("href", "https://github.com/concoct-rs/concoct")
                         .view("Concoct"),
