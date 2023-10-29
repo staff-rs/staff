@@ -123,3 +123,13 @@ impl fmt::Display for MidiNote {
         write!(f, "{}{}", self.pitch(), self.octave())
     }
 }
+
+#[cfg(feature = "ui")]
+impl<'a> dioxus::prelude::IntoAttributeValue<'a> for MidiNote {
+    fn into_value(
+        self,
+        _bump: &'a dioxus::core::exports::bumpalo::Bump,
+    ) -> dioxus::core::AttributeValue<'a> {
+        dioxus::core::AttributeValue::Int(self.into_byte() as _)
+    }
+}

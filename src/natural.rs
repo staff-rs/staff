@@ -83,3 +83,13 @@ impl FromStr for Natural {
         c.try_into().map_err(Some)
     }
 }
+
+#[cfg(feature = "ui")]
+impl<'a> dioxus::prelude::IntoAttributeValue<'a> for Natural {
+    fn into_value(
+        self,
+        _bump: &'a dioxus::core::exports::bumpalo::Bump,
+    ) -> dioxus::core::AttributeValue<'a> {
+        dioxus::core::AttributeValue::Int(self as u8 as _)
+    }
+}

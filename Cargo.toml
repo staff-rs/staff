@@ -13,7 +13,7 @@ fretboard = ["std"]
 parse = ["std"]
 render = ["std"]
 serde = ["dep:serde"]
-ui = ["concoct"]
+ui = ["dep:bumpalo", "dep:dioxus", "dep:dioxus-web"]
 full = ["fretboard", "parse", "render", "serde", "ui"]
 default = ["full"]
 
@@ -30,8 +30,10 @@ required-features = ["synth"]
 
 [dependencies]
 num-traits = "0.2.14"
-concoct = { version = "0.6.8", path = "../concoct", features = ["web"], optional = true }
 console_error_panic_hook = "0.1.7"
+dioxus = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
+dioxus-web = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
+bumpalo = { version = "3.14.0", features = ["boxed"], optional = true }
 
 [dependencies.serde]
 version = "1.0"
