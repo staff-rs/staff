@@ -4,12 +4,26 @@ use core::mem;
 use dioxus::core::AttributeValue;
 
 #[component]
-pub fn Staff<'a>(cx: Scope<'a>, children: Element<'a>) -> Element<'a> {
+pub fn Staff<'a>(
+    cx: Scope<'a>,
+    children: Element<'a>,
+
+    /// Line height of the staff.
+    #[props(default = 20.)]
+    line_height: f64,
+
+    /// Width of the staff.
+    #[props(default = 400.)]
+    width: f64,
+
+    /// Stroke width of the items in the staff.
+    #[props(default = 2.)]
+    stroke_width: f64,
+) -> Element<'a> {
     let node = children.as_ref().unwrap();
 
     let mut left = 10.;
-    let line_height = 20.;
-    let width = 400.;
+    let top = *stroke_width;
 
     let elements = node.template.get().roots.iter().map(|root| match root {
         TemplateNode::Element {
@@ -42,16 +56,17 @@ pub fn Staff<'a>(cx: Scope<'a>, children: Element<'a>) -> Element<'a> {
             }
 
             let natural = natural.unwrap();
-
-            let y = note_index(natural, Octave::FOUR) as f64 * (line_height / 2.);
+            let y = note_index(natural, Octave::FOUR) as f64 * (line_height / 2.) + top;
             let x = left;
             left += 30.;
 
+            let stem_x = x + line_height / 2. - stroke_width / 2.;
             render!(
                 circle { cx: x, cy: y, r: line_height / 2. }
                 path {
-                    d: "M{x + line_height / 2.} {y - line_height * 3.} L{x + line_height / 2.} {y}",
-                    stroke: "#000"
+                    d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
+                    stroke: "#000",
+                    stroke_width: *stroke_width
                 }
             )
         }
@@ -60,7 +75,7 @@ pub fn Staff<'a>(cx: Scope<'a>, children: Element<'a>) -> Element<'a> {
 
     let mut d = String::new();
     for i in 0..5 {
-        let y = i as f64 * line_height;
+        let y = i as f64 * line_height + top;
 
         d.push_str(&format!("M0 {y} L {width} {y} "));
     }
@@ -68,7 +83,7 @@ pub fn Staff<'a>(cx: Scope<'a>, children: Element<'a>) -> Element<'a> {
     render!(
         svg { width: "500px", height: "500px", xmlns: "http://www.w3.org/2000/svg",
             elements,
-            path { d: "{d}", stroke: "#000" }
+            path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
         }
     )
 }
