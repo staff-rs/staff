@@ -1,7 +1,7 @@
 use staff::{
     note::Accidental,
     ui::{prelude::*, Font, Staff},
-    Natural,
+    Natural, time::{Duration, DurationKind},
 };
 
 fn app(cx: Scope) -> Element {
@@ -11,6 +11,7 @@ fn app(cx: Scope) -> Element {
             Staff { 
                 note { natural: Natural::F, accidental: Accidental::Sharp }
                 note { natural: Natural::A }
+                note { natural: Natural::G, accidental: Accidental::Flat , duration: Duration::new(DurationKind::Half, false) }
             }
         }
     )

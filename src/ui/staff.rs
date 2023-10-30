@@ -65,7 +65,8 @@ pub fn Staff<'a>(
                     let y = i as f64 * line_height + top + y;
                     d.push_str(&format!("M0 {y} L {width} {y} "));
                 }
-                render!(
+
+                let elem = render!(
                     path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
                     Br {
                         x: left + stroke_width / 2.,
@@ -81,7 +82,10 @@ pub fn Staff<'a>(
                         line_height: *line_height,
                         stroke_width: *stroke_width
                     }
-                )
+                );
+
+                left += 20.;
+                elem
             } else {
                 None
             };
@@ -92,11 +96,14 @@ pub fn Staff<'a>(
                     left += layout.width();
 
                     render!(Note {
+                        duration: note.duration,
                         x: x,
                         y: top + note.index() as f64 * (line_height / 2.),
                         layout: layout.clone(),
                         head_size: line_height / 2.,
-                        font_size: 24.,
+                        font_size: 48.,
+                        stroke_width: *stroke_width,
+                        line_height: *line_height,
                         onlayout: move |layout| layouts.write()[idx].0 = layout
                     })
                 }
