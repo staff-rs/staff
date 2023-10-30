@@ -44,8 +44,8 @@ pub fn items<'a>(node: &'a VNode<'a>, width: f64) -> impl Iterator<Item = (Item,
                 let old_is_newline = is_newline;
                 is_newline = x > width;
                 if is_newline {
-                    x = 20.;
-                    y += 200.;
+                    x = 0.;
+                    y += 120.;
                 }
 
                 (item, old_is_newline)

@@ -8,6 +8,15 @@ use crate::{
 };
 
 #[component]
+fn Br(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
+    render!(path {
+        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
+        stroke: "#000",
+        stroke_width: *stroke_width
+    })
+}
+
+#[component]
 pub fn Staff<'a>(
     cx: Scope<'a>,
     children: Element<'a>,
@@ -27,23 +36,35 @@ pub fn Staff<'a>(
     let node = children.as_ref().unwrap();
     let top = *stroke_width + 100.;
 
-    let mut is_first = true;
-
     let elements = items(node, *width).map(|(item, is_newline)| {
         let mut x = item.x;
-
-        let lines = if is_newline || is_first {
-            is_first = false;
-            
+        let lines = if is_newline {
             let mut d = String::new();
             for i in 0..5 {
                 let y = i as f64 * line_height + top + item.y;
                 d.push_str(&format!("M0 {y} L {width} {y} "));
             }
-            render!(path { d: "{d}", stroke: "#000", stroke_width: *stroke_width })
+            render!(
+                path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
+                Br {
+                    x: x + stroke_width / 2.,
+                    y: item.y,
+                    top: top,
+                    line_height: *line_height,
+                    stroke_width: *stroke_width
+                }
+                Br {
+                    x: width - stroke_width / 2.,
+                    y: item.y,
+                    top: top,
+                    line_height: *line_height,
+                    stroke_width: *stroke_width
+                }
+            )
         } else {
             None
         };
+        x += 20.;
 
         let elem =match item.element {
             element::Element::Note(note) => {
@@ -83,29 +104,29 @@ pub fn Staff<'a>(
                     }        
                 };
 
-                render!(acc, head_and_stem )
+                render!( acc, head_and_stem )
             }
-            element::Element::Br(_) => {
-                render!(path {
-                    d: "M{x} {top + item.y}L{x} {top + item.y + line_height * 4.}",
-                    stroke: "#000",
+            element::Element::Br(_) => render!(
+                Br {
+                    x: x,
+                    y: item.y,
+                    top: top,
+                    line_height: *line_height,
                     stroke_width: *stroke_width
                 }
-                )
-             }
+            ),
              element::Element::Clef(_) => {
                 render!(text { x: x, y: top + line_height * 4. + stroke_width, font_family: "Noto Music", font_size: "{line_height * 3.}px", "𝄞" })
             }
     
         };
-        render!(lines, elem)
+        render!( lines, elem )
     });
 
-    
-
-    render!(
-        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg",
-            elements,
-             }
-    )
+    render!(svg {
+        width: "{width}px",
+        height: "500px",
+        xmlns: "http://www.w3.org/2000/svg",
+        elements
+    })
 }
