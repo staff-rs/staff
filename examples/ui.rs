@@ -15,6 +15,8 @@ fn app(cx: Scope) -> Element {
                 note { natural: Natural::F }
                 note { natural: Natural::G, accidental: Accidental::Sharp, duration: Duration::new(DurationKind::Half, false) }
                 note { natural: Natural::C, accidental: Accidental::Flat, octave: Octave::FIVE }
+                br {}
+
                 note { natural: Natural::A, duration: Duration::new(DurationKind::Whole, false) }
             }
         }

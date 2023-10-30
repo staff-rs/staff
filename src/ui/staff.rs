@@ -75,9 +75,23 @@ pub fn Staff<'a>(
 
                 render!( acc, head_and_stem )
             }
+            "br" => {
+                let x = left;
+                left += 20.;
+
+                render!(path {
+
+                    d: "M{x} {top}L{x} {top + line_height * 4.}",
+
+                    stroke: "#000",
+
+                    stroke_width: *stroke_width
+                }
+                )
+             }
             "clef" => {
                 let x = left;
-                left += 70.;
+                left += 60.;
 
                 render!(text { x: x, y: top + line_height * 4. + stroke_width, font_family: "Noto Music", font_size: "{line_height * 3.}px", "𝄞" })
             }

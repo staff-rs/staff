@@ -59,6 +59,14 @@ pub mod prelude {
         }
 
         #[allow(non_camel_case_types)]
+        pub struct br {}
+
+        impl br {
+            pub const TAG_NAME: &'static str = "br";
+            pub const NAME_SPACE: Option<&'static str> = None;
+        }
+
+        #[allow(non_camel_case_types)]
         pub struct chord {}
 
         impl chord {
