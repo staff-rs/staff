@@ -1,3 +1,6 @@
+mod element;
+pub use element::Note;
+
 mod font;
 pub use font::Font;
 
