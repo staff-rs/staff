@@ -99,7 +99,7 @@ pub mod prelude {
         pub struct fret {}
 
         impl fret {
-            pub const TAG_NAME: &'static str = "marker";
+            pub const TAG_NAME: &'static str = "fret";
             pub const NAME_SPACE: Option<&'static str> = None;
 
             #[allow(non_upper_case_globals)]
@@ -116,17 +116,17 @@ pub mod prelude {
         pub struct frets {}
 
         impl frets {
-            pub const TAG_NAME: &'static str = "marker";
+            pub const TAG_NAME: &'static str = "frets";
             pub const NAME_SPACE: Option<&'static str> = None;
+
+            #[allow(non_upper_case_globals)]
+            pub const index: AttributeDiscription = ("index", None, true);
 
             #[allow(non_upper_case_globals)]
             pub const from: AttributeDiscription = ("from", None, true);
 
             #[allow(non_upper_case_globals)]
             pub const to: AttributeDiscription = ("to", None, true);
-
-            #[allow(non_upper_case_globals)]
-            pub const string: AttributeDiscription = ("string", None, true);
         }
     }
 }
