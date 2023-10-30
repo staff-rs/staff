@@ -28,12 +28,22 @@ impl Accidental {
 impl fmt::Display for Accidental {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Accidental::Natural => Ok(()),
-            Accidental::Flat => f.write_char('b'),
-            Accidental::DoubleFlat => f.write_str("bb"),
-            Accidental::Sharp => f.write_char('#'),
-            Accidental::DoubleSharp => f.write_str("##"),
+            Accidental::Natural => f.write_char('♮'),
+            Accidental::Flat => f.write_char('♭'),
+            Accidental::DoubleFlat => f.write_str("𝄫"),
+            Accidental::Sharp => f.write_char('♯'),
+            Accidental::DoubleSharp => f.write_str("𝄪"),
         }
+    }
+}
+
+#[cfg(feature = "ui")]
+impl<'a> dioxus::prelude::IntoAttributeValue<'a> for Accidental {
+    fn into_value(
+        self,
+        _bump: &'a dioxus::core::exports::bumpalo::Bump,
+    ) -> dioxus::core::AttributeValue<'a> {
+        dioxus::core::AttributeValue::Int(self as u8 as _)
     }
 }
 
