@@ -1,14 +1,10 @@
 use dioxus_resize_observer::use_size;
-use dioxus_signals::use_signal;
+
 use dioxus_use_mounted::use_mounted;
 use staff::{
     note::Accidental,
     time::{Duration, DurationKind},
-    ui::{
-        element::{Note, StaffElement},
-        prelude::*,
-        Font, NoteEvent, Staff,
-    },
+    ui::{prelude::*, Font, NoteEvent, Staff},
     Natural,
 };
 
@@ -16,26 +12,6 @@ fn app(cx: Scope) -> Element {
     let mounted = use_mounted(cx);
     let size = use_size(cx, mounted);
     let selected: &UseState<Option<NoteEvent>> = use_state(cx, || None);
-    let elements = use_signal(cx, || {
-        vec![
-            StaffElement::Note(
-                Note::default()
-                    .with_natural(Natural::E)
-                    .with_duration(Duration::from(DurationKind::Half)),
-            ),
-            StaffElement::Note(
-                Note::default()
-                    .with_natural(Natural::B)
-                    .with_accidental(Some(Accidental::Sharp))
-                    .with_duration(Duration::from(DurationKind::Eigth)),
-            ),
-            StaffElement::Note(
-                Note::default()
-                    .with_natural(Natural::G)
-                    .with_duration(Duration::from(DurationKind::Eigth)),
-            ),
-        ]
-    });
 
     render!(
         div {
@@ -61,10 +37,10 @@ fn app(cx: Scope) -> Element {
                 margin: "50px",
                 overflow: "hidden",
                 onmounted: move |event| mounted.onmounted(event),
-                Staff {
-                    width: size.width(),
-                    elements: elements,
-                    onclick: |event| selected.set(Some(event))
+                Staff { width: size.width(), onclick: |event| selected.set(Some(event)),
+                    note { natural: Natural::E }
+                    note { natural: Natural::B, accidental: Accidental::Sharp, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::G, duration: Duration::from(DurationKind::Eigth) }
                 }
             }
         }

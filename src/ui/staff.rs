@@ -1,4 +1,7 @@
-use super::{element::StaffElement, prelude::*};
+use super::{
+    element::{self, Clef, StaffElement},
+    prelude::*,
+};
 use crate::{
     note::Accidental,
     ui::{
@@ -7,16 +10,12 @@ use crate::{
     },
     Natural,
 };
-use dioxus_signals::Signal;
+use dioxus_signals::{use_signal, Signal};
 use std::rc::Rc;
 
 #[component]
 fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path {
-        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
-        stroke: "#000",
-        stroke_width: *stroke_width
-    })
+    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
 }
 
 pub struct NoteEvent {
@@ -28,6 +27,68 @@ pub struct NoteEvent {
 /// Staff component.
 #[component]
 pub fn Staff<'a>(
+    cx: Scope<'a>,
+
+    children: Element<'a>,
+
+    /// Line height of the staff.
+    #[props(default = 15.)]
+    line_height: f64,
+
+    /// Width of the staff.
+    #[props(default = 400.)]
+    width: f64,
+
+    /// Stroke width of the items in the staff.
+    #[props(default = 2.)]
+    stroke_width: f64,
+
+    onclick: EventHandler<'a, NoteEvent>,
+) -> Element<'a> {
+    let items: Vec<_> = items(children.as_ref().unwrap()).collect();
+    let elements = use_signal(cx, || Vec::new());
+
+    use_effect(cx, &items, move |items| {
+        elements.set(items);
+        async {}
+    });
+
+    render!(
+        StaffElements {
+            elements: elements,
+            line_height: *line_height,
+            width: *width,
+            stroke_width: *stroke_width,
+            onclick: |event| onclick.call(event)
+        }
+    )
+}
+
+fn items<'a>(node: &'a VNode<'a>) -> impl Iterator<Item = StaffElement> + 'a {
+    node.template
+        .get()
+        .roots
+        .iter()
+        .map(move |root| match root {
+            TemplateNode::Element {
+                tag,
+                namespace: _,
+                attrs,
+                children: _,
+            } => match *tag {
+                "note" => StaffElement::Note(element::Note::from_attrs(&node, attrs)),
+                "br" => StaffElement::Br,
+                "hr" => StaffElement::Hr,
+                "clef" => StaffElement::Clef(Clef {}),
+                _ => todo!(),
+            },
+            _ => todo!(),
+        })
+}
+
+/// Staff component.
+#[component]
+pub fn StaffElements<'a>(
     cx: Scope<'a>,
 
     /// Staff elements signal.
@@ -88,53 +149,54 @@ pub fn Staff<'a>(
             let elem = match &item.kind {
                 ItemKind::Br => None,
                 ItemKind::Hr => {
-                    render!(Hr {
-                        x: item.x - stroke_width / 2.,
-                        y: item.y,
-                        top: top,
-                        line_height: *line_height,
-                        stroke_width: *stroke_width
-                    })
+                    render!(
+                        Hr {
+                            x: item.x - stroke_width / 2.,
+                            y: item.y,
+                            top: top,
+                            line_height: *line_height,
+                            stroke_width: *stroke_width
+                        }
+                    )
                 }
                 ItemKind::Note { layout, note } => {
                     let natural = note.natural;
                     let accidental = note.accidental;
 
-                    render!(Note {
-                        duration: note.duration,
-                        x: item.x,
-                        y: top + item.y + note.index() as f64 * (line_height / 2.),
-                        layout: layout.clone(),
-                        head_size: line_height / 2.,
-                        font_size: 48.,
-                        stroke_width: *stroke_width,
-                        line_height: *line_height,
-                        last: last.clone(),
-                        onlayout: move |new_layout| {
-                            if let LayoutElement::Note { ref mut layout, .. } =
-                                &mut *layouts.read()[idx].write()
-                            {
-                                *layout = new_layout;
+                    render!(
+                        Note {
+                            duration: note.duration,
+                            x: item.x,
+                            y: top + item.y + note.index() as f64 * (line_height / 2.),
+                            layout: layout.clone(),
+                            head_size: line_height / 2.,
+                            font_size: 48.,
+                            stroke_width: *stroke_width,
+                            line_height: *line_height,
+                            last: last.clone(),
+                            onlayout: move |new_layout| {
+                                if let LayoutElement::Note { ref mut layout, .. } = &mut *layouts.read()[idx].write()
+                                {
+                                    *layout = new_layout;
+                                }
+                            },
+                            onclick: move |_event| {
+                                onclick
+                                    .call(NoteEvent {
+                                        idx,
+                                        natural: natural,
+                                        accidental: accidental,
+                                    })
                             }
-                        },
-                        onclick: move |_event| {
-                            onclick.call(NoteEvent {
-                                idx,
-                                natural: natural,
-                                accidental: accidental,
-                            })
                         }
-                    })
+                    )
                 }
             };
 
             render! { lines, elem }
         });
 
-    render!(svg {
-        width: "{width}px",
-        height: "500px",
-        xmlns: "http://www.w3.org/2000/svg",
-        elems
-    })
+    render!(
+        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
+    )
 }

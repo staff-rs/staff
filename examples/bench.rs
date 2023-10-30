@@ -7,7 +7,7 @@ use staff::{
     ui::{
         element::{Note, StaffElement},
         prelude::*,
-        Font, NoteEvent, Staff,
+        Font, NoteEvent, StaffElements,
     },
     Natural,
 };
@@ -64,7 +64,7 @@ fn app(cx: Scope) -> Element {
                 margin: "50px",
                 overflow: "hidden",
                 onmounted: move |event| mounted.onmounted(event),
-                Staff {
+                StaffElements {
                     width: size.width(),
                     elements: elements,
                     onclick: |event| selected.set(Some(event))

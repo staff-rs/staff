@@ -15,7 +15,7 @@ mod note;
 pub use note::Note;
 
 mod staff;
-pub use staff::{NoteEvent, Staff};
+pub use staff::{NoteEvent, Staff, StaffElements};
 
 pub mod prelude {
     pub use dioxus::prelude::*;
@@ -110,11 +110,7 @@ fn Text<'a>(
         async {}
     });
 
-    render!(text {
-        font_family: *font_family,
-        font_size: *font_size,
-        onmounted: move |event| mounted.onmounted(event),
-        opacity: 0.,
-        content
-    })
+    render!(
+        text { font_family: *font_family, font_size: *font_size, onmounted: move |event| mounted.onmounted(event), opacity: 0., content }
+    )
 }
