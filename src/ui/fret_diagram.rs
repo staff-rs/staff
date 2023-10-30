@@ -14,7 +14,7 @@ pub fn FretDiagram<'a>(
     string_count: u8,
 
     /// Amount of frets in the diagram.
-    #[props(default = 8)]
+    #[props(default = 5)]
     fret_count: u8,
 
     /// Top-most position of the diagram.
@@ -37,26 +37,49 @@ pub fn FretDiagram<'a>(
     #[props(default = 2.)]
     stroke_width: f64,
 ) -> Element<'a> {
-    let fret_width = *width / (*string_count - 1) as f64;
-    let fret_height = (*height - stroke_width * 6.) / (*fret_count - 1) as f64;
+    let fret_width = *width / (*string_count + 1) as f64;
+    let fret_height = (*height - stroke_width * 6.) / (*fret_count + 1) as f64;
 
-    let fret_lines = (1..*fret_count).map(|i| {
+    let x = x + fret_width;
+    let y = y + fret_height;
+
+    let fret_lines = (2..=*fret_count).map(|i| {
         let line_y = fret_height * i as f64 + stroke_width * 5.5;
-        render!(path { stroke: "#000", stroke_width: *stroke_width, d: "M{x} {line_y}L{width} {line_y}" })
+        render!(path {
+            stroke: "#000",
+            stroke_width: *stroke_width,
+            d: "M{x} {line_y}L{width - fret_width} {line_y}"
+        })
     });
 
-    let string_lines = (0..*string_count).map(|i| {
+    let string_lines = (1..=*string_count).map(|i| {
         let line_x = fret_width * i as f64 + stroke_width / 2.;
-        render!(path { stroke: "#000", stroke_width: *stroke_width, d: "M{line_x} {y}L{line_x} {height}" })
+        render!(path {
+            stroke: "#000",
+            stroke_width: *stroke_width,
+            d: "M{line_x} {y}L{line_x} {height - fret_height}"
+        })
     });
 
     let elements = elements(children.as_ref().unwrap());
     let elements = elements.iter().map(|element| match element {
         FretDiagramElement::Fret(fret) => {
-            render!(circle { cx: fret.string as f64 * fret_width, cy: (fret.index as f64 - 0.5) * fret_height + stroke_width * 4.5, r: fret_width.min(fret_height) / 2., fill: "#000" })
+            render!(circle {
+                cx: x + fret.string as f64 * fret_width,
+                cy: y + (fret.index as f64 - 0.5) * fret_height + stroke_width * 4.5,
+                r: fret_width.min(fret_height) / 2.,
+                fill: "#000"
+            })
         }
         FretDiagramElement::Frets(frets) => {
-            render!(rect { x: frets.from as f64 * fret_width + stroke_width / 2., y: frets.index as f64 * fret_height + stroke_width * 4.5, width: (frets.to - 1) as f64 * fret_width - stroke_width / 2., height: (frets.index as f64 + 1.) * fret_height, rx: fret_width.max(fret_height) / 2., fill: "#000" })
+            render!(rect {
+                x: x + frets.from as f64 * fret_width + stroke_width / 2.,
+                y: y + frets.index as f64 * fret_height + stroke_width * 4.5,
+                width: (frets.to - 1) as f64 * fret_width - stroke_width / 2.,
+                height: (frets.index as f64 + 0.75) * fret_height,
+                rx: fret_width.max(fret_height) / 2.,
+                fill: "#000"
+            })
         }
     });
 
@@ -64,7 +87,7 @@ pub fn FretDiagram<'a>(
         path {
             stroke: "#000",
             stroke_width: *stroke_width * 4.,
-            d: "M{x} {*stroke_width * 2.}L{width} {*stroke_width * 2.}"
+            d: "M{x} {y + *stroke_width * 2.}L{width - fret_width} {y + *stroke_width * 2.}"
         }
         fret_lines,
         string_lines,
