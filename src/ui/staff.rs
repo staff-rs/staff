@@ -1,15 +1,10 @@
-use dioxus_signals::use_signal;
-
 use super::prelude::*;
-use crate::{
-    note::Accidental,
-    time::DurationKind,
-    ui::{
-        element::{self, Br, Clef},
-        layout::Layout,
-        Note,
-    },
+use crate::ui::{
+    element::{self, Br, Clef},
+    layout::Layout,
+    Note,
 };
+use dioxus_signals::use_signal;
 
 #[component]
 fn Br(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
@@ -42,37 +37,73 @@ pub fn Staff<'a>(
 
     let layouts = use_signal(cx, || {
         items(node, *width)
-            .map(|(elem, is_newline)| {
-                (
+            .map(|(elem, is_newline)| match &elem {
+                element::Element::Note(note) => (
                     Layout {
-                        accidental: Some((Accidental::Sharp, [0., 0.])),
+                        accidental: note.accidental.map(|acc| (acc, [0.; 2])),
                     },
                     elem,
                     is_newline,
-                )
+                ),
+                _ => todo!(),
             })
             .collect::<Vec<_>>()
     });
 
     let layouts_ref = layouts.read();
+
+    let y = 0.;
     let mut left = 0.;
+
     let elems = layouts_ref
         .iter()
         .enumerate()
-        .map(move |(idx, (layout, element, is_newline))| match element {
-            element::Element::Note(note) => {
-                let x = left;
-                left += layout.width();
+        .map(move |(idx, (layout, element, is_newline))| {
+            let lines = if *is_newline {
+                let mut d = String::new();
+                for i in 0..5 {
+                    let y = i as f64 * line_height + top + y;
+                    d.push_str(&format!("M0 {y} L {width} {y} "));
+                }
+                render!(
+                    path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
+                    Br {
+                        x: left + stroke_width / 2.,
+                        y: y,
+                        top: top,
+                        line_height: *line_height,
+                        stroke_width: *stroke_width
+                    }
+                    Br {
+                        x: width - stroke_width / 2.,
+                        y: y,
+                        top: top,
+                        line_height: *line_height,
+                        stroke_width: *stroke_width
+                    }
+                )
+            } else {
+                None
+            };
 
-                render!(Note {
-                    x: x,
-                    y: 50.,
-                    layout: layout.clone(),
-                    font_size: 24.,
-                    onlayout: move |layout| layouts.write()[idx].0 = layout,
-                })
-            }
-            _ => todo!(),
+            let elem = match element {
+                element::Element::Note(note) => {
+                    let x = left;
+                    left += layout.width();
+
+                    render!(Note {
+                        x: x,
+                        y: top + note.index() as f64 * (line_height / 2.),
+                        layout: layout.clone(),
+                        head_size: line_height / 2.,
+                        font_size: 24.,
+                        onlayout: move |layout| layouts.write()[idx].0 = layout
+                    })
+                }
+                _ => todo!(),
+            };
+
+            render! { lines, elem }
         });
 
     render!(svg {
