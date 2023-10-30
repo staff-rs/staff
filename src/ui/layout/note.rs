@@ -1,4 +1,8 @@
-use crate::{note::Accidental, ui::Text};
+use crate::{
+    note::Accidental,
+    time::{Duration, DurationKind},
+    ui::Text,
+};
 use dioxus::prelude::*;
 use dioxus_resize_observer::Rect;
 use dioxus_signals::{use_signal, Signal};
@@ -8,6 +12,7 @@ pub fn NoteLayout<'a>(
     cx: Scope<'a>,
     onlayout: EventHandler<'a, Layout>,
     font_size: f64,
+    duration: Duration,
     #[props(!optional)] accidental: Option<Accidental>,
 ) -> Element<'a> {
     let layout: Signal<Option<Layout>> = use_signal(cx, || None);
@@ -31,7 +36,10 @@ pub fn NoteLayout<'a>(
                     if let Some(layout) = layout_ref {
                         layout.accidental = Some(ret)
                     } else {
-                        *layout_ref = Some(Layout { accidental: Some(ret) })
+                        *layout_ref = Some(Layout {
+                            accidental: Some(ret),
+                            duration: *duration,
+                        })
                     };
                 }
             }
@@ -41,14 +49,20 @@ pub fn NoteLayout<'a>(
     }
 }
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Layout {
     pub accidental: Option<(Accidental, [f64; 2])>,
+    pub duration: Duration,
 }
 
 impl Layout {
     pub fn width(&self) -> f64 {
-        let mut w = 30.;
+        let mut w = match self.duration.kind {
+            DurationKind::Quarter => 40.,
+            DurationKind::Half => 80.,
+            DurationKind::Whole => 160.,
+        };
+
         if let Some((_, size)) = self.accidental {
             w += size[0];
         }

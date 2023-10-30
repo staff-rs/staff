@@ -1,18 +1,8 @@
-use dioxus::prelude::*;
 use crate::{
     time::{Duration, DurationKind},
     ui::layout::{Layout, NoteLayout},
 };
-
-
-#[component]
-fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path {
-        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
-        stroke: "#000",
-        stroke_width: *stroke_width
-    })
-}
+use dioxus::prelude::*;
 
 #[component]
 pub fn Note<'a>(
@@ -33,18 +23,17 @@ pub fn Note<'a>(
         let text_x = x;
         x += size[0];
 
-        render!(text { x: text_x, y: *y, font_family: "Noto Music", font_size: *font_size, "{accidental}" })
+        render!(text { x: text_x, y: *y + line_height / 2., font_family: "Noto Music", font_size: *font_size, "{accidental}" })
     } else {
         None
     };
 
-    x += line_height / 2.;
-
-    let stem_x = x + head_size - stroke_width / 2.;
-    let head_and_stem = match duration.kind {
+    let note_x = x + line_height / 2.;
+    let stem_x = note_x + head_size - stroke_width / 2.;
+    let head_and_stem_elem = match duration.kind {
         DurationKind::Quarter => {
             render! {
-                circle { cx: x, cy: *y, r: line_height / 2., fill: "#000" }
+                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000" }
                 path {
                     d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
                     stroke: "#000",
@@ -54,7 +43,7 @@ pub fn Note<'a>(
         }
         DurationKind::Half => {
             render! {
-                circle { cx: x, cy: *y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" }
+                circle { cx: note_x, cy: *y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" }
                 path {
                     d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
                     stroke: "#000",
@@ -63,14 +52,7 @@ pub fn Note<'a>(
             }
         }
         DurationKind::Whole => {
-            render!(circle {
-                cx: x,
-                cy: *y,
-                r: line_height / 2. - stroke_width / 2.,
-                stroke: "#000",
-                stroke_width: *stroke_width,
-                fill: "none"
-            })
+            render!(circle { cx: note_x, cy: *y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" })
         }
     };
 
@@ -78,9 +60,10 @@ pub fn Note<'a>(
         NoteLayout {
             font_size: *font_size,
             accidental: layout.accidental.map(|(acc, _)| acc),
+            duration: *duration,
             onlayout: |layout: Layout| onlayout.call(layout)
         }
         accidental_elem,
-        head_and_stem,
+        head_and_stem_elem
     }
 }
