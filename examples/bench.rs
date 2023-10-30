@@ -18,7 +18,7 @@ fn app(cx: Scope) -> Element {
     let selected: &UseState<Option<NoteEvent>> = use_state(cx, || None);
     let elements = use_signal(cx, || {
         let mut elems = Vec::new();
-        for _ in 0..10 {
+        for _ in 0..200 {
             elems.push(StaffElement::Note(
                 Note::default()
                     .with_natural(Natural::E)
