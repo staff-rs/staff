@@ -1,7 +1,4 @@
-use super::{
-    element::{self, Clef, StaffElement},
-    prelude::*,
-};
+use super::{element::StaffElement, prelude::*};
 use crate::{
     note::Accidental,
     ui::{
@@ -11,7 +8,6 @@ use crate::{
     },
     Natural,
 };
-use dioxus::core::DynamicNode;
 use dioxus_signals::{use_signal, Signal};
 use std::rc::Rc;
 
@@ -96,11 +92,13 @@ pub fn StaffElements<'a>(
     let items_ref = items.read();
     let last = Rc::new(RefCell::new(None));
     let top = *stroke_width + 100.;
+    let mut bottom = top;
     let elems = items_ref
         .iter()
         .enumerate()
         .map(|(idx, (item, is_newline))| {
             let lines = if *is_newline {
+                bottom = item.y;
                 let mut d = String::new();
                 for i in 0..5 {
                     let y = i as f64 * line_height + top + item.y;
@@ -176,7 +174,7 @@ pub fn StaffElements<'a>(
 
     render!(svg {
         width: "{width}px",
-        height: "500px",
+        height: "{bottom}px",
         xmlns: "http://www.w3.org/2000/svg",
         elems
     })
