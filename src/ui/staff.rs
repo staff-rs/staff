@@ -3,6 +3,62 @@ use crate::{midi::Octave, Natural};
 use core::mem;
 use dioxus::core::AttributeValue;
 
+pub struct Note {
+    natural: Natural,
+    octave: Octave,
+}
+
+impl Note {
+    pub fn from_attrs(node: &VNode, attrs: &[TemplateAttribute]) -> Note {
+        let mut natural = None;
+        let mut octave = None;
+
+        for attr in attrs {
+            match attr {
+                TemplateAttribute::Static {
+                    name: _,
+                    value: _,
+                    namespace: _,
+                } => todo!(),
+                TemplateAttribute::Dynamic { id } => {
+                    let attr = &node.dynamic_attrs[*id];
+                    match attr.name {
+                        "natural" => {
+                            if let AttributeValue::Int(n) = attr.value {
+                                if n < 0 || n > Natural::G as u8 as _ {
+                                    todo!()
+                                }
+                                let nat: Natural = unsafe { mem::transmute(n as u8) };
+                                natural = Some(nat);
+                            }
+                        }
+                        "octave" => {
+                            if let AttributeValue::Int(n) = attr.value {
+                                octave = Some(Octave::new_unchecked(n as _));
+                            }
+                        }
+                        _ => todo!(),
+                    }
+                }
+            }
+        }
+
+        Self {
+            natural: natural.unwrap(),
+            octave: octave.unwrap_or(Octave::FOUR),
+        }
+    }
+
+    pub fn index(&self) -> i64 {
+        let mut octave_index = Octave::FIVE.into_i8() as i64 - self.octave.into_i8() as i64;
+        if self.natural < Natural::C {
+            octave_index -= 1;
+        }
+
+        Natural::F as u8 as i64 - self.natural as u8 as i64 + 7 * octave_index
+    }
+}
+
 #[component]
 pub fn Staff<'a>(
     cx: Scope<'a>,
@@ -33,31 +89,8 @@ pub fn Staff<'a>(
             children: _,
         } => match *tag {
             "note" => {
-                let mut natural = None;
-                for attr in *attrs {
-                    match attr {
-                        TemplateAttribute::Static {
-                            name: _,
-                            value: _,
-                            namespace: _,
-                        } => todo!(),
-                        TemplateAttribute::Dynamic { id } => {
-                            let attr = &node.dynamic_attrs[*id];
-                            if attr.name == "natural" {
-                                if let AttributeValue::Int(n) = attr.value {
-                                    if n < 0 || n > Natural::G as u8 as _ {
-                                        todo!()
-                                    }
-                                    let nat: Natural = unsafe { mem::transmute(n as u8) };
-                                    natural = Some(nat);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                let natural = natural.unwrap();
-                let y = note_index(natural, Octave::FOUR) as f64 * (line_height / 2.) + top;
+                let note = Note::from_attrs(node, attrs);
+                let y = note.index() as f64 * (line_height / 2.) + top;
                 let x = left;
                 left += 30.;
 
@@ -85,7 +118,6 @@ pub fn Staff<'a>(
     let mut d = String::new();
     for i in 0..5 {
         let y = i as f64 * line_height + top;
-
         d.push_str(&format!("M0 {y} L {width} {y} "));
     }
 
@@ -95,13 +127,4 @@ pub fn Staff<'a>(
             path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
         }
     )
-}
-
-pub fn note_index(natural: Natural, octave: Octave) -> i64 {
-    let mut octave_index = Octave::FIVE.into_i8() as i64 - octave.into_i8() as i64;
-    if natural < Natural::C {
-        octave_index -= 1;
-    }
-
-    Natural::F as u8 as i64 - natural as u8 as i64 + 7 * octave_index
 }

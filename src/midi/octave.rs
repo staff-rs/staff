@@ -49,3 +49,13 @@ impl fmt::Display for Octave {
         write!(f, "{}", self.0)
     }
 }
+
+#[cfg(feature = "ui")]
+impl<'a> dioxus::prelude::IntoAttributeValue<'a> for Octave {
+    fn into_value(
+        self,
+        _bump: &'a dioxus::core::exports::bumpalo::Bump,
+    ) -> dioxus::core::AttributeValue<'a> {
+        dioxus::core::AttributeValue::Int(self.into_i8() as _)
+    }
+}

@@ -1,4 +1,5 @@
 use staff::{
+    midi::Octave,
     ui::{prelude::*, Font, Staff},
     Natural,
 };
@@ -6,12 +7,12 @@ use staff::{
 fn app(cx: Scope) -> Element {
     render!(
         div { display: "flex", width: "100vw", height: "100vh", align_items: "center", justify_content: "center",
-        Font {}
+            Font {}
             Staff {
                 clef { kind: ClefKind::Treble }
                 note { natural: Natural::F }
                 note { natural: Natural::G }
-                note { natural: Natural::A }
+                note { natural: Natural::C, octave: Octave::FIVE }
             }
         }
     )
