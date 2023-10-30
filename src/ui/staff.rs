@@ -1,5 +1,11 @@
 use super::prelude::*;
-use crate::{time::DurationKind, ui::Note};
+use crate::{
+    time::DurationKind,
+    ui::{
+        element::{self, Br, Clef},
+        items, Note,
+    },
+};
 
 #[component]
 pub fn Staff<'a>(
@@ -19,34 +25,38 @@ pub fn Staff<'a>(
     stroke_width: f64,
 ) -> Element<'a> {
     let node = children.as_ref().unwrap();
-
-    let mut left = 10.;
     let top = *stroke_width + 100.;
 
-    let elements = node.template.get().roots.iter().map(|root| match root {
-        TemplateNode::Element {
-            tag,
-            namespace: _,
-            attrs,
-            children: _,
-        } => match *tag {
-            "note" => {
-                let note = Note::from_attrs(node, attrs);    
-                let y = note.index() as f64 * (line_height / 2.) + top;
+    let mut is_first = true;
+
+    let elements = items(node, *width).map(|(item, is_newline)| {
+        let mut x = item.x;
+
+        let lines = if is_newline || is_first {
+            is_first = false;
             
+            let mut d = String::new();
+            for i in 0..5 {
+                let y = i as f64 * line_height + top + item.y;
+                d.push_str(&format!("M0 {y} L {width} {y} "));
+            }
+            render!(path { d: "{d}", stroke: "#000", stroke_width: *stroke_width })
+        } else {
+            None
+        };
+
+        let elem =match item.element {
+            element::Element::Note(note) => {
+                let y = item.y + note.index() as f64 * (line_height / 2.) + top;
                 let acc =  if let Some(accidental) = note.accidental {
-                    let x = left;
-                left += 25.;
-                    render!(text { font_family: "Noto Music", x: x, y: y + line_height / 2., font_size: "48px", "{accidental}" })
+                    let acc_x = x;
+                    x += 30.;
+                    render!(text { font_family: "Noto Music", x: acc_x, y: y + line_height / 2., font_size: "48px", "{accidental}" })
                 } else {
                     None
                 };
 
-                let x = left;
-                left += 30.;
-
                 let stem_x = x + line_height / 2. - stroke_width / 2.;
-
                 let head_and_stem = match note.duration.kind {
                     DurationKind::Quarter => {
                         render! {
@@ -73,43 +83,29 @@ pub fn Staff<'a>(
                     }        
                 };
 
-                render!( acc, head_and_stem )
+                render!(acc, head_and_stem )
             }
-            "br" => {
-                let x = left;
-                left += 20.;
-
+            element::Element::Br(_) => {
                 render!(path {
-
-                    d: "M{x} {top}L{x} {top + line_height * 4.}",
-
+                    d: "M{x} {top + item.y}L{x} {top + item.y + line_height * 4.}",
                     stroke: "#000",
-
                     stroke_width: *stroke_width
                 }
                 )
              }
-            "clef" => {
-                let x = left;
-                left += 60.;
-
+             element::Element::Clef(_) => {
                 render!(text { x: x, y: top + line_height * 4. + stroke_width, font_family: "Noto Music", font_size: "{line_height * 3.}px", "𝄞" })
             }
-            _ => todo!(),
-        },
-        _ => todo!(),
+    
+        };
+        render!(lines, elem)
     });
 
-    let mut d = String::new();
-    for i in 0..5 {
-        let y = i as f64 * line_height + top;
-        d.push_str(&format!("M0 {y} L {width} {y} "));
-    }
+    
 
     render!(
-        svg { width: "500px", height: "500px", xmlns: "http://www.w3.org/2000/svg",
+        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg",
             elements,
-            path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
-        }
+             }
     )
 }

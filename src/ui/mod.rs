@@ -4,6 +4,9 @@ pub use element::Note;
 mod font;
 pub use font::Font;
 
+mod item;
+pub use item::{items, Item};
+
 mod staff;
 pub use staff::{Staff, StaffProps};
 
