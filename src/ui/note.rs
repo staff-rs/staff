@@ -18,6 +18,7 @@ pub fn Note<'a>(
     line_height: f64,
     last: Rc<RefCell<Option<[f64; 2]>>>,
     onlayout: EventHandler<'a, Layout>,
+    onclick: EventHandler<'a, MouseEvent>,
 ) -> Element<'a> {
     let mut x = *x;
     let accidental_elem = if let Some((accidental, size)) = layout.accidental {
@@ -36,8 +37,7 @@ pub fn Note<'a>(
             d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
             stroke: "#000",
             stroke_width: *stroke_width
-        }
-        )
+        })
     };
     let head_and_stem_elem = match duration.kind {
         DurationKind::Eigth => {
@@ -50,17 +50,15 @@ pub fn Note<'a>(
                 let x1 = last[0] - half_stroke_width;
                 let x2 = stem_x + half_stroke_width;
 
-                render!(
-                    path {
-                        d: r"
+                render!(path {
+                    d: r"
                         M{x1} {last[1]} L{stem_x} {y - line_height * 3.}
                         L{x2} {y - line_height * 3.}
                         L{x2} {y - line_height * 3. - tie_height}
                         L{x1} {last[1] - tie_height}
                         Z",
-                        fill: "#000"
-                    }
-                )
+                    fill: "#000"
+                })
             } else {
                 let stem_x = note_x + head_size - stroke_width / 2.;
 
@@ -69,25 +67,41 @@ pub fn Note<'a>(
             };
 
             render! {
-                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000" }
+                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000", onclick: |event| onclick.call(event) }
                 render_stem(),
                 tie
             }
         }
         DurationKind::Quarter => {
             render! {
-                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000" }
+                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000", onclick: |event| onclick.call(event) }
                 render_stem()
             }
         }
         DurationKind::Half => {
             render! {
-                circle { cx: note_x, cy: *y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" }
+                circle {
+                    cx: note_x,
+                    cy: *y,
+                    r: line_height / 2. - stroke_width / 2.,
+                    stroke: "#000",
+                    stroke_width: *stroke_width,
+                    fill: "none",
+                    onclick: |event| onclick.call(event)
+                }
                 render_stem()
             }
         }
         DurationKind::Whole => {
-            render!(circle { cx: note_x, cy: *y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" })
+            render!(circle {
+                cx: note_x,
+                cy: *y,
+                r: line_height / 2. - stroke_width / 2.,
+                stroke: "#000",
+                stroke_width: *stroke_width,
+                fill: "none",
+                onclick: |event| onclick.call(event)
+            })
         }
     };
 

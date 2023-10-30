@@ -25,25 +25,23 @@ pub fn NoteLayout<'a>(
     });
 
     if let Some(accidental) = accidental {
-        render!(
-            Text {
-                content: "{accidental}",
-                font_family: "Noto Music",
-                font_size: *font_size,
-                onresize: move |rect: Rect| {
-                    let ret = (*accidental, [rect.width(), rect.height()]);
-                    let layout_ref = &mut *layout.write();
-                    if let Some(layout) = layout_ref {
-                        layout.accidental = Some(ret)
-                    } else {
-                        *layout_ref = Some(Layout {
-                            accidental: Some(ret),
-                            duration: *duration,
-                        })
-                    };
-                }
+        render!(Text {
+            content: "{accidental}",
+            font_family: "Noto Music",
+            font_size: *font_size,
+            onresize: move |rect: Rect| {
+                let ret = (*accidental, [rect.width(), rect.height()]);
+                let layout_ref = &mut *layout.write();
+                if let Some(layout) = layout_ref {
+                    layout.accidental = Some(ret)
+                } else {
+                    *layout_ref = Some(Layout {
+                        accidental: Some(ret),
+                        duration: *duration,
+                    })
+                };
             }
-        )
+        })
     } else {
         None
     }
