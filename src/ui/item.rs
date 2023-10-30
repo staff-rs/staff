@@ -1,8 +1,4 @@
-use super::{
-    element::{self, Br, Clef},
-    Note,
-};
-use dioxus::prelude::{TemplateNode, VNode};
+use super::element::{self};
 
 pub struct Item {
     pub element: element::Element,
@@ -10,6 +6,9 @@ pub struct Item {
     pub y: f64,
 }
 
+pub fn items() {}
+
+/*
 pub fn items<'a>(node: &'a VNode<'a>, width: f64) -> impl Iterator<Item = (Item, bool)> + 'a {
     let mut x = 0.;
     let mut y = 0.;
@@ -53,3 +52,4 @@ pub fn items<'a>(node: &'a VNode<'a>, width: f64) -> impl Iterator<Item = (Item,
             _ => todo!(),
         })
 }
+ */

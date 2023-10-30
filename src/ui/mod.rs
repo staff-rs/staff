@@ -1,14 +1,18 @@
-mod element;
-pub use element::Note;
+pub mod element;
+use dioxus::prelude::*;
+use dioxus_resize_observer::{use_size, Rect};
+use dioxus_use_mounted::use_mounted;
 
 mod font;
 pub use font::Font;
 
-mod item;
-pub use item::{items, Item};
+pub mod layout;
+
+mod note;
+pub use note::Note;
 
 mod staff;
-pub use staff::{Staff, StaffProps};
+pub use staff::Staff;
 
 pub mod prelude {
     pub use dioxus::prelude::*;
@@ -77,4 +81,29 @@ pub mod prelude {
             pub const NAME_SPACE: Option<&'static str> = None;
         }
     }
+}
+
+#[component]
+fn Text<'a>(
+    cx: Scope<'a>,
+    content: &'a str,
+    font_family: &'a str,
+    font_size: f64,
+    onresize: EventHandler<'a, Rect>,
+) -> Element<'a> {
+    let mounted = use_mounted(cx);
+    let size = use_size(cx, mounted);
+
+    use_effect(cx, (&size.width(), &size.height()), |_| {
+        onresize.call(size);
+        async {}
+    });
+
+    render!(text {
+        font_family: *font_family,
+        font_size: *font_size,
+        onmounted: move |event| mounted.onmounted(event),
+        opacity: 0.,
+        content
+    })
 }

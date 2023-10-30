@@ -1,11 +1,22 @@
 use staff::{
-    midi::Octave,
     note::Accidental,
-    time::{Duration, DurationKind},
     ui::{prelude::*, Font, Staff},
     Natural,
 };
 
+fn app(cx: Scope) -> Element {
+    render!(
+        div { display: "flex", width: "100vw", height: "100vh", align_items: "center", justify_content: "center",
+            Font {}
+            Staff {
+                note { natural: Natural::A, accidental: Accidental::Sharp }
+                note { natural: Natural::A }
+            }
+        }
+    )
+}
+
+/*
 fn app(cx: Scope) -> Element {
     render!(
         div { display: "flex", width: "100vw", height: "100vh", align_items: "center", justify_content: "center",
@@ -26,6 +37,7 @@ fn app(cx: Scope) -> Element {
         }
     )
 }
+ */
 
 fn main() {
     dioxus_web::launch(app);

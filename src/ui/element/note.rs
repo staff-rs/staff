@@ -4,12 +4,10 @@ use crate::{
     time::{Duration, DurationKind},
     Natural,
 };
-use core::mem;
-use dioxus::{
-    core::AttributeValue,
-    prelude::{TemplateAttribute, VNode},
-};
+use dioxus::{core::AttributeValue, prelude::*};
+use std::mem;
 
+#[derive(PartialEq, Eq)]
 pub struct Note {
     pub natural: Natural,
     pub octave: Octave,

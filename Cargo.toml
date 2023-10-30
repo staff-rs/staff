@@ -13,7 +13,7 @@ fretboard = ["std"]
 parse = ["std"]
 render = ["std"]
 serde = ["dep:serde"]
-ui = ["dep:bumpalo", "dep:dioxus", "dep:dioxus-web"]
+ui = ["dep:bumpalo", "dep:dioxus", "dep:dioxus-web", "dep:dioxus-signals", "dep:dioxus-resize-observer", "dep:dioxus-use-mounted"]
 full = ["fretboard", "parse", "render", "serde", "ui"]
 default = ["full"]
 
@@ -32,7 +32,10 @@ required-features = ["synth"]
 num-traits = "0.2.14"
 console_error_panic_hook = "0.1.7"
 dioxus = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
+dioxus-signals = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
 dioxus-web = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
+dioxus-resize-observer = { git = "https://github.com/dioxus-community/dioxus-resize-observer", optional = true }
+dioxus-use-mounted= { git = "https://github.com/matthunz/dioxus-use-mounted", optional = true }
 bumpalo = { version = "3.14.0", features = ["boxed"], optional = true }
 
 [dependencies.serde]
