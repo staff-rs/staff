@@ -27,6 +27,26 @@ impl Default for Note {
 }
 
 impl Note {
+    pub fn with_natural(mut self, natural: Natural) -> Self {
+        self.natural = natural;
+        self
+    }
+
+    pub fn with_octave(mut self, octave: Octave) -> Self {
+        self.octave = octave;
+        self
+    }
+
+    pub fn with_accidental(mut self, accidental: Option<Accidental>) -> Self {
+        self.accidental = accidental;
+        self
+    }
+
+    pub fn with_duration(mut self, duration: Duration) -> Self {
+        self.duration = duration;
+        self
+    }
+
     pub fn from_attrs(node: &VNode, attrs: &[TemplateAttribute]) -> Note {
         let mut natural = None;
         let mut octave = None;

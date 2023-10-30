@@ -17,24 +17,27 @@ fn app(cx: Scope) -> Element {
     let size = use_size(cx, mounted);
     let selected: &UseState<Option<NoteEvent>> = use_state(cx, || None);
     let elements = use_signal(cx, || {
-        vec![
-            StaffElement::Note(
+        let mut elems = Vec::new();
+        for _ in 0..10 {
+            elems.push(StaffElement::Note(
                 Note::default()
                     .with_natural(Natural::E)
                     .with_duration(Duration::from(DurationKind::Half)),
-            ),
-            StaffElement::Note(
+            ));
+            elems.push(StaffElement::Note(
                 Note::default()
-                    .with_natural(Natural::B)
+                    .with_natural(Natural::E)
                     .with_accidental(Some(Accidental::Sharp))
                     .with_duration(Duration::from(DurationKind::Eigth)),
-            ),
-            StaffElement::Note(
+            ));
+            elems.push(StaffElement::Note(
                 Note::default()
-                    .with_natural(Natural::G)
+                    .with_natural(Natural::E)
                     .with_duration(Duration::from(DurationKind::Eigth)),
-            ),
-        ]
+            ));
+        }
+
+        elems
     });
 
     render!(

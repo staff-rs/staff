@@ -2,7 +2,7 @@ mod note;
 pub use note::Note;
 
 #[derive(Clone, PartialEq, Eq)]
-pub enum Element {
+pub enum StaffElement {
     Br,
     Hr,
     Clef(Clef),

@@ -13,7 +13,11 @@ use std::rc::Rc;
 
 #[component]
 fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
+    render!(path {
+        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
+        stroke: "#000",
+        stroke_width: *stroke_width
+    })
 }
 
 pub struct NoteEvent {
@@ -40,7 +44,7 @@ struct Item {
 pub fn Staff<'a>(
     cx: Scope<'a>,
 
-    elements: Signal<Vec<element::Element>>,
+    elements: Signal<Vec<element::StaffElement>>,
 
     /// Line height of the staff.
     #[props(default = 15.)]
@@ -73,7 +77,7 @@ pub fn Staff<'a>(
                 .clone()
                 .into_iter()
                 .map(|elem| match &elem {
-                    element::Element::Note(note) => (
+                    element::StaffElement::Note(note) => (
                         Some(Layout {
                             accidental: note.accidental.map(|acc| (acc, [0.; 2])),
                             duration: note.duration,
@@ -107,7 +111,7 @@ pub fn Staff<'a>(
                 }
 
                 let item = match element {
-                    element::Element::Br => {
+                    element::StaffElement::Br => {
                         left = 0.;
                         y += 140.;
                         is_newline = true;
@@ -118,7 +122,7 @@ pub fn Staff<'a>(
                             kind: ItemKind::Hr,
                         }
                     }
-                    element::Element::Hr => {
+                    element::StaffElement::Hr => {
                         let x = left;
                         left += 30.;
                         Item {
@@ -127,7 +131,7 @@ pub fn Staff<'a>(
                             kind: ItemKind::Hr,
                         }
                     }
-                    element::Element::Note(note) => {
+                    element::StaffElement::Note(note) => {
                         let layout = layout_cell.as_ref().unwrap();
                         let x = left;
                         left += layout.width();
@@ -185,49 +189,47 @@ pub fn Staff<'a>(
             let elem = match &item.kind {
                 ItemKind::Br => None,
                 ItemKind::Hr => {
-                    render!(
-                        Hr {
-                            x: item.x - stroke_width / 2.,
-                            y: item.y,
-                            top: top,
-                            line_height: *line_height,
-                            stroke_width: *stroke_width
-                        }
-                    )
+                    render!(Hr {
+                        x: item.x - stroke_width / 2.,
+                        y: item.y,
+                        top: top,
+                        line_height: *line_height,
+                        stroke_width: *stroke_width
+                    })
                 }
                 ItemKind::Note { layout, note } => {
                     let natural = note.natural;
                     let accidental = note.accidental;
 
-                    render!(
-                        Note {
-                            duration: note.duration,
-                            x: item.x,
-                            y: top + item.y + note.index() as f64 * (line_height / 2.),
-                            layout: layout.clone(),
-                            head_size: line_height / 2.,
-                            font_size: 48.,
-                            stroke_width: *stroke_width,
-                            line_height: *line_height,
-                            last: last.clone(),
-                            onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
-                            onclick: move |_event| {
-                                onclick
-                                    .call(NoteEvent {
-                                        idx,
-                                        natural: natural,
-                                        accidental: accidental,
-                                    })
-                            }
+                    render!(Note {
+                        duration: note.duration,
+                        x: item.x,
+                        y: top + item.y + note.index() as f64 * (line_height / 2.),
+                        layout: layout.clone(),
+                        head_size: line_height / 2.,
+                        font_size: 48.,
+                        stroke_width: *stroke_width,
+                        line_height: *line_height,
+                        last: last.clone(),
+                        onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
+                        onclick: move |_event| {
+                            onclick.call(NoteEvent {
+                                idx,
+                                natural: natural,
+                                accidental: accidental,
+                            })
                         }
-                    )
+                    })
                 }
             };
 
             render! { lines, elem }
         });
 
-    render!(
-        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
-    )
+    render!(svg {
+        width: "{width}px",
+        height: "500px",
+        xmlns: "http://www.w3.org/2000/svg",
+        elems
+    })
 }
