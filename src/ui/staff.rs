@@ -13,11 +13,7 @@ use std::rc::Rc;
 
 #[component]
 fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path {
-        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
-        stroke: "#000",
-        stroke_width: *stroke_width
-    })
+    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
 }
 
 pub struct NoteEvent {
@@ -74,6 +70,12 @@ pub fn Staff<'a>(
         .iter()
         .enumerate()
         .map(move |(idx, (layout, element))| {
+            if left >= *width {
+                left = 0.;
+                y += 100.;
+                is_newline = true;
+            }
+
             let lines = if is_newline {
                 let mut d = String::new();
                 for i in 0..5 {
@@ -101,6 +103,7 @@ pub fn Staff<'a>(
 
                 left += 20.;
                 is_newline = false;
+                last.borrow_mut().take();
 
                 elem
             } else {
@@ -116,41 +119,43 @@ pub fn Staff<'a>(
                     let natural = note.natural;
                     let accidental = note.accidental;
 
-                    render!(Note {
-                        duration: note.duration,
-                        x: x,
-                        y: top + y + note.index() as f64 * (line_height / 2.),
-                        layout: layout.clone(),
-                        head_size: line_height / 2.,
-                        font_size: 48.,
-                        stroke_width: *stroke_width,
-                        line_height: *line_height,
-                        last: last.clone(),
-                        onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
-                        onclick: move |event| {
-                            onclick.call(NoteEvent {
-                                idx,
-                                natural: natural,
-                                accidental: accidental,
-                            })
+                    render!(
+                        Note {
+                            duration: note.duration,
+                            x: x,
+                            y: top + y + note.index() as f64 * (line_height / 2.),
+                            layout: layout.clone(),
+                            head_size: line_height / 2.,
+                            font_size: 48.,
+                            stroke_width: *stroke_width,
+                            line_height: *line_height,
+                            last: last.clone(),
+                            onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
+                            onclick: move |event| {
+                                onclick
+                                    .call(NoteEvent {
+                                        idx,
+                                        natural: natural,
+                                        accidental: accidental,
+                                    })
+                            }
                         }
-                    })
+                    )
                 }
                 element::Element::Hr => {
                     let x = left;
                     left += 20.;
-                    if left >= *width {
-                        left = 0.;
-                        is_newline = true;
-                    }
+                    
 
-                    render!(Hr {
-                        x: x - stroke_width / 2.,
-                        y: y,
-                        top: top,
-                        line_height: *line_height,
-                        stroke_width: *stroke_width
-                    })
+                    render!(
+                        Hr {
+                            x: x - stroke_width / 2.,
+                            y: y,
+                            top: top,
+                            line_height: *line_height,
+                            stroke_width: *stroke_width
+                        }
+                    )
                 }
                 element::Element::Br => {
                     left = 0.;
@@ -164,12 +169,9 @@ pub fn Staff<'a>(
             render! { lines, elem }
         });
 
-    render!(svg {
-        width: "{width}px",
-        height: "500px",
-        xmlns: "http://www.w3.org/2000/svg",
-        elems
-    })
+    render!(
+        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
+    )
 }
 
 fn items<'a>(node: &'a VNode<'a>) -> impl Iterator<Item = element::Element> + 'a {

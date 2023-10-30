@@ -44,6 +44,23 @@ fn app(cx: Scope) -> Element {
                     note { natural: Natural::D, duration: Duration::from(DurationKind::Eigth) }
                     hr {}
                     note { natural: Natural::C, duration: Duration::from(DurationKind::Whole) }
+                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
+                    hr {}
+                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
+                    hr {}
+                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
+                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
+                    hr {}
+                    note { natural: Natural::G, duration: Duration::from(DurationKind::Quarter) }
+                    note { natural: Natural::E, duration: Duration::new(DurationKind::Quarter, true) }
+                    note { natural: Natural::D, duration: Duration::from(DurationKind::Eigth) }
+                    hr {}
+                    note { natural: Natural::C, duration: Duration::from(DurationKind::Whole) }
                 }
             }
         }
