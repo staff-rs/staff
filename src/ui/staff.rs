@@ -10,6 +10,7 @@ use crate::{
     },
     Natural,
 };
+use dioxus::core::DynamicNode;
 use dioxus_signals::{use_signal, Signal};
 use std::rc::Rc;
 
@@ -65,25 +66,39 @@ pub fn Staff<'a>(
 }
 
 fn items<'a>(node: &'a VNode<'a>) -> impl Iterator<Item = StaffElement> + 'a {
-    node.template
-        .get()
-        .roots
-        .iter()
-        .map(move |root| match root {
+    let mut elements = Vec::new();
+    for root in node.template.get().roots {
+        match root {
             TemplateNode::Element {
                 tag,
                 namespace: _,
                 attrs,
                 children: _,
-            } => match *tag {
-                "note" => StaffElement::Note(element::Note::from_attrs(&node, attrs)),
-                "br" => StaffElement::Br,
-                "hr" => StaffElement::Hr,
-                "clef" => StaffElement::Clef(Clef {}),
-                _ => todo!(),
-            },
+            } => {
+                let elem = match *tag {
+                    "note" => StaffElement::Note(element::Note::from_attrs(&node, attrs)),
+                    "br" => StaffElement::Br,
+                    "hr" => StaffElement::Hr,
+                    "clef" => StaffElement::Clef(Clef {}),
+                    _ => todo!(),
+                };
+                elements.push(elem);
+            }
+            TemplateNode::Dynamic { id } => {
+                let node = &node.dynamic_nodes[*id];
+                match node {
+                    DynamicNode::Fragment(nodes) => {
+                        for node in *nodes {
+                            elements.extend(items(node))
+                        }
+                    }
+                    _ => todo!(),
+                }
+            }
             _ => todo!(),
-        })
+        };
+    }
+    elements.into_iter()
 }
 
 /// Staff component.
