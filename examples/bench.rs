@@ -1,5 +1,4 @@
 use dioxus_resize_observer::use_size;
-
 use dioxus_use_mounted::use_mounted;
 use staff::{
     note::Accidental,
@@ -38,7 +37,7 @@ fn app(cx: Scope) -> Element {
                 overflow: "hidden",
                 onmounted: move |event| mounted.onmounted(event),
                 Staff { width: size.width(), onclick: |event| selected.set(Some(event)),
-                    for _ in 0..1000 {
+                    for _ in 0..100 {
                         note { natural: Natural::E }
                         note { natural: Natural::B, accidental: Accidental::Sharp, duration: Duration::from(DurationKind::Eigth) }
                         note { natural: Natural::G, duration: Duration::from(DurationKind::Eigth) }

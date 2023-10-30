@@ -1,5 +1,4 @@
 use dioxus_resize_observer::use_size;
-
 use dioxus_use_mounted::use_mounted;
 use staff::{
     note::Accidental,
