@@ -1,8 +1,15 @@
 use dioxus_resize_observer::use_size;
+use dioxus_signals::use_signal;
 use dioxus_use_mounted::use_mounted;
 use staff::{
+    midi::Octave,
+    note::Accidental,
     time::{Duration, DurationKind},
-    ui::{prelude::*, Font, NoteEvent, Staff},
+    ui::{
+        element::{self, Note},
+        prelude::*,
+        Font, NoteEvent, Staff,
+    },
     Natural,
 };
 
@@ -10,9 +17,33 @@ fn app(cx: Scope) -> Element {
     let mounted = use_mounted(cx);
     let size = use_size(cx, mounted);
     let selected: &UseState<Option<NoteEvent>> = use_state(cx, || None);
+    let elements = use_signal(cx, || {
+        vec![
+            element::Element::Note(Note {
+                natural: Natural::C,
+                octave: Octave::FOUR,
+                accidental: Some(Accidental::Sharp),
+                duration: Duration::from(DurationKind::Quarter),
+            }),
+            element::Element::Note(Note {
+                natural: Natural::F,
+                octave: Octave::FOUR,
+                accidental: Some(Accidental::Sharp),
+                duration: Duration::from(DurationKind::Quarter),
+            }),
+        ]
+    });
 
     render!(
-        div { display: "flex", width: "100vw", height: "100vh", align_items: "center", justify_content: "center",
+        div {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            display: "flex",
+            width: "100vw",
+            height: "100vh",
+            align_items: "center",
+            justify_content: "center",
             Font {}
             if let Some(selected) = &**selected {
                 let mut selected_str = format!("Selected: {}", selected.natural);
@@ -24,43 +55,13 @@ fn app(cx: Scope) -> Element {
             div {
                 flex: 1,
                 max_width: "800px",
+                margin: "50px",
                 overflow: "hidden",
                 onmounted: move |event| mounted.onmounted(event),
-                Staff { width: size.width(), onclick: |event| selected.set(Some(event)),
-                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
-                    hr {}
-                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
-                    hr {}
-                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
-                    hr {}
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Quarter) }
-                    note { natural: Natural::E, duration: Duration::new(DurationKind::Quarter, true) }
-                    note { natural: Natural::D, duration: Duration::from(DurationKind::Eigth) }
-                    hr {}
-                    note { natural: Natural::C, duration: Duration::from(DurationKind::Whole) }
-                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
-                    hr {}
-                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
-                    hr {}
-                    note { natural: Natural::E, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::B, duration: Duration::from(DurationKind::Eigth) }
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Half) }
-                    hr {}
-                    note { natural: Natural::G, duration: Duration::from(DurationKind::Quarter) }
-                    note { natural: Natural::E, duration: Duration::new(DurationKind::Quarter, true) }
-                    note { natural: Natural::D, duration: Duration::from(DurationKind::Eigth) }
-                    hr {}
-                    note { natural: Natural::C, duration: Duration::from(DurationKind::Whole) }
+                Staff {
+                    width: size.width(),
+                    elements: elements,
+                    onclick: |event| selected.set(Some(event))
                 }
             }
         }

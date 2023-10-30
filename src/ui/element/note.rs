@@ -7,7 +7,7 @@ use crate::{
 use dioxus::{core::AttributeValue, prelude::*};
 use std::mem;
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Note {
     pub natural: Natural,
     pub octave: Octave,

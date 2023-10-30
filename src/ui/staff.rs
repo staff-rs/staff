@@ -1,4 +1,4 @@
-use super::prelude::*;
+use super::{element::Note, prelude::*};
 use crate::{
     note::Accidental,
     ui::{
@@ -8,7 +8,7 @@ use crate::{
     },
     Natural,
 };
-use dioxus_signals::use_signal;
+use dioxus_signals::{use_selector, use_signal, Signal};
 use std::rc::Rc;
 
 #[component]
@@ -22,10 +22,25 @@ pub struct NoteEvent {
     pub accidental: Option<Accidental>,
 }
 
+#[derive(Clone, PartialEq)]
+enum ItemKind {
+    Br,
+    Hr,
+    Note { layout: Layout, note: Note },
+}
+
+#[derive(Clone, PartialEq)]
+struct Item {
+    x: f64,
+    y: f64,
+    kind: ItemKind,
+}
+
 #[component]
 pub fn Staff<'a>(
     cx: Scope<'a>,
-    children: Element<'a>,
+
+    elements: Signal<Vec<element::Element>>,
 
     /// Line height of the staff.
     #[props(default = 15.)]
@@ -41,89 +56,127 @@ pub fn Staff<'a>(
 
     onclick: EventHandler<'a, NoteEvent>,
 ) -> Element<'a> {
-    let node = children.as_ref().unwrap();
+    let layouts = use_signal(cx, move || Vec::new());
     let top = *stroke_width + 100.;
 
-    let layouts = use_signal(cx, || {
-        items(node)
-            .map(|elem| match &elem {
-                element::Element::Note(note) => (
-                    Some(Layout {
-                        accidental: note.accidental.map(|acc| (acc, [0.; 2])),
-                        duration: note.duration,
-                    }),
-                    elem,
-                ),
-                _ => (None, elem),
+    to_owned![elements];
+    dioxus_signals::use_effect(cx, move || {
+        let elements_ref = elements.read();
+        layouts.set(
+            elements_ref
+                .clone()
+                .into_iter()
+                .map(|elem| match &elem {
+                    element::Element::Note(note) => (
+                        Some(Layout {
+                            accidental: note.accidental.map(|acc| (acc, [0.; 2])),
+                            duration: note.duration,
+                        }),
+                        elem,
+                    ),
+                    _ => (None, elem),
+                })
+                .collect::<Vec<_>>(),
+        );
+    });
+
+    to_owned![width];
+    let items = use_selector(cx, move || {
+        let mut y = 0.;
+        let mut left = 0.;
+        let mut is_newline = true;
+
+        let layouts_ref = layouts.read();
+        layouts_ref
+            .iter()
+            .map(|(layout_cell, element)| {
+                let old_is_newline = is_newline;
+                is_newline = false;
+
+                if left >= width {
+                    left = 0.;
+                    y += 140.;
+                    is_newline = true;
+                }
+
+                let item = match element {
+                    element::Element::Note(note) => {
+                        let layout = layout_cell.as_ref().unwrap();
+                        let x = left;
+                        left += layout.width();
+
+                        Item {
+                            x,
+                            y,
+                            kind: ItemKind::Note {
+                                note: note.clone(),
+                                layout: layout.clone(),
+                            },
+                        }
+                    }
+                    _ => todo!(),
+                };
+                (item, old_is_newline)
             })
             .collect::<Vec<_>>()
     });
 
-    let layouts_ref = layouts.read();
-
-    let mut y = 0.;
-    let mut left = 0.;
-    let mut is_newline = true;
+    let items_ref = items.read();
     let last = Rc::new(RefCell::new(None));
-
-    let elems = layouts_ref
+    let elems = items_ref
         .iter()
         .enumerate()
-        .map(move |(idx, (layout, element))| {
-            if left >= *width {
-                left = 0.;
-                y += 100.;
-                is_newline = true;
-            }
-
-            let lines = if is_newline {
+        .map(|(idx, (item, is_newline))| {
+            let lines = if *is_newline {
                 let mut d = String::new();
                 for i in 0..5 {
-                    let y = i as f64 * line_height + top + y;
+                    let y = i as f64 * line_height + top + item.y;
                     d.push_str(&format!("M0 {y} L {width} {y} "));
                 }
 
-                let elem = render!(
+                render!(
                     path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
                     Hr {
-                        x: left + stroke_width / 2.,
-                        y: y,
+                        x: item.x + stroke_width / 2.,
+                        y: item.y,
                         top: top,
                         line_height: *line_height,
                         stroke_width: *stroke_width
                     }
                     Hr {
                         x: width - stroke_width / 2.,
-                        y: y,
+                        y: item.y,
                         top: top,
                         line_height: *line_height,
                         stroke_width: *stroke_width
                     }
-                );
-
-                left += 20.;
-                is_newline = false;
-                last.borrow_mut().take();
-
-                elem
+                )
             } else {
                 None
             };
 
-            let elem = match element {
-                element::Element::Note(note) => {
-                    let layout = layout.as_ref().unwrap();
-                    let x = left;
-                    left += layout.width();
-
+            let elem = match &item.kind {
+                ItemKind::Br => None,
+                ItemKind::Hr => {
+                    render!(
+                        Hr {
+                            x: item.x - stroke_width / 2.,
+                            y: item.y,
+                            top: top,
+                            line_height: *line_height,
+                            stroke_width: *stroke_width
+                        }
+                    )
+                }
+                ItemKind::Note { layout, note } => {
                     let natural = note.natural;
                     let accidental = note.accidental;
 
                     render!(
                         Note {
                             duration: note.duration,
-                            x: x,
-                            y: top + y + note.index() as f64 * (line_height / 2.),
+                            x: item.x,
+                            y: top + item.y + note.index() as f64 * (line_height / 2.),
                             layout: layout.clone(),
                             head_size: line_height / 2.,
                             font_size: 48.,
@@ -142,28 +195,6 @@ pub fn Staff<'a>(
                         }
                     )
                 }
-                element::Element::Hr => {
-                    let x = left;
-                    left += 20.;
-                    
-
-                    render!(
-                        Hr {
-                            x: x - stroke_width / 2.,
-                            y: y,
-                            top: top,
-                            line_height: *line_height,
-                            stroke_width: *stroke_width
-                        }
-                    )
-                }
-                element::Element::Br => {
-                    left = 0.;
-                    y += 100.;
-                    is_newline = true;
-                    None
-                }
-                _ => todo!(),
             };
 
             render! { lines, elem }
@@ -172,26 +203,4 @@ pub fn Staff<'a>(
     render!(
         svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
     )
-}
-
-fn items<'a>(node: &'a VNode<'a>) -> impl Iterator<Item = element::Element> + 'a {
-    node.template
-        .get()
-        .roots
-        .iter()
-        .map(move |root| match root {
-            TemplateNode::Element {
-                tag,
-                namespace: _,
-                attrs,
-                children: _,
-            } => match *tag {
-                "note" => element::Element::Note(element::Note::from_attrs(&node, attrs)),
-                "br" => element::Element::Br,
-                "hr" => element::Element::Hr,
-                "clef" => element::Element::Clef(Clef {}),
-                _ => todo!(),
-            },
-            _ => todo!(),
-        })
 }

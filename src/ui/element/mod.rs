@@ -1,6 +1,7 @@
 mod note;
 pub use note::Note;
 
+#[derive(Clone, PartialEq, Eq)]
 pub enum Element {
     Br,
     Hr,
@@ -8,4 +9,5 @@ pub enum Element {
     Note(Note),
 }
 
+#[derive(Clone, PartialEq, Eq)]
 pub struct Clef {}
