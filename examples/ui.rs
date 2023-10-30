@@ -1,6 +1,7 @@
 use staff::{
     midi::Octave,
     note::Accidental,
+    time::{Duration, DurationKind},
     ui::{prelude::*, Font, Staff},
     Natural,
 };
@@ -9,11 +10,12 @@ fn app(cx: Scope) -> Element {
     render!(
         div { display: "flex", width: "100vw", height: "100vh", align_items: "center", justify_content: "center",
             Font {}
-            Staff { 
+            Staff {
                 clef { kind: ClefKind::Treble }
                 note { natural: Natural::F }
-                note { natural: Natural::G, accidental: Accidental::Sharp }
+                note { natural: Natural::G, accidental: Accidental::Sharp, duration: Duration::new(DurationKind::Half, false) }
                 note { natural: Natural::C, accidental: Accidental::Flat, octave: Octave::FIVE }
+                note { natural: Natural::A, duration: Duration::new(DurationKind::Whole, false) }
             }
         }
     )

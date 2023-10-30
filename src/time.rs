@@ -1,3 +1,4 @@
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DurationKind {
     Quarter,
@@ -27,6 +28,16 @@ impl Duration {
         }
 
         unit as f64 / n
+    }
+}
+
+#[cfg(feature = "ui")]
+impl<'a> dioxus::prelude::IntoAttributeValue<'a> for Duration {
+    fn into_value(
+        self,
+        _bump: &'a dioxus::core::exports::bumpalo::Bump,
+    ) -> dioxus::core::AttributeValue<'a> {
+        dioxus::core::AttributeValue::Int(((self.kind as u8) << 1 | self.is_dotted as u8) as _)
     }
 }
 

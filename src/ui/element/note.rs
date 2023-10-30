@@ -1,4 +1,9 @@
-use crate::{midi::Octave, note::Accidental, Natural};
+use crate::{
+    midi::Octave,
+    note::Accidental,
+    time::{Duration, DurationKind},
+    Natural,
+};
 use core::mem;
 use dioxus::{
     core::AttributeValue,
@@ -9,6 +14,7 @@ pub struct Note {
     pub natural: Natural,
     pub octave: Octave,
     pub accidental: Option<Accidental>,
+    pub duration: Duration,
 }
 
 impl Note {
@@ -16,6 +22,7 @@ impl Note {
         let mut natural = None;
         let mut octave = None;
         let mut accidental = None;
+        let mut duration = None;
 
         for attr in attrs {
             match attr {
@@ -50,6 +57,13 @@ impl Note {
                                 octave = Some(Octave::new_unchecked(n as _));
                             }
                         }
+                        "duration" => {
+                            if let AttributeValue::Int(n) = attr.value {
+                                let kind = unsafe { mem::transmute((n >> 1) as u8) };
+                                let is_dotted = n & 1 == 1;
+                                duration = Some(Duration::new(kind, is_dotted));
+                            }
+                        }
                         _ => todo!(),
                     }
                 }
@@ -60,6 +74,7 @@ impl Note {
             natural: natural.unwrap(),
             octave: octave.unwrap_or(Octave::FOUR),
             accidental,
+            duration: duration.unwrap_or_else(|| Duration::new(DurationKind::Quarter, false)),
         }
     }
 

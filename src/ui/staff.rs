@@ -1,5 +1,5 @@
 use super::prelude::*;
-use crate::ui::Note;
+use crate::{time::DurationKind, ui::Note};
 
 #[component]
 pub fn Staff<'a>(
@@ -47,15 +47,33 @@ pub fn Staff<'a>(
 
                 let stem_x = x + line_height / 2. - stroke_width / 2.;
 
-                render!(
-                    acc,
-                    circle { cx: x, cy: y, r: line_height / 2. }
-                    path {
-                        d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
-                        stroke: "#000",
-                        stroke_width: *stroke_width
+                let head_and_stem = match note.duration.kind {
+                    DurationKind::Quarter => {
+                        render! {
+                            circle { cx: x, cy: y, r: line_height / 2., fill: "#000" }
+                            path {
+                                d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
+                                stroke: "#000",
+                                stroke_width: *stroke_width
+                            }
+                        }
                     }
-                )
+                    DurationKind::Half => {
+                        render! {
+                            circle { cx: x, cy: y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" }
+                            path {
+                                d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
+                                stroke: "#000",
+                                stroke_width: *stroke_width
+                            }
+                        }
+                    }
+                    DurationKind::Whole => {
+                        render! (circle { cx: x, cy: y, r: line_height / 2. - stroke_width / 2., stroke: "#000", stroke_width: *stroke_width, fill: "none" })
+                    }        
+                };
+
+                render!( acc, head_and_stem )
             }
             "clef" => {
                 let x = left;

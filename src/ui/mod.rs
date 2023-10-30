@@ -42,6 +42,9 @@ pub mod prelude {
 
             #[allow(non_upper_case_globals)]
             pub const accidental: AttributeDiscription = ("accidental", None, false);
+
+            #[allow(non_upper_case_globals)]
+            pub const duration: AttributeDiscription = ("duration", None, false);
         }
 
         #[allow(non_camel_case_types)]
