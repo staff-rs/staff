@@ -1,17 +1,13 @@
-use super::{
-    element::{Note, StaffElement},
-    prelude::*,
-};
+use super::{element::StaffElement, prelude::*};
 use crate::{
     note::Accidental,
     ui::{
-        element::{self},
-        layout::Layout,
-        Note,
+        layout::{use_layouts, LayoutElement},
+        use_items, ItemKind, Note,
     },
     Natural,
 };
-use dioxus_signals::{use_selector, use_signal, ReadOnlySignal, Signal};
+use dioxus_signals::Signal;
 use std::rc::Rc;
 
 #[component]
@@ -29,24 +25,12 @@ pub struct NoteEvent {
     pub accidental: Option<Accidental>,
 }
 
-#[derive(Clone, PartialEq)]
-pub enum ItemKind {
-    Br,
-    Hr,
-    Note { layout: Layout, note: Note },
-}
-
-#[derive(Clone, PartialEq)]
-pub struct Item {
-    pub x: f64,
-    pub y: f64,
-    pub kind: ItemKind,
-}
-
+/// Staff component.
 #[component]
 pub fn Staff<'a>(
     cx: Scope<'a>,
 
+    /// Staff elements signal.
     elements: Signal<Vec<StaffElement>>,
 
     /// Line height of the staff.
@@ -126,7 +110,13 @@ pub fn Staff<'a>(
                         stroke_width: *stroke_width,
                         line_height: *line_height,
                         last: last.clone(),
-                        onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
+                        onlayout: move |new_layout| {
+                            if let LayoutElement::Note { ref mut layout, .. } =
+                                &mut *layouts.read()[idx].write()
+                            {
+                                *layout = new_layout;
+                            }
+                        },
                         onclick: move |_event| {
                             onclick.call(NoteEvent {
                                 idx,
@@ -146,109 +136,5 @@ pub fn Staff<'a>(
         height: "500px",
         xmlns: "http://www.w3.org/2000/svg",
         elems
-    })
-}
-
-pub fn use_layouts<T>(
-    cx: Scope<T>,
-    elements: Signal<Vec<StaffElement>>,
-) -> Signal<Vec<(Option<Layout>, StaffElement)>> {
-    let layouts = use_signal(cx, move || Vec::new());
-
-    to_owned![elements];
-    dioxus_signals::use_effect(cx, move || {
-        let elements_ref = elements.read();
-        layouts.set(
-            elements_ref
-                .clone()
-                .into_iter()
-                .map(|elem| match &elem {
-                    StaffElement::Note(note) => (
-                        Some(Layout {
-                            accidental: note.accidental.map(|acc| (acc, [0.; 2])),
-                            duration: note.duration,
-                        }),
-                        elem,
-                    ),
-                    _ => (None, elem),
-                })
-                .collect::<Vec<_>>(),
-        );
-    });
-
-    layouts
-}
-
-pub fn use_items<T>(
-    cx: Scope<T>,
-    layouts: Signal<Vec<(Option<Layout>, StaffElement)>>,
-    width: f64,
-) -> ReadOnlySignal<Vec<(Item, bool)>> {
-    let width_signal = use_signal(cx, || width);
-    use_effect(cx, &width, |w| {
-        width_signal.set(w);
-        async {}
-    });
-
-    use_selector(cx, move || {
-        let mut y = 0.;
-        let mut left = 0.;
-        let mut is_newline = true;
-
-        let layouts_ref = layouts.read();
-        let width = *width_signal.read();
-
-        layouts_ref
-            .iter()
-            .map(|(layout_cell, element)| {
-                let old_is_newline = is_newline;
-                is_newline = false;
-
-                if left >= width && width > 0. {
-                    left = 0.;
-                    y += 140.;
-                    is_newline = true;
-                }
-
-                let item = match element {
-                    StaffElement::Br => {
-                        left = 0.;
-                        y += 140.;
-                        is_newline = true;
-
-                        Item {
-                            x: left,
-                            y,
-                            kind: ItemKind::Hr,
-                        }
-                    }
-                    StaffElement::Hr => {
-                        let x = left;
-                        left += 30.;
-                        Item {
-                            x,
-                            y,
-                            kind: ItemKind::Hr,
-                        }
-                    }
-                    StaffElement::Note(note) => {
-                        let layout = layout_cell.as_ref().unwrap();
-                        let x = left;
-                        left += layout.width();
-
-                        Item {
-                            x,
-                            y,
-                            kind: ItemKind::Note {
-                                note: note.clone(),
-                                layout: layout.clone(),
-                            },
-                        }
-                    }
-                    _ => todo!(),
-                };
-                (item, old_is_newline)
-            })
-            .collect::<Vec<_>>()
     })
 }

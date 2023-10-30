@@ -6,6 +6,9 @@ use dioxus_use_mounted::use_mounted;
 mod font;
 pub use font::Font;
 
+mod item;
+pub use item::{use_items, Item, ItemKind};
+
 pub mod layout;
 
 mod note;
