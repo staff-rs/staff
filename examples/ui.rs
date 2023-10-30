@@ -25,6 +25,7 @@ fn app(cx: Scope) -> Element {
                 accidental: Some(Accidental::Sharp),
                 duration: Duration::from(DurationKind::Quarter),
             }),
+            element::Element::Br,
             element::Element::Note(Note {
                 natural: Natural::F,
                 octave: Octave::FOUR,
