@@ -25,25 +25,23 @@ pub fn NoteLayout<'a>(
     });
 
     if let Some(accidental) = accidental {
-        render!(
-            Text {
-                content: "{accidental}",
-                font_family: "Noto Music",
-                font_size: *font_size,
-                onresize: move |rect: Rect| {
-                    let ret = (*accidental, [rect.width(), rect.height()]);
-                    let layout_ref = &mut *layout.write();
-                    if let Some(layout) = layout_ref {
-                        layout.accidental = Some(ret)
-                    } else {
-                        *layout_ref = Some(Layout {
-                            accidental: Some(ret),
-                            duration: *duration,
-                        })
-                    };
-                }
+        render!(Text {
+            content: "{accidental}",
+            font_family: "Noto Music",
+            font_size: *font_size,
+            onresize: move |rect: Rect| {
+                let ret = (*accidental, [rect.width(), rect.height()]);
+                let layout_ref = &mut *layout.write();
+                if let Some(layout) = layout_ref {
+                    layout.accidental = Some(ret)
+                } else {
+                    *layout_ref = Some(Layout {
+                        accidental: Some(ret),
+                        duration: *duration,
+                    })
+                };
             }
-        )
+        })
     } else {
         None
     }
@@ -57,10 +55,13 @@ pub struct Layout {
 
 impl Layout {
     pub fn width(&self) -> f64 {
-        let mut w = match self.duration.kind {
-            DurationKind::Quarter => 40.,
-            DurationKind::Half => 80.,
-            DurationKind::Whole => 160.,
+        let mut w = 20.;
+
+        w += match self.duration.kind {
+            DurationKind::Eigth => 10.,
+            DurationKind::Quarter => 20.,
+            DurationKind::Half => 40.,
+            DurationKind::Whole => 80.,
         };
 
         if let Some((_, size)) = self.accidental {

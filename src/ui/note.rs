@@ -3,6 +3,7 @@ use crate::{
     ui::layout::{Layout, NoteLayout},
 };
 use dioxus::prelude::*;
+use dioxus_signals::Signal;
 
 #[component]
 pub fn Note<'a>(
@@ -15,6 +16,7 @@ pub fn Note<'a>(
     font_size: f64,
     stroke_width: f64,
     line_height: f64,
+    last: Signal<Option<[f64; 2]>>,
     onlayout: EventHandler<'a, Layout>,
 ) -> Element<'a> {
     let mut x = *x;
@@ -37,6 +39,38 @@ pub fn Note<'a>(
         })
     };
     let head_and_stem_elem = match duration.kind {
+        DurationKind::Eigth => {
+            let mut last_ref = last.write();
+            let half_stroke_width = stroke_width / 2.;
+            let stem_x = note_x + head_size - stroke_width / 2.;
+            let tie_height = 8.;
+
+            let tie = if let Some(last) = last_ref.take() {
+                let x1 = last[0] - half_stroke_width;
+                let x2 = stem_x + half_stroke_width;
+
+                render!(path {
+                    d: r"
+                        M{x1} {last[1]} L{stem_x} {y - line_height * 3.}
+                        L{x2} {y - line_height * 3.}
+                        L{x2} {y - line_height * 3. - tie_height}
+                        L{x1} {last[1] - tie_height}
+                        Z",
+                    fill: "#000"
+                })
+            } else {
+                let stem_x = note_x + head_size - stroke_width / 2.;
+
+                *last_ref = Some([stem_x, y - line_height * 3.]);
+                None
+            };
+
+            render! {
+                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000" }
+                render_stem(),
+                tie
+            }
+        }
         DurationKind::Quarter => {
             render! {
                 circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000" }

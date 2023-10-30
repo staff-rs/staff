@@ -55,6 +55,7 @@ pub fn Staff<'a>(
     let mut y = 0.;
     let mut left = 0.;
     let mut is_newline = true;
+    let mut last = use_signal(cx, || None);
 
     let elems = layouts_ref
         .iter()
@@ -85,15 +86,13 @@ pub fn Staff<'a>(
                     }
                 );
 
-               
+                left += 20.;
                 is_newline = false;
 
                 elem
             } else {
                 None
             };
-
-            
 
             let elem = match element {
                 element::Element::Note(note) => {
@@ -109,6 +108,7 @@ pub fn Staff<'a>(
                         font_size: 48.,
                         stroke_width: *stroke_width,
                         line_height: *line_height,
+                        last: last,
                         onlayout: move |layout| layouts.write()[idx].0 = Some(layout)
                     })
                 }
@@ -119,7 +119,7 @@ pub fn Staff<'a>(
                         left = 0.;
                         is_newline = true;
                     }
-                    
+
                     render!(Hr {
                         x: x - stroke_width / 2.,
                         y: y,

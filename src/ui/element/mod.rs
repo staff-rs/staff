@@ -8,5 +8,4 @@ pub enum Element {
     Note(Note),
 }
 
-
 pub struct Clef {}

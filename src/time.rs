@@ -1,6 +1,7 @@
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DurationKind {
+    Eigth,
     Quarter,
     Half,
     Whole,
@@ -19,6 +20,7 @@ impl Duration {
 
     pub fn beats(self, unit: u8) -> f64 {
         let mut n = match self.kind {
+            DurationKind::Eigth => 8.,
             DurationKind::Quarter => 4.,
             DurationKind::Half => 2.,
             DurationKind::Whole => 1.,
