@@ -5,6 +5,7 @@ use super::{
 use crate::{
     note::Accidental,
     ui::{
+        element::elements,
         layout::{use_layouts, LayoutElement},
         use_items, ItemKind, Note,
     },
@@ -16,7 +17,11 @@ use std::rc::Rc;
 
 #[component]
 fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
+    render!(path {
+        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
+        stroke: "#000",
+        stroke_width: *stroke_width
+    })
 }
 
 pub struct NoteEvent {
@@ -46,7 +51,7 @@ pub fn Staff<'a>(
 
     onclick: EventHandler<'a, NoteEvent>,
 ) -> Element<'a> {
-    let items: Vec<_> = items(children.as_ref().unwrap()).collect();
+    let items = elements(children.as_ref().unwrap());
     let elements = use_signal(cx, || Vec::new());
 
     use_effect(cx, &items, move |items| {
@@ -54,51 +59,13 @@ pub fn Staff<'a>(
         async {}
     });
 
-    render!(
-        StaffElements {
-            elements: elements,
-            line_height: *line_height,
-            width: *width,
-            stroke_width: *stroke_width,
-            onclick: |event| onclick.call(event)
-        }
-    )
-}
-
-fn items<'a>(node: &'a VNode<'a>) -> impl Iterator<Item = StaffElement> + 'a {
-    let mut elements = Vec::new();
-    for root in node.template.get().roots {
-        match root {
-            TemplateNode::Element {
-                tag,
-                namespace: _,
-                attrs,
-                children: _,
-            } => {
-                let elem = match *tag {
-                    "note" => StaffElement::Note(element::Note::from_attrs(&node, attrs)),
-                    "br" => StaffElement::Br,
-                    "hr" => StaffElement::Hr,
-                    "clef" => StaffElement::Clef(Clef {}),
-                    _ => todo!(),
-                };
-                elements.push(elem);
-            }
-            TemplateNode::Dynamic { id } => {
-                let node = &node.dynamic_nodes[*id];
-                match node {
-                    DynamicNode::Fragment(nodes) => {
-                        for node in *nodes {
-                            elements.extend(items(node))
-                        }
-                    }
-                    _ => todo!(),
-                }
-            }
-            _ => todo!(),
-        };
-    }
-    elements.into_iter()
+    render!(StaffElements {
+        elements: elements,
+        line_height: *line_height,
+        width: *width,
+        stroke_width: *stroke_width,
+        onclick: |event| onclick.call(event)
+    })
 }
 
 /// Staff component.
@@ -164,54 +131,53 @@ pub fn StaffElements<'a>(
             let elem = match &item.kind {
                 ItemKind::Br => None,
                 ItemKind::Hr => {
-                    render!(
-                        Hr {
-                            x: item.x - stroke_width / 2.,
-                            y: item.y,
-                            top: top,
-                            line_height: *line_height,
-                            stroke_width: *stroke_width
-                        }
-                    )
+                    render!(Hr {
+                        x: item.x - stroke_width / 2.,
+                        y: item.y,
+                        top: top,
+                        line_height: *line_height,
+                        stroke_width: *stroke_width
+                    })
                 }
                 ItemKind::Note { layout, note } => {
                     let natural = note.natural;
                     let accidental = note.accidental;
 
-                    render!(
-                        Note {
-                            duration: note.duration,
-                            x: item.x,
-                            y: top + item.y + note.index() as f64 * (line_height / 2.),
-                            layout: layout.clone(),
-                            head_size: line_height / 2.,
-                            font_size: 48.,
-                            stroke_width: *stroke_width,
-                            line_height: *line_height,
-                            last: last.clone(),
-                            onlayout: move |new_layout| {
-                                if let LayoutElement::Note { ref mut layout, .. } = &mut *layouts.read()[idx].write()
-                                {
-                                    *layout = new_layout;
-                                }
-                            },
-                            onclick: move |_event| {
-                                onclick
-                                    .call(NoteEvent {
-                                        idx,
-                                        natural: natural,
-                                        accidental: accidental,
-                                    })
+                    render!(Note {
+                        duration: note.duration,
+                        x: item.x,
+                        y: top + item.y + note.index() as f64 * (line_height / 2.),
+                        layout: layout.clone(),
+                        head_size: line_height / 2.,
+                        font_size: 48.,
+                        stroke_width: *stroke_width,
+                        line_height: *line_height,
+                        last: last.clone(),
+                        onlayout: move |new_layout| {
+                            if let LayoutElement::Note { ref mut layout, .. } =
+                                &mut *layouts.read()[idx].write()
+                            {
+                                *layout = new_layout;
                             }
+                        },
+                        onclick: move |_event| {
+                            onclick.call(NoteEvent {
+                                idx,
+                                natural: natural,
+                                accidental: accidental,
+                            })
                         }
-                    )
+                    })
                 }
             };
 
             render! { lines, elem }
         });
 
-    render!(
-        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
-    )
+    render!(svg {
+        width: "{width}px",
+        height: "500px",
+        xmlns: "http://www.w3.org/2000/svg",
+        elems
+    })
 }
