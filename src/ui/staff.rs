@@ -7,12 +7,8 @@ use crate::ui::{
 use dioxus_signals::use_signal;
 
 #[component]
-fn Br(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path {
-        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
-        stroke: "#000",
-        stroke_width: *stroke_width
-    })
+fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
+    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
 }
 
 #[component]
@@ -46,8 +42,8 @@ pub fn Staff<'a>(
                     }),
                     elem,
                 ),
-                element::Element::Br => (None, elem),
-                _ => todo!(),
+               _ => (None, elem),
+        
             })
             .collect::<Vec<_>>()
     });
@@ -71,14 +67,14 @@ pub fn Staff<'a>(
 
                 let elem = render!(
                     path { d: "{d}", stroke: "#000", stroke_width: *stroke_width }
-                    Br {
+                    Hr {
                         x: left + stroke_width / 2.,
                         y: y,
                         top: top,
                         line_height: *line_height,
                         stroke_width: *stroke_width
                     }
-                    Br {
+                    Hr {
                         x: width - stroke_width / 2.,
                         y: y,
                         top: top,
@@ -105,17 +101,32 @@ pub fn Staff<'a>(
                     let x = left;
                     left += layout.width();
 
-                    render!(Note {
-                        duration: note.duration,
-                        x: x,
-                        y: top  + y + note.index() as f64 * (line_height / 2.),
-                        layout: layout.clone(),
-                        head_size: line_height / 2.,
-                        font_size: 48.,
-                        stroke_width: *stroke_width,
-                        line_height: *line_height,
-                        onlayout: move |layout| layouts.write()[idx].0 = Some(layout)
-                    })
+                    render!(
+                        Note {
+                            duration: note.duration,
+                            x: x,
+                            y: top + y + note.index() as f64 * (line_height / 2.),
+                            layout: layout.clone(),
+                            head_size: line_height / 2.,
+                            font_size: 48.,
+                            stroke_width: *stroke_width,
+                            line_height: *line_height,
+                            onlayout: move |layout| layouts.write()[idx].0 = Some(layout)
+                        }
+                    )
+                }
+                element::Element::Hr => {
+                    let x = left;
+                    left += 20.;
+                    render!(
+                        Hr {
+                            x: x - stroke_width / 2.,
+                            y: y,
+                            top: top,
+                            line_height: *line_height,
+                            stroke_width: *stroke_width
+                        }
+                    )
                 }
                 element::Element::Br => {
                     left = 0.;
@@ -130,12 +141,9 @@ pub fn Staff<'a>(
             render! { lines, elem }
         });
 
-    render!(svg {
-        width: "{width}px",
-        height: "500px",
-        xmlns: "http://www.w3.org/2000/svg",
-        elems
-    })
+    render!(
+        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
+    )
 }
 
 fn items<'a>(node: &'a VNode<'a>, width: f64) -> impl Iterator<Item = element::Element> + 'a {

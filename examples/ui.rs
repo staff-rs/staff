@@ -2,7 +2,7 @@ use staff::{
     note::Accidental,
     time::{Duration, DurationKind},
     ui::{prelude::*, Font, Staff},
-    Natural,
+    Natural, midi::Octave,
 };
 
 fn app(cx: Scope) -> Element {
@@ -11,10 +11,10 @@ fn app(cx: Scope) -> Element {
             Font {}
             Staff { 
                 note { natural: Natural::F, accidental: Accidental::Sharp }
-                note { natural: Natural::G, accidental: Accidental::Flat, duration: Duration::new(DurationKind::Half, false) }
+                note { natural: Natural::G, accidental: Accidental::Flat, duration: Duration::from(DurationKind::Half) }
                 note { natural: Natural::A }
-                br {}
-                note { natural: Natural::A }
+                hr {}
+                note { natural: Natural::C, octave: Octave::FIVE, duration: Duration::from(DurationKind::Whole) }
             }
         }
     )

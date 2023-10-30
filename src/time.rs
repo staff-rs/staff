@@ -31,6 +31,12 @@ impl Duration {
     }
 }
 
+impl From<DurationKind> for Duration {
+    fn from(value: DurationKind) -> Self {
+        Self::new(value, false)
+    }
+}
+
 #[cfg(feature = "ui")]
 impl<'a> dioxus::prelude::IntoAttributeValue<'a> for Duration {
     fn into_value(

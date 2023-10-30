@@ -74,6 +74,14 @@ pub mod prelude {
         }
 
         #[allow(non_camel_case_types)]
+        pub struct hr {}
+
+        impl hr {
+            pub const TAG_NAME: &'static str = "hr";
+            pub const NAME_SPACE: Option<&'static str> = None;
+        }
+
+        #[allow(non_camel_case_types)]
         pub struct chord {}
 
         impl chord {
