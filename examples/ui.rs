@@ -13,6 +13,8 @@ fn app(cx: Scope) -> Element {
                 note { natural: Natural::F, accidental: Accidental::Sharp }
                 note { natural: Natural::G, accidental: Accidental::Flat, duration: Duration::new(DurationKind::Half, false) }
                 note { natural: Natural::A }
+                br {}
+                note { natural: Natural::A }
             }
         }
     )

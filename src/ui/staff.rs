@@ -1,6 +1,6 @@
 use super::prelude::*;
 use crate::ui::{
-    element::{self, Br, Clef},
+    element::{self, Clef},
     layout::Layout,
     Note,
 };
@@ -8,7 +8,11 @@ use dioxus_signals::use_signal;
 
 #[component]
 fn Br(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
+    render!(path {
+        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
+        stroke: "#000",
+        stroke_width: *stroke_width
+    })
 }
 
 #[component]
@@ -31,17 +35,18 @@ pub fn Staff<'a>(
     let node = children.as_ref().unwrap();
     let top = *stroke_width + 100.;
 
+
     let layouts = use_signal(cx, || {
         items(node, *width)
-            .map(|(elem, is_newline)| match &elem {
+            .map(|elem| match &elem {
                 element::Element::Note(note) => (
-                    Layout {
+                    Some(Layout {
                         accidental: note.accidental.map(|acc| (acc, [0.; 2])),
                         duration: note.duration,
-                    },
+                    }),
                     elem,
-                    is_newline,
                 ),
+                element::Element::Br => (None, elem),
                 _ => todo!(),
             })
             .collect::<Vec<_>>()
@@ -49,14 +54,15 @@ pub fn Staff<'a>(
 
     let layouts_ref = layouts.read();
 
-    let y = 0.;
+    let mut y = 0.;
     let mut left = 0.;
+    let mut is_newline = true;  
 
     let elems = layouts_ref
         .iter()
         .enumerate()
-        .map(move |(idx, (layout, element, is_newline))| {
-            let lines = if *is_newline {
+        .map(move |(idx, (layout, element))| {
+            let lines = if is_newline {
                 let mut d = String::new();
                 for i in 0..5 {
                     let y = i as f64 * line_height + top + y;
@@ -82,6 +88,12 @@ pub fn Staff<'a>(
                 );
 
                 left += 20.;
+                if left >= *width {
+                    left = 0.;
+                    is_newline = true;
+                }
+                is_newline = false;
+
                 elem
             } else {
                 None
@@ -89,22 +101,28 @@ pub fn Staff<'a>(
 
             let elem = match element {
                 element::Element::Note(note) => {
+                    let layout = layout.as_ref().unwrap();
                     let x = left;
                     left += layout.width();
 
-                    render!(
-                        Note {
-                            duration: note.duration,
-                            x: x,
-                            y: top + note.index() as f64 * (line_height / 2.),
-                            layout: layout.clone(),
-                            head_size: line_height / 2.,
-                            font_size: 48.,
-                            stroke_width: *stroke_width,
-                            line_height: *line_height,
-                            onlayout: move |layout| layouts.write()[idx].0 = layout
-                        }
-                    )
+                    render!(Note {
+                        duration: note.duration,
+                        x: x,
+                        y: top  + y + note.index() as f64 * (line_height / 2.),
+                        layout: layout.clone(),
+                        head_size: line_height / 2.,
+                        font_size: 48.,
+                        stroke_width: *stroke_width,
+                        line_height: *line_height,
+                        onlayout: move |layout| layouts.write()[idx].0 = Some(layout)
+                    })
+                }
+                element::Element::Br => {
+                    left = 0.;
+                    y += 100.;
+                    is_newline = true;
+                    
+                    None
                 }
                 _ => todo!(),
             };
@@ -112,19 +130,15 @@ pub fn Staff<'a>(
             render! { lines, elem }
         });
 
-    render!(
-        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
-    )
+    render!(svg {
+        width: "{width}px",
+        height: "500px",
+        xmlns: "http://www.w3.org/2000/svg",
+        elems
+    })
 }
 
-fn items<'a>(
-    node: &'a VNode<'a>,
-    width: f64,
-) -> impl Iterator<Item = (element::Element, bool)> + 'a {
-    let mut x = 0.;
-
-    let mut is_newline = true;
-
+fn items<'a>(node: &'a VNode<'a>, width: f64) -> impl Iterator<Item = element::Element> + 'a {
     node.template
         .get()
         .roots
@@ -135,26 +149,13 @@ fn items<'a>(
                 namespace: _,
                 attrs,
                 children: _,
-            } => {
-                let (elem, elem_width) = match *tag {
-                    "note" => (
-                        element::Element::Note(element::Note::from_attrs(&node, attrs)),
-                        80.,
-                    ),
-                    "br" => (element::Element::Br(Br {}), 30.),
-                    "clef" => (element::Element::Clef(Clef {}), 60.),
-                    _ => todo!(),
-                };
-
-                x += elem_width;
-                let old_is_newline = is_newline;
-                is_newline = x > width;
-                if is_newline {
-                    x = 0.;
-                }
-
-                (elem, old_is_newline)
-            }
+            } => match *tag {
+                "note" => element::Element::Note(element::Note::from_attrs(&node, attrs)),
+                "br" => element::Element::Br,
+                "hr" => element::Element::Hr,
+                "clef" => element::Element::Clef(Clef {}),
+                _ => todo!(),
+            },
             _ => todo!(),
         })
 }
