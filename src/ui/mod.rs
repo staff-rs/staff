@@ -3,6 +3,9 @@ use dioxus::prelude::*;
 use dioxus_resize_observer::{use_size, Rect};
 use dioxus_use_mounted::use_mounted;
 
+mod fret_diagram;
+pub use fret_diagram::FretDiagram;
+
 mod font;
 pub use font::Font;
 
@@ -91,6 +94,40 @@ pub mod prelude {
             pub const TAG_NAME: &'static str = "chord";
             pub const NAME_SPACE: Option<&'static str> = None;
         }
+
+        #[allow(non_camel_case_types)]
+        pub struct fret {}
+
+        impl fret {
+            pub const TAG_NAME: &'static str = "marker";
+            pub const NAME_SPACE: Option<&'static str> = None;
+
+            #[allow(non_upper_case_globals)]
+            pub const index: AttributeDiscription = ("index", None, true);
+
+            #[allow(non_upper_case_globals)]
+            pub const string: AttributeDiscription = ("string", None, true);
+
+            #[allow(non_upper_case_globals)]
+            pub const is_muted: AttributeDiscription = ("is_muted", None, true);
+        }
+
+        #[allow(non_camel_case_types)]
+        pub struct frets {}
+
+        impl frets {
+            pub const TAG_NAME: &'static str = "marker";
+            pub const NAME_SPACE: Option<&'static str> = None;
+
+            #[allow(non_upper_case_globals)]
+            pub const from: AttributeDiscription = ("from", None, true);
+
+            #[allow(non_upper_case_globals)]
+            pub const to: AttributeDiscription = ("to", None, true);
+
+            #[allow(non_upper_case_globals)]
+            pub const string: AttributeDiscription = ("string", None, true);
+        }
     }
 }
 
@@ -110,11 +147,7 @@ fn Text<'a>(
         async {}
     });
 
-    render!(text {
-        font_family: *font_family,
-        font_size: *font_size,
-        onmounted: move |event| mounted.onmounted(event),
-        opacity: 0.,
-        content
-    })
+    render!(
+        text { font_family: *font_family, font_size: *font_size, onmounted: move |event| mounted.onmounted(event), opacity: 0., content }
+    )
 }
