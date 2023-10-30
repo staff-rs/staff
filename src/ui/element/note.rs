@@ -15,6 +15,17 @@ pub struct Note {
     pub duration: Duration,
 }
 
+impl Default for Note {
+    fn default() -> Self {
+        Self {
+            natural: Natural::C,
+            octave: Octave::FOUR,
+            accidental: None,
+            duration: Duration::from(DurationKind::Quarter),
+        }
+    }
+}
+
 impl Note {
     pub fn from_attrs(node: &VNode, attrs: &[TemplateAttribute]) -> Note {
         let mut natural = None;

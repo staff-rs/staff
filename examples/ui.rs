@@ -2,7 +2,6 @@ use dioxus_resize_observer::use_size;
 use dioxus_signals::use_signal;
 use dioxus_use_mounted::use_mounted;
 use staff::{
-    midi::Octave,
     note::Accidental,
     time::{Duration, DurationKind},
     ui::{
@@ -18,21 +17,27 @@ fn app(cx: Scope) -> Element {
     let size = use_size(cx, mounted);
     let selected: &UseState<Option<NoteEvent>> = use_state(cx, || None);
     let elements = use_signal(cx, || {
-        vec![
-            element::Element::Note(Note {
-                natural: Natural::C,
-                octave: Octave::FOUR,
+        let mut elems = Vec::new();
+        for _ in 0..10 {
+            elems.push(element::Element::Note(Note {
+                natural: Natural::E,
+                duration: Duration::from(DurationKind::Half),
+                ..Default::default()
+            }));
+            elems.push(element::Element::Note(Note {
+                natural: Natural::B,
                 accidental: Some(Accidental::Sharp),
-                duration: Duration::from(DurationKind::Quarter),
-            }),
-            element::Element::Br,
-            element::Element::Note(Note {
-                natural: Natural::F,
-                octave: Octave::FOUR,
-                accidental: Some(Accidental::Sharp),
-                duration: Duration::from(DurationKind::Quarter),
-            }),
-        ]
+                duration: Duration::from(DurationKind::Eigth),
+                ..Default::default()
+            }));
+            elems.push(element::Element::Note(Note {
+                natural: Natural::G,
+                duration: Duration::from(DurationKind::Eigth),
+                ..Default::default()
+            }));
+        }
+        
+        elems
     });
 
     render!(

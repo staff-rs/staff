@@ -71,7 +71,14 @@ pub fn Note<'a>(
             };
 
             render! {
-                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000", onclick: |event| onclick.call(event) }
+                circle {
+                    cx: note_x,
+                    cy: *y,
+                    r: line_height / 2.,
+                    fill: "#000",
+                    cursor: "pointer",
+                    onclick: |event| onclick.call(event)
+                }
                 render_stem(),
                 tie
             }
@@ -79,7 +86,14 @@ pub fn Note<'a>(
         DurationKind::Quarter => {
             last.borrow_mut().take();
             render! {
-                circle { cx: note_x, cy: *y, r: line_height / 2., fill: "#000", onclick: |event| onclick.call(event) }
+                circle {
+                    cx: note_x,
+                    cy: *y,
+                    r: line_height / 2.,
+                    fill: "#000",
+                    cursor: "pointer",
+                    onclick: |event| onclick.call(event)
+                }
                 render_stem()
             }
         }
@@ -92,7 +106,8 @@ pub fn Note<'a>(
                     r: line_height / 2. - stroke_width / 2.,
                     stroke: "#000",
                     stroke_width: *stroke_width,
-                    fill: "none",
+                    fill: "rgba(0,0,0,0)",
+                    cursor: "pointer",
                     onclick: |event| onclick.call(event)
                 }
                 render_stem()
@@ -107,7 +122,8 @@ pub fn Note<'a>(
                     r: line_height / 2. - stroke_width / 2.,
                     stroke: "#000",
                     stroke_width: *stroke_width,
-                    fill: "none",
+                    fill: "rgba(0,0,0,0)",
+                    cursor: "pointer",
                     onclick: |event| onclick.call(event)
                 }
             )

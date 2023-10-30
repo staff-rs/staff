@@ -2,7 +2,7 @@ use super::{element::Note, prelude::*};
 use crate::{
     note::Accidental,
     ui::{
-        element::{self, Clef},
+        element::{self},
         layout::Layout,
         Note,
     },
@@ -13,11 +13,7 @@ use std::rc::Rc;
 
 #[component]
 fn Hr(cx: Scope, x: f64, y: f64, top: f64, line_height: f64, stroke_width: f64) -> Element {
-    render!(path {
-        d: "M{x} {top + y}L{x} {top + y + line_height * 4.}",
-        stroke: "#000",
-        stroke_width: *stroke_width
-    })
+    render!(path { d: "M{x} {top + y}L{x} {top + y + line_height * 4.}", stroke: "#000", stroke_width: *stroke_width })
 }
 
 pub struct NoteEvent {
@@ -63,6 +59,12 @@ pub fn Staff<'a>(
     let layouts = use_signal(cx, move || Vec::new());
     let top = *stroke_width + 100.;
 
+    let width_signal = use_signal(cx, || *width);
+    use_effect(cx, width, |w| {
+        width_signal.set(w);
+        async {}
+    });
+
     to_owned![elements];
     dioxus_signals::use_effect(cx, move || {
         let elements_ref = elements.read();
@@ -84,13 +86,14 @@ pub fn Staff<'a>(
         );
     });
 
-    to_owned![width];
     let items = use_selector(cx, move || {
         let mut y = 0.;
         let mut left = 0.;
         let mut is_newline = true;
 
         let layouts_ref = layouts.read();
+        let width = *width_signal.read();
+
         layouts_ref
             .iter()
             .map(|(layout_cell, element)| {
@@ -118,7 +121,6 @@ pub fn Staff<'a>(
                     element::Element::Hr => {
                         let x = left;
                         left += 30.;
-
                         Item {
                             x,
                             y,
@@ -183,47 +185,49 @@ pub fn Staff<'a>(
             let elem = match &item.kind {
                 ItemKind::Br => None,
                 ItemKind::Hr => {
-                    render!(Hr {
-                        x: item.x - stroke_width / 2.,
-                        y: item.y,
-                        top: top,
-                        line_height: *line_height,
-                        stroke_width: *stroke_width
-                    })
+                    render!(
+                        Hr {
+                            x: item.x - stroke_width / 2.,
+                            y: item.y,
+                            top: top,
+                            line_height: *line_height,
+                            stroke_width: *stroke_width
+                        }
+                    )
                 }
                 ItemKind::Note { layout, note } => {
                     let natural = note.natural;
                     let accidental = note.accidental;
 
-                    render!(Note {
-                        duration: note.duration,
-                        x: item.x,
-                        y: top + item.y + note.index() as f64 * (line_height / 2.),
-                        layout: layout.clone(),
-                        head_size: line_height / 2.,
-                        font_size: 48.,
-                        stroke_width: *stroke_width,
-                        line_height: *line_height,
-                        last: last.clone(),
-                        onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
-                        onclick: move |event| {
-                            onclick.call(NoteEvent {
-                                idx,
-                                natural: natural,
-                                accidental: accidental,
-                            })
+                    render!(
+                        Note {
+                            duration: note.duration,
+                            x: item.x,
+                            y: top + item.y + note.index() as f64 * (line_height / 2.),
+                            layout: layout.clone(),
+                            head_size: line_height / 2.,
+                            font_size: 48.,
+                            stroke_width: *stroke_width,
+                            line_height: *line_height,
+                            last: last.clone(),
+                            onlayout: move |layout| layouts.write()[idx].0 = Some(layout),
+                            onclick: move |_event| {
+                                onclick
+                                    .call(NoteEvent {
+                                        idx,
+                                        natural: natural,
+                                        accidental: accidental,
+                                    })
+                            }
                         }
-                    })
+                    )
                 }
             };
 
             render! { lines, elem }
         });
 
-    render!(svg {
-        width: "{width}px",
-        height: "500px",
-        xmlns: "http://www.w3.org/2000/svg",
-        elems
-    })
+    render!(
+        svg { width: "{width}px", height: "500px", xmlns: "http://www.w3.org/2000/svg", elems }
+    )
 }
