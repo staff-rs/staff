@@ -9,7 +9,7 @@ pub fn Staff<'a>(
     children: Element<'a>,
 
     /// Line height of the staff.
-    #[props(default = 20.)]
+    #[props(default = 15.)]
     line_height: f64,
 
     /// Width of the staff.
@@ -27,49 +27,58 @@ pub fn Staff<'a>(
 
     let elements = node.template.get().roots.iter().map(|root| match root {
         TemplateNode::Element {
-            tag: _,
+            tag,
             namespace: _,
             attrs,
             children: _,
-        } => {
-            let mut natural = None;
-            for attr in *attrs {
-                match attr {
-                    TemplateAttribute::Static {
-                        name: _,
-                        value: _,
-                        namespace: _,
-                    } => todo!(),
-                    TemplateAttribute::Dynamic { id } => {
-                        let attr = &node.dynamic_attrs[*id];
-                        if attr.name == "natural" {
-                            if let AttributeValue::Int(n) = attr.value {
-                                if n < 0 || n > Natural::G as u8 as _ {
-                                    todo!()
+        } => match *tag {
+            "note" => {
+                let mut natural = None;
+                for attr in *attrs {
+                    match attr {
+                        TemplateAttribute::Static {
+                            name: _,
+                            value: _,
+                            namespace: _,
+                        } => todo!(),
+                        TemplateAttribute::Dynamic { id } => {
+                            let attr = &node.dynamic_attrs[*id];
+                            if attr.name == "natural" {
+                                if let AttributeValue::Int(n) = attr.value {
+                                    if n < 0 || n > Natural::G as u8 as _ {
+                                        todo!()
+                                    }
+                                    let nat: Natural = unsafe { mem::transmute(n as u8) };
+                                    natural = Some(nat);
                                 }
-                                let nat: Natural = unsafe { mem::transmute(n as u8) };
-                                natural = Some(nat);
                             }
                         }
                     }
                 }
+
+                let natural = natural.unwrap();
+                let y = note_index(natural, Octave::FOUR) as f64 * (line_height / 2.) + top;
+                let x = left;
+                left += 30.;
+
+                let stem_x = x + line_height / 2. - stroke_width / 2.;
+                render!(
+                    circle { cx: x, cy: y, r: line_height / 2. }
+                    path {
+                        d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
+                        stroke: "#000",
+                        stroke_width: *stroke_width
+                    }
+                )
             }
+            "clef" => {
+                let x = left;
+                left += 70.;
 
-            let natural = natural.unwrap();
-            let y = note_index(natural, Octave::FOUR) as f64 * (line_height / 2.) + top;
-            let x = left;
-            left += 30.;
-
-            let stem_x = x + line_height / 2. - stroke_width / 2.;
-            render!(
-                circle { cx: x, cy: y, r: line_height / 2. }
-                path {
-                    d: "M{stem_x} {y - line_height * 3.} L{stem_x} {y}",
-                    stroke: "#000",
-                    stroke_width: *stroke_width
-                }
-            )
-        }
+                render!(text { x: x, y: line_height * 4. + stroke_width, font_family: "Noto Music", font_size: "{line_height * 3.}px", "𝄞" })
+            }
+            _ => todo!(),
+        },
         _ => todo!(),
     });
 

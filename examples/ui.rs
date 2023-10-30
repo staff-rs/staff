@@ -1,12 +1,14 @@
 use staff::{
-    ui::{prelude::*, Staff},
+    ui::{prelude::*, Font, Staff},
     Natural,
 };
 
 fn app(cx: Scope) -> Element {
     render!(
         div { display: "flex", width: "100vw", height: "100vh", align_items: "center", justify_content: "center",
-            Staff { 
+        Font {}
+            Staff {
+                clef { kind: ClefKind::Treble }
                 note { natural: Natural::F }
                 note { natural: Natural::G }
                 note { natural: Natural::A }
