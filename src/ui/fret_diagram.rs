@@ -3,6 +3,9 @@ use dioxus::{
     prelude::*,
 };
 
+use super::element::{Fret, Frets};
+
+/// Fret diagram component.
 #[component]
 pub fn FretDiagram<'a>(
     cx: Scope<'a>,
@@ -61,27 +64,28 @@ pub fn FretDiagram<'a>(
         })
     });
 
-    let elements = elements(children.as_ref().unwrap());
-    let elements = elements.iter().map(|element| match element {
-        FretDiagramElement::Fret(fret) => {
-            render!(circle {
-                cx: x + fret.string as f64 * fret_width,
-                cy: y + (fret.index as f64 - 0.5) * fret_height + stroke_width * 4.5,
-                r: fret_width.min(fret_height) / 2.,
-                fill: "#000"
-            })
-        }
-        FretDiagramElement::Frets(frets) => {
-            render!(rect {
-                x: x + frets.from as f64 * fret_width + stroke_width / 2.,
-                y: y + frets.index as f64 * fret_height + stroke_width * 4.5,
-                width: (frets.to - 1) as f64 * fret_width - stroke_width / 2.,
-                height: (frets.index as f64 + 0.75) * fret_height,
-                rx: fret_width.max(fret_height) / 2.,
-                fill: "#000"
-            })
-        }
-    });
+    let elements = elements(children.as_ref().unwrap())
+        .into_iter()
+        .map(|element| match element {
+            FretDiagramElement::Fret(fret) => {
+                render!(circle {
+                    cx: x + fret.string as f64 * fret_width,
+                    cy: y + (fret.index as f64 - 0.5) * fret_height + stroke_width * 4.5,
+                    r: fret_width.min(fret_height) / 2.,
+                    fill: "#000"
+                })
+            }
+            FretDiagramElement::Frets(frets) => {
+                render!(rect {
+                    x: x + frets.from as f64 * fret_width + stroke_width / 2.,
+                    y: y + (frets.index as f64 - 0.85) * fret_height + stroke_width * 4.5,
+                    width: (frets.to - 1) as f64 * fret_width - stroke_width / 2.,
+                    height: fret_width.min(fret_height),
+                    rx: 10,
+                    fill: "#000"
+                })
+            }
+        });
 
     render! {
         path {
@@ -92,116 +96,6 @@ pub fn FretDiagram<'a>(
         fret_lines,
         string_lines,
         elements
-    }
-}
-
-pub struct Fret {
-    index: u8,
-    string: u8,
-    is_muted: bool,
-}
-impl Fret {
-    pub fn from_attrs(node: &VNode, attrs: &[TemplateAttribute]) -> Self {
-        let mut index = None;
-        let mut string = None;
-        let mut is_muted = false;
-        for attr in attrs {
-            match attr {
-                TemplateAttribute::Static {
-                    name: _,
-                    value: _,
-                    namespace: _,
-                } => todo!(),
-                TemplateAttribute::Dynamic { id } => {
-                    let attr = &node.dynamic_attrs[*id];
-                    match attr.name {
-                        "index" => {
-                            if let AttributeValue::Int(i) = attr.value {
-                                index = Some(i as _)
-                            } else {
-                                todo!()
-                            }
-                        }
-                        "string" => {
-                            if let AttributeValue::Int(i) = attr.value {
-                                string = Some(i as _)
-                            } else {
-                                todo!()
-                            }
-                        }
-                        "is_muted" => {
-                            if let AttributeValue::Bool(b) = attr.value {
-                                is_muted = b;
-                            } else {
-                                todo!()
-                            }
-                        }
-                        _ => todo!(),
-                    }
-                }
-            }
-        }
-
-        Fret {
-            index: index.unwrap(),
-            string: string.unwrap(),
-            is_muted,
-        }
-    }
-}
-
-pub struct Frets {
-    from: u8,
-    to: u8,
-    index: u8,
-}
-impl Frets {
-    pub fn from_attrs(node: &VNode, attrs: &[TemplateAttribute]) -> Self {
-        let mut from = None;
-        let mut to = None;
-        let mut index = None;
-        for attr in attrs {
-            match attr {
-                TemplateAttribute::Static {
-                    name: _,
-                    value: _,
-                    namespace: _,
-                } => todo!(),
-                TemplateAttribute::Dynamic { id } => {
-                    let attr = &node.dynamic_attrs[*id];
-                    match attr.name {
-                        "from" => {
-                            if let AttributeValue::Int(i) = attr.value {
-                                from = Some(i as _)
-                            } else {
-                                todo!()
-                            }
-                        }
-                        "to" => {
-                            if let AttributeValue::Int(i) = attr.value {
-                                to = Some(i as _)
-                            } else {
-                                todo!()
-                            }
-                        }
-                        "index" => {
-                            if let AttributeValue::Int(i) = attr.value {
-                                index = Some(i as _)
-                            } else {
-                                todo!()
-                            }
-                        }
-                        _ => todo!(),
-                    }
-                }
-            }
-        }
-
-        Frets {
-            from: from.unwrap(),
-            to: to.unwrap(),
-            index: index.unwrap(),
-        }
     }
 }
 

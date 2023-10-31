@@ -1,5 +1,12 @@
 use dioxus::{core::DynamicNode, prelude::*};
 
+mod fret;
+pub use fret::Fret;
+
+mod frets;
+pub use frets::Frets;
+
+
 mod note;
 pub use note::Note;
 
