@@ -96,7 +96,6 @@ pub fn StaffElements<'a>(
         .enumerate()
         .map(|(idx, (item, is_newline))| {
             let lines = if *is_newline {
-                bottom = item.y;
                 let mut d = String::new();
                 for i in 0..5 {
                     let y = i as f64 * line_height + top + item.y;
@@ -170,6 +169,8 @@ pub fn StaffElements<'a>(
                     )
                 }
             };
+
+            bottom = item.y  + top + line_height * 6.;
 
             render! { lines, elem }
         });
