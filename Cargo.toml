@@ -10,12 +10,19 @@ homepage = "https://staff-rs.github.io"
 [features]
 std = []
 fretboard = ["std"]
-parse = ["std"]
-render = ["std"]
 serde = ["dep:serde"]
-ui = ["dep:bumpalo", "dep:dioxus", "dep:dioxus-web", "dep:dioxus-signals", "dep:dioxus-resize-observer", "dep:dioxus-use-mounted"]
-full = ["fretboard", "parse", "render", "serde", "ui"]
-default = ["full"]
+ui = [
+    "std",
+    "dep:bumpalo",
+    "dep:console_error_panic_hook",
+    "dep:dioxus",
+    "dep:dioxus-web",
+    "dep:dioxus-signals",
+    "dep:dioxus-resize-observer",
+    "dep:dioxus-use-mounted"
+]
+full = ["fretboard", "serde", "ui"]
+default = ["std"]
 
 [lib]
 name = "staff"
@@ -24,13 +31,9 @@ name = "staff"
 name = "staff"
 required-features = ["ui"]
 
-[[example]]
-name = "synth"
-required-features = ["synth"]
-
 [dependencies]
 num-traits = "0.2.14"
-console_error_panic_hook = "0.1.7"
+console_error_panic_hook = { version = "0.1.7", optional = true }
 dioxus = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
 dioxus-signals = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
 dioxus-web = { git = "https://github.com/dioxuslabs/dioxus", optional = true }
@@ -46,3 +49,15 @@ optional = true
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "bench"
+required-features = ["ui"]
+
+[[example]]
+name = "fret_diagram"
+required-features = ["ui"]
+
+[[example]]
+name = "ui"
+required-features = ["ui"]
