@@ -73,4 +73,52 @@ impl ScaleIntervals {
             Interval::MINOR_SEVENTH,
         ])
     }
+
+    pub fn phrygian() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MINOR_SECOND,
+            Interval::MINOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::PERFECT_FIFTH,
+            Interval::MINOR_SIXTH,
+            Interval::MINOR_SEVENTH,
+        ])
+    }
+
+    pub fn lydian() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MAJOR_SECOND,
+            Interval::MAJOR_THIRD,
+            Interval::TRITONE,
+            Interval::PERFECT_FIFTH,
+            Interval::MAJOR_SIXTH,
+            Interval::MAJOR_SEVENTH,
+        ])
+    }
+
+    pub fn mixolydian() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MAJOR_SECOND,
+            Interval::MAJOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::PERFECT_FIFTH,
+            Interval::MAJOR_SIXTH,
+            Interval::MINOR_SEVENTH,
+        ])
+    }
+
+    pub fn locrian() -> Self {
+        Self::from_iter([
+            Interval::UNISON,
+            Interval::MINOR_SECOND,
+            Interval::MINOR_THIRD,
+            Interval::PERFECT_FOURTH,
+            Interval::TRITONE,
+            Interval::MINOR_SIXTH,
+            Interval::MINOR_SEVENTH,
+        ])
+    }
 }

@@ -117,4 +117,34 @@ mod tests {
             Note::sharp(Natural::B),
         ]))
     }
+
+    #[test]
+    fn test_c_locrian() {
+        let scale = Scale::locrian(Note::from(Natural::C));
+
+        assert!(scale.eq([
+            Note::from(Natural::C),
+            Note::flat(Natural::D),
+            Note::flat(Natural::E),
+            Note::from(Natural::F),
+            Note::flat(Natural::G),
+            Note::flat(Natural::A),
+            Note::flat(Natural::B),
+        ]));
+    }
+
+    #[test]
+    fn test_c_lydian() {
+        let scale = Scale::lydian(Note::from(Natural::C));
+
+        assert!(scale.eq([
+            Note::C,
+            Note::D,
+            Note::E,
+            Note::sharp(Natural::F),
+            Note::G,
+            Note::A,
+            Note::B,
+        ]));
+    }
 }

@@ -86,8 +86,32 @@ where
         Self::diatonic(root, ScaleIntervals::melodic_minor())
     }
 
+    pub fn ionian(root: T) -> Self {
+        Self::major(root)
+    }
+
     pub fn dorian(root: T) -> Self {
         Self::diatonic(root, ScaleIntervals::dorian())
+    }
+
+    pub fn phrygian(root: T) -> Self {
+        Self::diatonic(root, ScaleIntervals::phrygian())
+    }
+
+    pub fn lydian(root: T) -> Self {
+        Self::diatonic(root, ScaleIntervals::lydian())
+    }
+
+    pub fn mixolydian(root: T) -> Self {
+        Self::diatonic(root, ScaleIntervals::mixolydian())
+    }
+
+    pub fn aeolian(root: T) -> Self {
+        Self::natural_minor(root)
+    }
+
+    pub fn locrian(root: T) -> Self {
+        Self::diatonic(root, ScaleIntervals::locrian())
     }
 }
 
