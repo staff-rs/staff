@@ -55,26 +55,34 @@ pub struct Note {
 }
 
 impl Note {
-    pub fn new(natural: Natural, accidental: Accidental) -> Self {
+    pub const C: Self = Self::new(Natural::C, Accidental::Natural);
+    pub const D: Self = Self::new(Natural::D, Accidental::Natural);
+    pub const E: Self = Self::new(Natural::E, Accidental::Natural);
+    pub const F: Self = Self::new(Natural::F, Accidental::Natural);
+    pub const G: Self = Self::new(Natural::G, Accidental::Natural);
+    pub const A: Self = Self::new(Natural::A, Accidental::Natural);
+    pub const B: Self = Self::new(Natural::B, Accidental::Natural);
+
+    pub const fn new(natural: Natural, accidental: Accidental) -> Self {
         Self {
             natural,
             accidental,
         }
     }
 
-    pub fn flat(natural: Natural) -> Self {
+    pub const fn flat(natural: Natural) -> Self {
         Self::new(natural, Accidental::Flat)
     }
 
-    pub fn double_flat(natural: Natural) -> Self {
+    pub const fn double_flat(natural: Natural) -> Self {
         Self::new(natural, Accidental::DoubleFlat)
     }
 
-    pub fn sharp(natural: Natural) -> Self {
+    pub const fn sharp(natural: Natural) -> Self {
         Self::new(natural, Accidental::Sharp)
     }
 
-    pub fn double_sharp(natural: Natural) -> Self {
+    pub const fn double_sharp(natural: Natural) -> Self {
         Self::new(natural, Accidental::DoubleSharp)
     }
 }
