@@ -95,10 +95,10 @@ where
     }
 
     pub fn split(self, item: T) -> (Self, Self) {
-        let byte = item.into() as usize;
+        let bit = item.into() as usize;
         (
-            Self::new(self.bits & ((U::one() << byte) - U::one())),
-            Self::new((self.bits >> byte) << byte),
+            Self::new(self.bits & ((U::one() << bit) - U::one())),
+            Self::new((self.bits >> bit) << bit),
         )
     }
 }
