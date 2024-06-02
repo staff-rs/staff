@@ -119,6 +119,10 @@ impl Chord {
         Self::minor(root).with_interval(Interval::MINOR_SEVENTH)
     }
 
+    pub fn minor_ninth(self) -> Self {
+        self.with_interval(Interval::MINOR_NINTH)
+    }
+
     pub fn major_ninth(self) -> Self {
         self.with_interval(Interval::MAJOR_NINTH)
     }

@@ -33,6 +33,7 @@ impl Interval {
 
     pub const OCTAVE: Self = Self::new(12);
 
+    pub const MINOR_NINTH: Self = Self::new(13);
     pub const MAJOR_NINTH: Self = Self::new(14);
 
     pub const MINOR_ELEVENTH: Self = Self::new(16);
@@ -82,20 +83,22 @@ impl fmt::Display for Interval {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Interval::UNISON => f.write_char('1'),
-            Interval::MINOR_SECOND => f.write_str("maj2"),
+            Interval::MINOR_SECOND => f.write_str("b2"),
             Interval::MAJOR_SECOND => f.write_char('2'),
             Interval::MINOR_THIRD => f.write_str("b3"),
             Interval::MAJOR_THIRD => f.write_char('3'),
             Interval::PERFECT_FOURTH => f.write_char('4'),
+            Interval::TRITONE => f.write_str("b5"),
             Interval::PERFECT_FIFTH => f.write_char('5'),
             Interval::MINOR_SIXTH => f.write_str("b6"),
             Interval::MAJOR_SIXTH => f.write_char('6'),
             Interval::MINOR_SEVENTH => f.write_str("m7"),
             Interval::MAJOR_SEVENTH => f.write_str("maj7"),
+            Interval::MINOR_NINTH => f.write_str("b9"),
             Interval::MAJOR_NINTH => f.write_char('9'),
             Interval::MINOR_ELEVENTH => f.write_str("11"),
             Interval::MAJOR_ELEVENTH => f.write_str("maj11"),
-            Interval::MINOR_THIRTEENTH => f.write_str("11"),
+            Interval::MINOR_THIRTEENTH => f.write_str("13"),
             Interval::MAJOR_THIRTEENTH => f.write_str("maj13"),
             i => panic!("{:?}", i),
         }
