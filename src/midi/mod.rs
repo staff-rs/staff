@@ -35,6 +35,7 @@ impl MidiNote {
 
     /// Create a new `MidiNote` from a byte.
     pub const fn from_byte(byte: u8) -> Self {
+        assert!(byte <= 127, "byte>127 isn't a valid midi note");
         Self(byte)
     }
 

@@ -13,6 +13,34 @@ impl MidiSet {
         with_midi(self.low, self.high, midi, |set, midi| set.contains(midi))
     }
 
+    pub fn split(mut self, midi: MidiNote) -> (Self, Self) {
+        if midi <= MidiNote::from_byte(63) {
+            let (lower_low, upper_low) = self.inner(midi, |set, midi| set.split(midi));
+            (
+                MidiSet {
+                    low: lower_low,
+                    ..Default::default()
+                },
+                MidiSet {
+                    low: upper_low,
+                    high: self.high,
+                },
+            )
+        } else {
+            let (lower_high, upper_high) = self.inner(midi, |set, midi| set.split(midi));
+            (
+                MidiSet {
+                    low: self.low,
+                    high: lower_high,
+                },
+                MidiSet {
+                    high: upper_high,
+                    ..Default::default()
+                },
+            )
+        }
+    }
+
     pub fn push(&mut self, midi: MidiNote) {
         self.inner(midi, |set, midi| set.push(midi))
     }
@@ -36,7 +64,7 @@ where
     if midi <= MidiNote::from_byte(63) {
         f(low, midi)
     } else {
-        let byte = midi.into_byte() - 63;
+        let byte = midi.into_byte() - 64;
         f(high, MidiNote::from(byte))
     }
 }
@@ -64,7 +92,7 @@ impl Iterator for MidiSet {
         self.low.next().or_else(|| {
             self.high
                 .next()
-                .map(|midi| MidiNote::from(midi.into_byte() + 63))
+                .map(|midi| MidiNote::from(midi.into_byte() + 64))
         })
     }
 }
