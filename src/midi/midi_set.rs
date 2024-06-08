@@ -13,9 +13,9 @@ impl MidiSet {
         with_midi(self.low, self.high, midi, |set, midi| set.contains(midi))
     }
 
-    pub fn split(self, midi: MidiNote) -> (Self, Self) {
+    pub fn split(mut self, midi: MidiNote) -> (Self, Self) {
         if midi <= MidiNote::from_byte(63) {
-            let (lower_low, upper_low) = self.low.split(midi);
+            let (lower_low, upper_low) = self.inner(midi, |set, midi| set.split(midi));
             (
                 MidiSet {
                     low: lower_low,
@@ -27,7 +27,7 @@ impl MidiSet {
                 },
             )
         } else {
-            let (lower_high, upper_high) = self.high.split(midi);
+            let (lower_high, upper_high) = self.inner(midi, |set, midi| set.split(midi));
             (
                 MidiSet {
                     low: self.low,
