@@ -35,12 +35,15 @@ impl Interval {
 
     pub const MINOR_NINTH: Self = Self::new(13);
     pub const MAJOR_NINTH: Self = Self::new(14);
+    pub const AUG_NINTH: Self = Self::new(15);
 
     pub const MINOR_ELEVENTH: Self = Self::new(16);
     pub const MAJOR_ELEVENTH: Self = Self::new(17);
+    pub const AUG_ELEVENTH: Self = Self::new(18);
 
     pub const MINOR_THIRTEENTH: Self = Self::new(20);
     pub const MAJOR_THIRTEENTH: Self = Self::new(21);
+    pub const AUG_THIRTEENTH: Self = Self::new(22);
 
     pub const fn new(semitones: u8) -> Self {
         Self { semitones }
@@ -94,12 +97,16 @@ impl fmt::Display for Interval {
             Interval::MAJOR_SIXTH => f.write_char('6'),
             Interval::MINOR_SEVENTH => f.write_str("m7"),
             Interval::MAJOR_SEVENTH => f.write_str("maj7"),
+            Interval::OCTAVE => f.write_char('8'),
             Interval::MINOR_NINTH => f.write_str("b9"),
             Interval::MAJOR_NINTH => f.write_char('9'),
-            Interval::MINOR_ELEVENTH => f.write_str("11"),
-            Interval::MAJOR_ELEVENTH => f.write_str("maj11"),
-            Interval::MINOR_THIRTEENTH => f.write_str("13"),
-            Interval::MAJOR_THIRTEENTH => f.write_str("maj13"),
+            Interval::AUG_NINTH => f.write_str("#9"),
+            Interval::MINOR_ELEVENTH => f.write_str("b11"),
+            Interval::MAJOR_ELEVENTH => f.write_str("11"),
+            Interval::AUG_ELEVENTH => f.write_str("#11"),
+            Interval::MINOR_THIRTEENTH => f.write_str("b13"),
+            Interval::MAJOR_THIRTEENTH => f.write_str("13"),
+            Interval::AUG_THIRTEENTH => f.write_str("#13"),
             i => panic!("{:?}", i),
         }
     }
